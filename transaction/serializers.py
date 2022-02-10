@@ -1,8 +1,9 @@
 from dataclasses import fields
+from datetime import datetime
 import email
 from email.policy import default
 from django.forms import models
-from .models import Payment
+from .models import Payment, Withdrawal
 import uuid
 from rest_framework import serializers        
 class PaymentSerializer(serializers.ModelSerializer):
@@ -10,14 +11,13 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ['amount', 'email','name', 'phone', 'agent_account_number' ]
 
-class WithdrawalSerializer(serializers.Serializer):
-    account_number = serializers.CharField()
-    account_bank = serializers.CharField(max_length=3)
-    amount = serializers.CharField()
-    narration = serializers.CharField()
-    currency = serializers.CharField(max_length=3)
-    reference = serializers.UUIDField(default=uuid.uuid4)
-    email = serializers.EmailField
-    debit_currency = serializers.CharField(default='NGN')
-    account_id = serializers.CharField()
-    withdrawal_date = serializers.DateTimeField()
+class VerifyPaymentSerializer(serializers.Serializer):
+    transaction_id = serializers.CharField()
+
+class WithdrawalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Withdrawal
+        fields = ['account_number', 'account_bank', 'amount', 'narration', 'currency', 'reference', 'email', 'debit_currency', 'account_id']
+        
+        def __str__(self):
+            return self.amount

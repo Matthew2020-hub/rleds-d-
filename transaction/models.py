@@ -1,5 +1,5 @@
 from django.db import models
-
+import uuid
 from cmath import phase
 import email
 from email.policy import default
@@ -19,3 +19,24 @@ class Payment(models.Model):
 
     def __str__(self):
         return self.agent_account_number
+
+
+class Withdrawal(models.Model):
+    account_number = models.CharField(max_length=20)
+    account_bank = models.CharField(max_length=4)
+    amount = models.CharField(max_length=20)
+    narration = models.CharField(max_length=200)
+    currency_choice = [
+        ('USD', 'USD'),
+        ('NGN', 'NGN')
+    ]
+    debit_choice = [
+        ('USD', 'USD'),
+        ('NGN', 'NGN')
+    ]
+    currency = models.CharField(choices=currency_choice,  max_length=3)
+    reference = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
+    email = models.EmailField()
+    debit_currency = models.CharField(choices=debit_choice, max_length=3)
+    account_id = models.CharField(max_length=60)
+    withdrawal_date = models.DateTimeField()

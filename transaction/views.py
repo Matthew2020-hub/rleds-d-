@@ -10,7 +10,7 @@ from django.http import request
 from django.shortcuts import render
 from userAuthentication.models import User
 from .models import Payment
-from .serializers import PaymentSerializer, WithdrawalSerializer
+from .serializers import PaymentSerializer, VerifyPaymentSerializer, WithdrawalSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -35,8 +35,12 @@ def make_payment(request):
         verify_acct = User.objects.get(user_id = agent_account_no)
         if verify_acct is not None:
             print(verify_acct)
-            verify_acct['balance'] += amount
+            acc = verify_acct.balance
+            print(acc)
+            acc += float(amount)
+            print(acc)
             verify_acct.save()
+            print(verify_acct.balance)
             auth_token = FLUTTERWAVE_KEY
             hed = {'Authorization': 'Bearer ' + auth_token}
             data = {
@@ -68,16 +72,16 @@ def make_payment(request):
         raise AuthenticationError('no valid user')
 
 @api_view(['GET','POST']) 
-def verify_transaction(transaction_id): 
+def verify_transaction(self, transaction_id): 
     response = requests.get(
         f'https://api.flutterwave.com/v3/transactions/{transaction_id}/verify',
         headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {FLUTTERWAVE_KEY}'},
     )
     json_response = response.json()
-    print(json_response)
     response_data = json_response['data']
     if response_data['status'] == 'successful':   
         return Response(response_data)
+    return Response ('Payment not successful', status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'POST'])
 def agent_withdrawal(request):
@@ -91,13 +95,14 @@ def agent_withdrawal(request):
         amount = serializer.validated_data['amount']
         debit_currency = serializer.validated_data['debit_currency']
         acct_id = serializer.validated_data['account_id']
-        account_id = User.objects.filter(account_id=acct_id)
-        email_verify = User.objects.filter(email=email)
-        if email_verify is None:
+        account_id = User.objects.get(user_id=acct_id)
+        print(account_id.balance)
+        # email_verify = account_id.get(email=email)
+        if account_id.email !=email:
             return Response({'message':'Invalid Email input, enter the correct email!'}, status=status.HTTP_404_NOT_FOUND)
-        if account_id is None:
+        elif account_id is None:
             return Response({'message':'Incorrect Account ID!'}, status=status.HTTP_404_NOT_FOUND) 
-        if amount > User.objects.get(user=User)['balcance']:
+        elif int(amount) > int(account_id.balance):
             raise ValueError("Insufficient fund")
         auth_token = FLUTTERWAVE_KEY
         header = {'Authorization': 'Bearer ' + auth_token}
@@ -117,7 +122,7 @@ def agent_withdrawal(request):
         response_data = response.json()
         return response_data
 
-@login_required
+# @login_required
 def dashboard(request):
     
     print(request.user)
@@ -130,37 +135,4 @@ def dashboard(request):
         return Response(context, status=status.HTTP_200_OK)
     else:
         return ValidationError('error')
-
-# def make_payment(name, email, amount, phone):
-#     env = environ.Env()
-#     environ.Env.read_env('transaction.env')
-#     serializer = PaymentSerializer
-#     auth_token = env('SECRET_KEY')
-#     hed = {'Authorization': 'Bearer ' + auth_token}
-#     data = {
-#                 "tx_ref":''+str(randint(111111,999999)),
-#                 "amount":amount,
-#                 "currency":"NGN",
-#                 "redirect_url":"http://localhost:8000/callback",
-#                 "payment_options":"card",
-#                 "meta":{
-#                     "consumer_id":23,
-#                     "consumer_mac":"92a3-912ba-1192a"
-#                 },
-#                 "customer":{
-#                     "email":email,
-#                     "phonenumber":phone,
-#                     "name":name
-#                 },
-#                 "customizations":{
-#                     "title":"Supa houseFree",
-#                     "description":"a user-agent connct platform",
-#                     "logo":"https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg"
-#                 }
-#                 }
-#     url = ' https://api.flutterwave.com/v3/payments'
-#     response = requests.post(url, json=data, headers=hed)
-#     response_data = response.json()
-#     link=response_data['data']['link']
-#     return link
 

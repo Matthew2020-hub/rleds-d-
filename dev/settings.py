@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 # SECRET_KEY = os.environ.get('DJANGO_KEY')
@@ -143,6 +143,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -175,16 +176,12 @@ AUTH_USER_MODEL = 'userAuthentication.User'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+ALLOWED_HOSTS = []
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -219,15 +216,21 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+
+)
 STATIC_URL = 'static/'
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
