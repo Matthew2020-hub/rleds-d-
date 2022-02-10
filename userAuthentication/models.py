@@ -1,6 +1,6 @@
+from enum import unique
+from random import choices
 from django.db import models
-
-# Create your models here.
 import email
 from email.policy import default
 from django.db import models
@@ -14,6 +14,7 @@ from django.conf import settings
 # from django.contrib.auth.base_user import BaseUserManager, UserManager
 from cloudinary.models import CloudinaryField
 from .validators import minimum_amount
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 
@@ -67,7 +68,7 @@ class User(AbstractUser):
     home_address = models.CharField( max_length=30, null=True, verbose_name= 'Home Address', blank=False)
     balance = models.FloatField(default=0, validators=[minimum_amount, ])
     country = CountryField()
-    phone_number = models.CharField(max_length=14, null=True, unique=True, verbose_name='phone number', blank=False)
+    phone_number = PhoneNumberField(null=True, blank=False, unique=True)
     date_created = models.DateTimeField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)

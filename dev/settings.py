@@ -27,16 +27,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 # SECRET_KEY = os.environ.get('DJANGO_KEY')
-CLOUDINARY_URL="cloudinary://313926842933816:DSBYok2TOrxqZjMKrEp8nNM_OcA@housefree"
+CLOUDINARY_URL= os.environ.get('CLOUDINARY_URL')
 # DEBUG=True
 # Facebook configuration
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 SOCIAL_AUTH_GOOGLE_KEY = os.environ.get('GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_SECRET =os.environ.get('GOOGLE_CLIENT_KEY')
@@ -69,8 +70,8 @@ SITE_ID = 1
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'
-EMAIL_HOST_USER = 'housefree189@gmail.com'
-EMAIL_HOST_PASSWORD = 'respect1242'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 
 FACEBOOK_EXTENDED_PERMISSIONS = ['email']
@@ -162,7 +163,6 @@ DATABASES = {
 
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
-
 
 
 ROOT_URLCONF = 'dev.urls'

@@ -37,7 +37,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 import requests
 from rest_framework.exceptions import AuthenticationFailed
-# import jwt, datetime
+import jwt, datetime
 from django.utils.http import unquote
 
 """An endpoint to crreate user and to GET list of all users"""
@@ -109,20 +109,19 @@ class SetLoginView(APIView):
                     if not queryset.check_password(password):
                         raise AuthenticationFailed("Incorrect Password")
                     elif queryset is None:
-                        pass
-                #         raise AuthenticationFailed("User not found")
-                #     payload = {
-                #         "user": queryset.email,
-                #         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-                #         "iat": datetime.datetime.utcnow()
-                #     }
-                #     token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-                #     response = Response()
-                #     response.set_cookie(key='jwt', value=token, httponly=True)
-                #     response.data = {
-                #         'jwt': token
-                #     }           
-                # return response
+                        raise AuthenticationFailed("User not found")
+                    payload = {
+                        "user": queryset.email,
+                        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                        "iat": datetime.datetime.utcnow()
+                    }
+                    token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+                    response = Response()
+                    response.set_cookie(key='jwt', value=token, httponly=True)
+                    response.data = {
+                        'jwt': token
+                    }           
+                return response
             except User.DoesNotExist:
                 return Response({"error": _("User with this email does not exist!")}, status=status.HTTP_404_NOT_FOUND)
 """
@@ -132,15 +131,14 @@ class CookiesLoginView(APIView):
     def get(self, request):
         token = request.COOKIES.get('jwt')
         if not token:
-            pass
-        #     raise AuthenticationFailed('Unauthenticated')
-        # try:
-        #     payload = jwt.decode(token, 'secret', algorithms='HS256')
-        # except jwt.ExpiredSignatureError:
-        #     raise AuthenticationFailed('Unauthenticated')
-        # user = User.objects.filter(email=payload['user']).first()
-        # serializer = CustomUserSerializer(user)
-        # return Response(serializer.data, status = status.HTTP_200_OK)
+            raise AuthenticationFailed('Unauthenticated')
+        try:
+            payload = jwt.decode(token, 'secret', algorithms='HS256')
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated')
+        user = User.objects.filter(email=payload['user']).first()
+        serializer = CustomUserSerializer(user)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
 @api_view(['POST'])
 def validate_authorization_code(request):
