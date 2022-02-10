@@ -3,7 +3,6 @@ from django.db import models
 # Create your models here.
 import email
 from email.policy import default
-from tkinter import CASCADE
 from django.db import models
 # Create your models here.
 from django.db import models
