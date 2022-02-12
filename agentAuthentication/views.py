@@ -79,9 +79,8 @@ def validate_authorization_code(request):
     return Response(result, status=status.HTTP_200_OK)
 
 
-
 """
-Handling Agent's Login details from Google session with JWT and setting cookies
+Handling Agent's Login details from Google-session with JWT and setting cookies
 """
 class SetLoginView(APIView):
         def post(self, request):
