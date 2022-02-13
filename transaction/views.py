@@ -80,16 +80,13 @@ def verify_transaction(self, transaction_id):
     json_response = response.json()
     response_data = json_response['data']
     if response_data['status'] == 'successful':
-        if len(response) ==1:
-            print(len(response))
-            amount = response_data['amount']
-            agent = response_data['meta']['consumer_id']
-            verify = User.objects.get(user_id=agent)
-            verify.balance +=amount
-            verify.save()
-            print(verify.balance) 
-            return Response(response_data)
-        return Response('error')
+        amount = response_data['amount']
+        agent = response_data['meta']['consumer_id']
+        verify = User.objects.get(user_id=agent)
+        verify.balance +=amount
+        verify.save()
+        print(verify.balance) 
+        return Response(response_data)
     return Response ('Payment not successful', status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'POST'])

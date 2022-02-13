@@ -11,3 +11,6 @@ class Message(models.Model):
 
     def __str__(self):
         return self.author
+
+class Room(models.Model):
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)

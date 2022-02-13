@@ -37,7 +37,7 @@ environ.Env.read_env('housefree.env')
 CLOUDINARY_URL= os.environ.get('CLOUDINARY_URL')
 # DEBUG=True
 # Facebook configuration
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x'
 
 SOCIAL_AUTH_GOOGLE_KEY = os.environ.get('GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_SECRET =os.environ.get('GOOGLE_CLIENT_KEY')
@@ -135,7 +135,8 @@ INSTALLED_APPS = [
     'userAuthentication',
     'message',
     'agentAuthentication',
-    'transaction'
+    'transaction',
+    'Profile',
     
 ]
 
@@ -152,17 +153,12 @@ MIDDLEWARE = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-
-ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
+ALLOWED_HOSTS = []
 
 
 ROOT_URLCONF = 'dev.urls'

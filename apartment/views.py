@@ -78,3 +78,5 @@ class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateM
             query = Apartment.objects.filter(location=location, price=price_range, category=category)
             if query is not None:
                 return self.list(query)
+            return Response('No result found', status=status.HTTP_204_NO_CONTENT)
+        raise ValueError()
