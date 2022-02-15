@@ -37,15 +37,18 @@ environ.Env.read_env('housefree.env')
 CLOUDINARY_URL= os.environ.get('CLOUDINARY_URL')
 # DEBUG=True
 # Facebook configuration
-SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
+ACCOUNT_ADAPTER = 'Profile.adapter.AccountAdapter'
 SOCIAL_AUTH_GOOGLE_KEY = os.environ.get('GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_SECRET =os.environ.get('GOOGLE_CLIENT_KEY')
 FLUTTERWAVE_KEY= os.environ.get('FLUTTER_WAVE')
 redirect_uri = os.environ.get('redirect_uri')
 project_id = os.environ.get('project_id')
 
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'api/v1/'
+LOGIN_REDIRECT_URL = 'api/v1/profile/'
+LOGIN_URL= 'account/login/'
 
 cloudinary.config( 
   cloud_name = 'housefree', 
@@ -58,6 +61,7 @@ cloudinary.config(
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS= False
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -132,9 +136,8 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'userAuthentication',
+    'Authentication',
     'message',
-    'agentAuthentication',
     'transaction',
     'Profile',
     
@@ -181,7 +184,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dev.wsgi.application'
 
-AUTH_USER_MODEL = 'userAuthentication.User'
+AUTH_USER_MODEL = 'Authentication.User'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -244,5 +247,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 2,
+    'PAGE_SIZE': 6,
 }

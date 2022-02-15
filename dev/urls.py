@@ -23,13 +23,12 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('apartment.urls')),
-    path('', include('userAuthentication.urls')),
+    path('', include('Authentication.urls')),
     path('', include('rest_auth.urls')),
     path('', include('rest_auth.registration.urls')),
     path('', include('message.urls')),
-    path('soc/', include('rest_framework_social_oauth2.urls')),
-    path('accounts/', include('allauth.urls')),
+    path('api/v1/oauth/', include('rest_framework_social_oauth2.urls')),
+    # path('accounts/', include('allauth.urls')),
     path('', include('transaction.urls')),
-    path('', include('agentAuthentication.urls')),
-   
+    path('', include('Profile.urls')), 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

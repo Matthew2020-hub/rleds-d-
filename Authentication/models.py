@@ -1,24 +1,22 @@
+from django.db import models
+
+from distutils.command.upload import upload
 from enum import unique
 from random import choices
 from django.db import models
 import email
 from email.policy import default
 from django.db import models
-# Create your models here.
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
 import uuid
 from django.conf import settings
-# from django.contrib.auth.base_user import BaseUserManager, UserManager
 from cloudinary.models import CloudinaryField
 from .validators import minimum_amount
 from phonenumber_field.modelfields import PhoneNumberField
 
-
-
-# from django.contrib.auth.base_user import BaseUserManager
 
 class CustomUserManager(UserManager):
     use_in_migrations = True
@@ -42,7 +40,7 @@ class CustomUserManager(UserManager):
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, password, *args, **kwargs):
+    def create_superuser(self, email, password):
         """
         Create and save a SuperUser with the given email and password.
         """
@@ -51,6 +49,7 @@ class CustomUserManager(UserManager):
         user.is_admin = True
         user.is_staff = True
         user.is_superuser = True
+        user.is_active = False
         user.save(using=self.db)
         return user
 
@@ -63,12 +62,12 @@ class User(AbstractUser):
     entry = models.CharField(choices=USER_TYPE, max_length=10)
     email = models.EmailField(_('email address'), unique=True)
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
-    first_name = models.CharField(null=True, max_length=30, verbose_name= 'First Name')
-    last_name = models.CharField(null=True, max_length=30, verbose_name= 'Last Name')
-    home_address = models.CharField( max_length=30, null=True, verbose_name= 'Home Address', blank=False)
+    name = models.CharField(max_length=20, blank=True, null=True, verbose_name='Full Name')
+    image = models.ImageField(upload_to = 'profile/', blank=True)
+    home_address = models.CharField( max_length=30, null=True,  blank=True)
     balance = models.FloatField(default=0, validators=[minimum_amount, ])
     country = CountryField()
-    phone_number = PhoneNumberField(null=True, blank=False, unique=True)
+    phone_number = PhoneNumberField(null=True, blank=True, unique=True)
     date_created = models.DateTimeField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
@@ -76,42 +75,18 @@ class User(AbstractUser):
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'home_address', 'phone_number']
+    REQUIRED_FIELDS = []
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
 
     def has_perm(self, perm, obj=None):
-        return self.is_admin
+        return self.is_superuser
 
     def has_module_perms(self, app_label):
-        return True
+        return self.is_superuser
 
 
-
-# class Profile(User):
-#     phone_number = 
-
-
-
-
-
-
-
-# class User(AbstractUser):
-  
-#     password = models.CharField(max_length=30, null=True)
-#     email = models.EmailField(_('email address'), unique=True, default=False)
-#     ID = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
-#     first_name = models.CharField(null=True, max_length=30, verbose_name= 'First Name')
-#     last_name = models.CharField(null=True, max_length=30, verbose_name= 'Last Name')
-#     home_address = models.CharField(null=True, max_length=30, verbose_name= 'Home Address')
-#     country = CountryField(default=False)
-#     phone_number = models.CharField(max_length=14, null=True, unique=True,  blank=False)
-#     date_created = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return self.first_name
 
         

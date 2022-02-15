@@ -8,7 +8,7 @@ from unicodedata import name
 from django.forms import ValidationError
 from django.http import request
 from django.shortcuts import render
-from userAuthentication.models import User
+from Authentication.models import User
 from .models import Payment
 from .serializers import PaymentSerializer, VerifyPaymentSerializer, WithdrawalSerializer
 from rest_framework.decorators import api_view
@@ -23,7 +23,6 @@ from dev.settings import FLUTTERWAVE_KEY
 
 @api_view(['GET', 'POST'])
 def make_payment(request):
-    # queryset = Payment.objects.all()
     serializer = PaymentSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         email = serializer.validated_data['email']
@@ -31,16 +30,8 @@ def make_payment(request):
         phone = serializer.validated_data['phone']
         name = serializer.validated_data['name']
         agent_account_no = serializer.validated_data['agent_account_number']
-        # query = User.objects.filter(entry='agent')
         verify_acct = User.objects.get(user_id = agent_account_no)
         if verify_acct is not None:
-            print(verify_acct)
-            acc = verify_acct.balance
-            print(acc)
-            acc += float(amount)
-            print(acc)
-            verify_acct.save()
-            print(verify_acct.balance)
             auth_token = FLUTTERWAVE_KEY
             hed = {'Authorization': 'Bearer ' + auth_token}
             data = {
@@ -103,7 +94,6 @@ def agent_withdrawal(request):
         acct_id = serializer.validated_data['account_id']
         account_id = User.objects.get(user_id=acct_id)
         print(account_id.balance)
-        # email_verify = account_id.get(email=email)
         if account_id.email !=email:
             return Response({'message':'Invalid Email input, enter the correct email!'}, status=status.HTTP_404_NOT_FOUND)
         elif account_id is None:
@@ -128,17 +118,19 @@ def agent_withdrawal(request):
         response_data = response.json()
         return Response(response_data)
 
-# @login_required
+"""An endpoint to get Agent's Wallet balance
+"""
+@api_view(['GET'])
 def dashboard(request):
-    
-    print(request.user)
-    wallet_balance = User.objects.get(user=request.user).balance
+    wallet_balance = User.objects.get(email=request.user.email).balance
     if not wallet_balance is None:
-        print(request.user)
         context = {
             'wallet': wallet_balance
         }
         return Response(context, status=status.HTTP_200_OK)
     else:
-        return ValidationError('error')
+        message = {
+            'Error': 'User does not have a valid wallet'
+        }
+        raise ValidationError(message, status=status.HTTP_204_NO_CONTENT)
 
