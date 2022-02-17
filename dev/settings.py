@@ -140,6 +140,7 @@ INSTALLED_APPS = [
     'message',
     'transaction',
     'Profile',
+    'drf_yasg',
     
 ]
 
@@ -183,6 +184,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'dev.wsgi.application'
+ASGI_APPLICATION = 'dev.asgi.application'
 
 AUTH_USER_MODEL = 'Authentication.User'
 
@@ -248,4 +250,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
+}
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'relative_paths': False,
+    "DISPLAY_OPERATION_ID": False,
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        },
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        },
+        'Token': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
 }
