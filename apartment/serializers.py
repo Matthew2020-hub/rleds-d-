@@ -10,7 +10,8 @@ class ApartmentSerializer(serializers.ModelSerializer):
         super(ApartmentSerializer, self).__init__(*args, **kwargs)
     class Meta:
         model = Apartment
-        fields = ['apartment_id', 'name','category', 'image', 'price', 'location', 'agent']
+        fields = "__all__"
+        # ['apartment_id', 'apartment_title','category', 'image', 'price', 'location', 'agent', 'videofile', 'descriptions', 'features', 'location_info', 'reviews']
 
 
 class ApartmentSearchSerializer(serializers.Serializer):

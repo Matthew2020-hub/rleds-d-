@@ -3,17 +3,19 @@ from datetime import datetime
 import email
 from email.policy import default
 from django.forms import models
-from .models import Payment, Withdrawal
+from .models import Payment, PaymentHistory, Withdrawal
 import uuid
 from rest_framework import serializers        
 class PaymentSerializer(serializers.ModelSerializer):
+    House_location = serializers.CharField(max_length=150)
     class Meta:
         model = Payment
-        fields = ['amount', 'email','name', 'phone', 'agent_account_number' ]
-
-class VerifyPaymentSerializer(serializers.Serializer):
-    transaction_id = serializers.CharField()
-
+        fields = ['amount', 'email','name', 'phone', 'agent_account_number', 'House_location' ]
+        
+class HistorySerializer(serializers.Serializer):
+    class Meta:
+        model = PaymentHistory
+        fields = "__all__"
 class WithdrawalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Withdrawal

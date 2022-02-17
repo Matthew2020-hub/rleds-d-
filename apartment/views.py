@@ -20,8 +20,8 @@ from rest_framework.decorators import api_view
 import requests
 from .pagination import CustomPagination
 
-
-class CreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
+"""An endpoint to post and to list all available apartment"""
+class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
     serializer_class = ApartmentSerializer
     queryset = Apartment.objects.all()
     lookup_field = 'id'
@@ -35,8 +35,8 @@ class CreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.C
 
     def post(self, request):
         return self.create(request)
-
-class CreateUpdateDestroyAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+"""An endpoint to get, delete and update a particular endpoint"""
+class ApartmentCreateUpdateDestroyAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     serializer_class = ApartmentSerializer
     queryset = Apartment.objects.all()
     lookup_field = 'apartment_id'
@@ -44,7 +44,6 @@ class CreateUpdateDestroyAPIView(generics.GenericAPIView, mixins.ListModelMixin,
     permisssion_classes = [IsAuthenticated]
 
     def get(self, request, apartment_id):
-
         queryset = Apartment.objects.filter(apartment_id = apartment_id)
         article = get_object_or_404(queryset)
         serializer = ApartmentSerializer(article)
@@ -61,8 +60,9 @@ class CreateUpdateDestroyAPIView(generics.GenericAPIView, mixins.ListModelMixin,
         if query:
             return self.destroy(request)
 
-
-class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
+""" An endpoint to list the apartment search result
+"""
+class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
     serializer_class = ApartmentSerializer
     lookup_field = 'location'
     pagination_class = CustomPagination
@@ -79,4 +79,4 @@ class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateM
             if query is not None:
                 return self.list(query)
             return Response('No result found', status=status.HTTP_204_NO_CONTENT)
-        raise ValueError()
+        raise ValueError('No valid Input')

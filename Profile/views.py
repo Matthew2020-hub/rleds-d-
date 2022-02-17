@@ -1,3 +1,4 @@
+from distutils.log import error
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required 
 from Authentication.models import User
@@ -10,10 +11,13 @@ from django.contrib.auth import get_user_model
 # Create your views here.
 @api_view(['GET'])
 def profile(request):
-    email = request.user.email
-    name = request.user.name
-    context = {
-        'email': email,
-        'full_name': name
-    }
-    return Response(context,status=status.HTTP_200_OK)
+    try:
+        email = request.user.email
+        name = request.user.name
+        context = {
+            'email': email,
+            'full_name': name
+        }
+        return Response(context,status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response('User does not exist!', status=status.HTTP_204_NO_CONTENT)
