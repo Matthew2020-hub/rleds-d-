@@ -38,6 +38,7 @@ import jwt, datetime
 from django.utils.http import unquote
 from django.contrib.auth import authenticate
 from django.contrib import messages
+from drf_yasg.utils import swagger_auto_schema
 
 """An endpoint to create user and to GET list of all users"""
 class CreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
@@ -177,17 +178,18 @@ def validate_authorization_code(request):
 """A manaual or Custom login and logout View without cookies.
 N.B: This is login view when user signs in manually, i.e., without google authentication
  """
-@api_view(["POST", "GET"])
+@swagger_auto_schema(methods=['post'], request_body=LoginSerializer)
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
-        Account = User.objects.get(email=email)
+        Account = get_object_or_404(User, email=email)
         Account.backend = 'django.contrib.auth.backends.ModelBackend'    
         if not Account.check_password(password):
-            raise ValidationError({"message": "Incorrect Login credentials"})
+            return Response({"message": "Incorrect Login credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         token = Token.objects.get_or_create(user=Account)[0].key
         print(token)
         if Account:
@@ -202,7 +204,7 @@ def login_user(request):
                 return Response(res)
 
             else:
-                raise ValidationError({"400": f'Account not active'})
+                return Response({"message": "Account not active"}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(["GET"])
 def logout_user(request):

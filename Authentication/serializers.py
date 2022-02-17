@@ -9,6 +9,7 @@ from rest_framework import serializers
 from rest_auth.serializers import PasswordResetSerializer
 from django_countries.fields import CountryField
 from django.contrib import messages
+from message.models import Room
 class CustomUserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'}, write_only=True)
     class Meta:
@@ -34,11 +35,15 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.entry ='Tenant'
         user.is_active = True
         user.save()
+        Room.objects.create(user=user)
         return user 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(
         style={'input_type': 'password'}, trim_whitespace=False)
+
+    class Meta:
+        ref_name = "my_login"
 
     def __str__(self):
         return self.email
