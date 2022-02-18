@@ -61,10 +61,11 @@ class CreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.C
         check = User.objects.filter(entry='Tenant')
         return self.list(check)
     def post(self, request):
-        serializer = CustomUserSerializer(data=request.data)
         env = environ.Env()
         environ.Env.read_env('housefree.env')
         from_email= os.environ.get('EMAIL_HOST_USER')
+        serializer = CustomUserSerializer(data=request.data)
+       
         if serializer.is_valid(raise_exception=True):
             user_data = serializer.data
             user = self.create(request)

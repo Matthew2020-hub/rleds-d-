@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x
 # os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 CLOUDINARY_URL= os.environ.get('CLOUDINARY_URL')
