@@ -11,9 +11,6 @@ class ApartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Apartment
         fields = "__all__"
-        # ['apartment_id', 'apartment_title','category', 'image', 'price', 'location', 'agent', 'videofile', 'descriptions', 'features', 'location_info', 'reviews']
-
-
 class ApartmentSearchSerializer(serializers.Serializer):
     location = serializers.CharField()
     price_range = serializers.CharField()

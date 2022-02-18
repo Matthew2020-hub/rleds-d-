@@ -27,17 +27,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
+SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x'
+# os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 env = environ.Env()
 environ.Env.read_env('housefree.env')
-# SECRET_KEY = os.environ.get('DJANGO_KEY')
 CLOUDINARY_URL= os.environ.get('CLOUDINARY_URL')
-# DEBUG=True
-# Facebook configuration
-SECRET_KEY = os.environ.get('SECRET_KEY')
 
 ACCOUNT_ADAPTER = 'Profile.adapter.AccountAdapter'
 SOCIAL_AUTH_GOOGLE_KEY = os.environ.get('GOOGLE_CLIENT_ID')
@@ -69,7 +66,10 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/?verification=1'
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/?verification=1'
 
+SIMPLE_JWT = {
 
+      'USER_ID_FIELD': 'user_id'
+}
 SITE_ID = 1
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -104,7 +104,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',  
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  
     ),
     'DEFAULT_PERMISSIONS_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -141,6 +142,7 @@ INSTALLED_APPS = [
     'transaction',
     'Profile',
     'drf_yasg',
+    'rest_framework_simplejwt',
     
 ]
 
@@ -154,15 +156,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-ALLOWED_HOSTS = []
 
 
 ROOT_URLCONF = 'dev.urls'
@@ -190,6 +183,20 @@ AUTH_USER_MODEL = 'Authentication.User'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'HOST': os.environ.get('DATABASE_HOST'),
+        'PORT': os.environ.get('DATABASE_PORT'),
+    }
+}
+
+ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

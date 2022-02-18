@@ -73,8 +73,8 @@ def make_payment(request):
             return Response(link)
         return Response('Agent with this Acoount ID does not exist!', status=status.HTTP_204_NO_CONTENT)
 
-"""An endpoint to verify payment by calling futterwave's verification endpoint"""
 
+"""An endpoint to verify payment by calling futterwave's verification endpoint"""
 @api_view(['GET','POST']) 
 def verify_transaction(request, transaction_id): 
     response = requests.get(
@@ -120,6 +120,7 @@ def verify_transaction(request, transaction_id):
         return Response('Transaction Failed!', status=status.HTTP_400_BAD_REQUEST)     
     return Response ('BAD REQUEST', status=status.HTTP_400_BAD_REQUEST)
 
+
 """An endpoint to list User's transaction history"""
 class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
     serializer_class = HistorySerializer
@@ -144,6 +145,7 @@ class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin,
                 
         return Response(history, status=status.HTTP_200_OK)
 
+"""An endpoint through which an agent could withdraw from his wallet"""
 @api_view(['GET', 'POST'])
 def agent_withdrawal(request):
     serializer = WithdrawalSerializer(data=request.data)
@@ -167,20 +169,20 @@ def agent_withdrawal(request):
         header = {'Content-Type':'application/json',
             'Authorization': f'Bearer {auth_token} ' }
         data = {
-                    "account_bank": account_bank,
-                    "account_number": account_no,
-                    "amount":amount,
-                    "narration": narration,
-                    "currency": currency,
-                    "currency":"NGN",
-                    "reference":''+str(randint(111111,999999)),
-                    "callback_url":"http://localhost:8000/view/",
-                    "debit_currency":debit_currency,
-                    }
+            "account_bank": account_bank,
+            "account_number": account_no,
+            "amount":amount,
+            "narration": narration,
+            "currency": currency,
+            "currency":"NGN",
+            "reference":''+str(randint(111111,999999)),
+            "callback_url":"http://localhost:8000/view/",
+            "debit_currency":debit_currency,
+            }
         url = ' https://api.flutterwave.com/v3/transfers'
         response = requests.post(url, headers=header, params=data)
         response_data = response.json()
-        return Response(response_data)
+        return Response(response_data['status'])
 
 """An endpoint to get Agent's Wallet balance
 """

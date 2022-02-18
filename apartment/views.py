@@ -30,11 +30,11 @@ class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin,
 
     def get(self, request):
         check = Apartment.objects.all()
-
         return self.list(check)
 
     def post(self, request):
         return self.create(request)
+
 """An endpoint to get, delete and update a particular endpoint"""
 class ApartmentCreateUpdateDestroyAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     serializer_class = ApartmentSerializer
@@ -76,7 +76,7 @@ class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixin
             price_range = serializer.validated_data['price_range']
             category = serializer.validated_data['category']
             query = Apartment.objects.filter(location=location, price=price_range, category=category)
-            if query is not None:
+            if query is not None and query.is_available is True:
                 return self.list(query)
             return Response('No result found', status=status.HTTP_204_NO_CONTENT)
         raise ValueError('No valid Input')
