@@ -86,7 +86,7 @@ def contact_us(request):
             ['housefree189@gmail.com'],
             fail_silently=False
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({'message':'Thank you for your message, we will get back to you shortyly'}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetUserMessages(APIView):
