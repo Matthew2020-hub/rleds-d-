@@ -64,8 +64,7 @@ class CreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.C
         env = environ.Env()
         environ.Env.read_env('housefree.env')
         from_email= os.environ.get('EMAIL_HOST_USER')
-        serializer = CustomUserSerializer(data=request.data)
-       
+        serializer = CustomUserSerializer(data=request.data)  
         if serializer.is_valid(raise_exception=True):
             user_data = serializer.data
             user = self.create(request)
@@ -179,38 +178,6 @@ class SetLoginView(APIView):
             except User.DoesNotExist:
                 return Response({"error": _("User with this email does not exist!")}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['POST'])
-def validate_authorization_code(request):
-    serializer = GetAcessTokenSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-        code = serializer.validated_data['code']
-        uncoded = unquote(code)
-        if code  is None:
-            return Response({"message": "Error occured due to Invalid authorization code"}, status=status.HTTP_204_NO_CONTENT)
-        data = {
-                'code': uncoded ,
-                'project_id': project_id,
-                'client_id': SOCIAL_AUTH_GOOGLE_KEY,
-                'client_secret': SOCIAL_AUTH_GOOGLE_SECRET,
-                'redirect_uri': redirect_uri,
-                'grant_type': 'authorization_code'
-        }
-        response = requests.post('https://oauth2.googleapis.com/token', data=data)
-        if not response.ok:
-            return Response({'message':'Failed to obtain access token from Google'}, status=status.HTTP_400_BAD_REQUEST)
-        access_token = response.json()['access_token']
-        response = requests.get(
-        'https://www.googleapis.com/oauth2/v3/userinfo',
-        params={'access_token': access_token}
-    )
-    if not response.ok:
-        raise ValidationError('Failed to obtain user info from Google.')
-    result = response.json()
-    login = User.objects.get(email=result['email'])
-    if login is None:
-        raise AuthenticationError("User with this email doesn't exist, kindly sign up")
-    return Response(result, status=status.HTTP_200_OK)
-
 
 """A manaual or Custom login and logout View without cookies.
 N.B: This is login view when user signs in manually, i.e., without google authentication
@@ -218,7 +185,7 @@ N.B: This is login view when user signs in manually, i.e., without google authen
 @swagger_auto_schema(methods=['post'], request_body=LoginSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def login_user(request):
+def login(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         email = serializer.validated_data['email']
@@ -230,15 +197,15 @@ def login_user(request):
         if not Account.is_verify is True:
             return Response({'message': 'Email is not yet verified, kindly do that!'}, status= status.HTTP_401_UNAUTHORIZED)
         token = Token.objects.get_or_create(user=Account)[0].key
-        if Account:
-            if Account.is_active:
-                login(request, Account)
-                return Response('Login is successful', status= status.HTTP_200_OK)
-            else:
-                return Response({"message": "Account not active, kindly register!!"}, status=status.HTTP_401_UNAUTHORIZED)
+        if Account and Account.is_active is True:
+            login(request, Account)
+            return Response('Login is successful', status= status.HTTP_200_OK)
+        else:
+            return Response({"message": "Account not active, kindly register!!"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(["GET"])
-def logout_user(request):
+def logout(request):
     try:
         request.user.auth_token.delete()
         logout(request)
@@ -247,6 +214,7 @@ def logout_user(request):
     except (AttributeError, User.DoesNotExist):
         return Response ({"Error": _("User not found, enter a valid token.")},
         status=status.HTTP_404_NOT_FOUND)
+
 
 
 """A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
@@ -263,7 +231,7 @@ class LogoutView(APIView):
 """Agent's Login Athorization Endpoint With Google Token and saving user's info in COOKIES
 """
 @api_view(['POST'])
-def validate_agent_authorization_code(request):
+def validate_authorization_code(request):
     serializer = GetAcessTokenSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         authorization_code = serializer.validated_data['code']
@@ -303,25 +271,6 @@ def validate_agent_authorization_code(request):
     return Response(result, status=status.HTTP_200_OK)
 
 
-# """
-# Handling Agent's Login details from Google-session with JWT and setting cookies
-# """
-# class SetAgentView(APIView):
-#         def post(self, request):
-#             try:
-#                 serializer = LoginSerializer(data=request.data)
-#                 if serializer.is_valid(raise_exception=True):
-#                     email = serializer.validated_data['email']
-#                     password = serializer.validated_data['password']
-#                     queryset = User.objects.get(email=email)
-#                     if not queryset.check_password(password):
-#                         raise AuthenticationFailed("Incorrect Password")
-#                     elif queryset is None:
-#                         raise AuthenticationFailed("User not found")          
-#                 return response
-#             except User.DoesNotExist:
-#                 return Response({"error": _("User with this email does not exist!")}, status=status.HTTP_404_NOT_FOUND)
-                
 """
 Handling the login view with Cookies and JWT decoding
 """
@@ -353,43 +302,6 @@ class LogoutView(APIView):
             "message": "Logout successfully"
         }
         return response
-
-
-"""A manaual or Custom login and logout View without cookies.
-N.B: This is login view when user signs in manually, i.e., without google authentication
- """
-@api_view(["POST", "GET"])
-@permission_classes([AllowAny])
-def login_agent(request):
-    serializer = LoginSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-        email = serializer.validated_data['email']
-        password = serializer.validated_data['password']
-        Account = User.objects.get(email=email)
-        Account.backend = 'django.contrib.auth.backends.ModelBackend'    
-        if not Account.check_password(password):
-            raise ValidationError({"message": "Incorrect Login credentials"})
-        token = Token.objects.get_or_create(user=Account)[0].key
-        if Account and Account.is_active is True:
-            login(request, Account)
-            res = {
-                "message": "login",
-                "Token": token
-            }
-            return Response(res)
-        else:
-            raise ValidationError({"400": f'Account not active'})
-
-@api_view(["GET"])
-def agent_logout(request):
-    try:
-        request.user.auth_token.delete()
-        logout(request)
-        return Response({"success": _("Successfully logged out.")},
-                    status=status.HTTP_200_OK)
-    except (AttributeError, User.DoesNotExist):
-        return Response ({"Error": _("User not found, enter a valid token.")},
-        status=status.HTTP_404_NOT_FOUND)
 
 
 """An endpoint to create user and to GET list of all users"""
