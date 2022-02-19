@@ -185,7 +185,7 @@ N.B: This is login view when user signs in manually, i.e., without google authen
 @swagger_auto_schema(methods=['post'], request_body=LoginSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def login(request):
+def user_login(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         email = serializer.validated_data['email']
@@ -198,8 +198,8 @@ def login(request):
             return Response({'message': 'Email is not yet verified, kindly do that!'}, status= status.HTTP_401_UNAUTHORIZED)
         token = Token.objects.get_or_create(user=Account)[0].key
         if Account and Account.is_active is True:
-            login(request, Account)
-            return Response('Login is successful', status= status.HTTP_200_OK)
+            # (request, token)
+            return Response(token, status= status.HTTP_200_OK)
         else:
             return Response({"message": "Account not active, kindly register!!"}, status=status.HTTP_401_UNAUTHORIZED)
 

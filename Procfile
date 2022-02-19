@@ -1,2 +1,1 @@
-web: gunicorn dev.wsgi
-gunicorn myproject.asgi:application -k uvicorn.workers.UvicornWorker
+gunicorn dev.asgi:application -k uvicorn.workers.UvicornWorker
