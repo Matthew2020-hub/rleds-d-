@@ -71,19 +71,6 @@ async def print_message(sid, data):
 
 
 
-# @sio.on("disconnect")
-# async def disconnect(sid):
-#     print("SocketIO disconnect")
-
-
-
-
-
-
-
-
-
-
 
 @api_view(['POST','GET'])
 def contact_us(request):
