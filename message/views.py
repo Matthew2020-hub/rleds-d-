@@ -82,7 +82,7 @@ def contact_us(request):
             subject = 'Contact Form mail ' ,
             message = message,
             from_email= sender,
-            to=
+            recipient_list=
             ['housefree189@gmail.com'],
             fail_silently=False
         )
