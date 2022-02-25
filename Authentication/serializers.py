@@ -10,6 +10,7 @@ from rest_auth.serializers import PasswordResetSerializer
 from django_countries.fields import CountryField
 from django.contrib import messages
 from message.models import Room
+from transaction.models import Rooms
 class CustomUserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'}, write_only=True)
     class Meta:
@@ -18,7 +19,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password2': {
                 'write_only':True
+            
             },
+            'password': {
+                'write_only':True
+            
+            },
+
         }          
     def save(self):
         user = User(
@@ -35,7 +42,20 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.entry ='Tenant'
         user.is_active = True
         user.save()
+        try:
+            Rooms.objects.get(user=user)
+        except Exception as e:
+            Rooms.objects.create(user=user)
+            print(Rooms.user)
+        try:
+             Room.objects.get(user=user)
+             print(Room)
+        except Exception as e:
+            Room.objects.create(user=user) 
+     
+        #     print(Rooms.objects.get(user=request.user))
         # Room.objects.create(user=user)
+
         return user 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -47,12 +67,6 @@ class LoginSerializer(serializers.Serializer):
 
     def __str__(self):
         return self.email
-
-# class SocialSerializer(serializers.Serializer):
-#     """
-#     Serializer which accepts an OAuth2 access token.
-#     """
-#     access_token = serializers.CharField()
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     email = serializers.EmailField()

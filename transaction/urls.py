@@ -10,5 +10,7 @@ urlpatterns = [
     path('api/v1/verify_transaction/<int:transaction_id>', views.verify_transaction, name='verify_payment'),
     path('api/v1/agent/withdraw/', views.agent_withdrawal, name='verify_payment'),
     path('api/v1/agent/balance/', views.dashboard, name='balance'),
-    path('api/v1/user/transaction/history/', ApartmentCreateListAPIView.as_view())
+    path('api/v1/user/transaction/history/', ApartmentCreateListAPIView.as_view()),
+    path('api/v1/history/', views.ListAPIView.as_view()),
+    path('api/v1/user/<str:user_id>/payment-history', views.GetUserHistoryAPIView.as_view())
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -50,15 +50,20 @@ class ApartmentCreateUpdateDestroyAPIView(generics.GenericAPIView, mixins.ListMo
         return Response(serializer.data)
 
     def put(self, request, apartment_id):
-        query = Apartment.objects.filter(apartment_id=apartment_id)
-        if query:
-            return self.update(request)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+        query = get_object_or_404(Apartment, apartment_id=apartment_id)
+        # except Exception as DoesNotExist:
+        #     return Response({'error':'Apartment Not Found'}, status= status.HTTP_404_NOT_FOUND)
+        serializer = ApartmentSerializer(query, data=request.data)   
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response('Data update was successful', status=status.HTTP_200_OK)
 
     def delete(self, request, apartment_id):
-        query = Apartment.objects.get(apartment_id=apartment_id)
-        if query:
-            return self.destroy(request)
+        try:
+            query = get_object_or_404(Apartment, apartment_id=apartment_id)
+        except Exception as DoesNotExist:
+            return Response({'error':'Apartment Not Found'}, status= status.HTTP_404_NOT_FOUND)
+        return self.destroy(request)
 
 """ An endpoint to list the apartment search result
 """

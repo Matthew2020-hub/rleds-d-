@@ -12,5 +12,4 @@ urlpatterns = [
     path('api/v1/apartment/post/', ApartmentCreateListAPIView.as_view()),
     path('api/v1/apartment/<uuid:apartment_id>', ApartmentCreateUpdateDestroyAPIView.as_view()),
     path('api/v1/apartment/search/', ApartmentListAPIView.as_view(), name='aprtment-search')
-    # path('api/v1/apartment-search/', views.Search, name='aprtment-search')
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -10,6 +10,7 @@ from django.dispatch import receiver
 from Authentication.models import User 
 from phonenumber_field.modelfields import PhoneNumberField
 import uuid
+import random
 # Create your models here.
 
 class Payment(models.Model):
@@ -23,9 +24,15 @@ class Payment(models.Model):
     def __str__(self):
         return self.agent_account_number
 
+def generate_short_id(size=9, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'):
+    return ''.join(random.choice(chars) for _ in range(size))
+class Rooms(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    room_id = models.CharField(max_length=255, default=generate_short_id(), unique=True)
 
 class PaymentHistory(models.Model):
     history_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
+    room = models.ForeignKey(Rooms, related_name="messages",on_delete=models.CASCADE, null=True)
     sender = models.CharField(blank=False, max_length=30, null=True)
     recipient = models.CharField(max_length=60, blank=True, null=True)
     phone =  models.CharField(blank=False, max_length=30, null=True)
@@ -41,9 +48,22 @@ class PaymentHistory(models.Model):
     account_id = models.CharField(max_length=60, blank=True, null=True)
     transaction_status = models.CharField(max_length=12, null=True)
     withdrawal_date = models.CharField(max_length=60, blank=True, null=True)
-
+    short_id = models.CharField(max_length=255, default=generate_short_id(), unique=True)
     class Meta:
         ordering = ['-history_time']
+
+class PaymentHistoryManager(models.Manager):
+    def by_room(self, room):
+        qs = PaymentHistory.objects.filter(room=room).order_by("-history_time")
+        return qs
+
+    def __str__(self):
+        return self.transaction_status
+
+
+
+
+
 
 class Withdrawal(models.Model):
     account_number = models.CharField(max_length=20)

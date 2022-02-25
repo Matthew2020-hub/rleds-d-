@@ -14,7 +14,7 @@ from .serializers import message_serializer
 from asgiref.sync import sync_to_async
 import socketio
 import environ
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
 from Authentication.models import User
 from drf_yasg.utils import swagger_auto_schema
@@ -58,8 +58,6 @@ def store_and_return_message(data):
     message = message_serializer(instance)
     return message
 
-
-
 # listening to a 'message' event from the client
 @sio.on('message')
 async def print_message(sid, data):
@@ -90,7 +88,7 @@ def contact_us(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetUserMessages(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     def get(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
         room = get_object_or_404(Room, user=user)
@@ -102,13 +100,14 @@ class GetUserMessages(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 class GetMessages(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    permission_classes = [AllowAny]
     @swagger_auto_schema(responses={200: MessageSerializer(many=True)})
     def get(self, request):
-        print(request.user)
-        user = get_object_or_404(User, email=request.user)
+        user = get_object_or_404(User, email='akinolatolulope21@gmail.com')
+        print(user)
         room = get_object_or_404(Room, user=user)
+        print(room)
         messages =room.messages
         serializer = MessageSerializer(messages, many=True)
         response = {}
