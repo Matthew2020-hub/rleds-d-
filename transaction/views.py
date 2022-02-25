@@ -37,7 +37,10 @@ env = environ.Env()
 environ.Env.read_env('housefree.env')
 
 mgr = socketio.AsyncRedisManager(os.environ.get('REDIS_URL'))
-sio = socketio.AsyncServer(async_mode="asgi", client_manager=mgr, cors_allowed_origins="*")
+sio = socketio.AsyncServer(
+    async_mode="asgi", client_manager=mgr, 
+    cors_allowed_origins="*"
+    )
 # Create your views here.
 
 #establishes a connection with the client
@@ -70,6 +73,7 @@ def store_and_return_payment_history(data):
     return data
 
 
+
 # listening to a 'message' event from the client
 @sio.on('message')
 async def print_message(sid, data):
@@ -90,13 +94,20 @@ def make_payment(request):
         phone = serializer.validated_data['phone']
         name = serializer.validated_data['name']
         house_location = serializer.validated_data['House_location']
-        # A try and except is used so to get the specific error as there are many conditions considered before a payment is allowed
+        # A try and except is used so to get the specific error as there are many
+        # -conditions considered before a payment is allowed
         try:
             verify_location = get_object_or_404(Apartment, location = house_location)
         except Exception as DoesNotExist:
-            return Response('Transaction failed due to incorrect house address. Try again', status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                'Transaction failed due to incorrect house address. Try again', 
+                status=status.HTTP_400_BAD_REQUEST
+                )
         if verify_location.is_available != True:
-            return Response ('This Particular house is no more available', status=status.HTTP_204_NO_CONTENT)
+            return Response (
+                'This Particular house is no more available', 
+                status=status.HTTP_204_NO_CONTENT
+                )
         agent_account_no = serializer.validated_data['agent_account_number']
         verify_agent = User.objects.filter(entry='Agent')
         try:
@@ -136,6 +147,7 @@ def make_payment(request):
         
 
 
+
 """An endpoint to verify payment by calling futterwave's verification endpoint"""
 @api_view(['GET','POST']) 
 def verify_transaction(request, transaction_id):
@@ -151,7 +163,8 @@ def verify_transaction(request, transaction_id):
         agent = response_data['meta']['consumer_id']
         house_detail = response_data['meta']['house_location']
         verify_apartment = get_object_or_404(Apartment,location = house_detail)
-        # After a successful payment, a house availability must be set to none to avoid multiple users paying for a single apartment or building
+        # After a successful payment, a house availability must be set to none 
+        # -to avoid multiple users paying for a single apartment or building
         if verify_apartment is not None:
             verify_apartment.is_available = False
             verify_apartment.save()
@@ -167,8 +180,11 @@ def verify_transaction(request, transaction_id):
                 sender = response_data['customer']['name']
                 transaction_status = 'Successful'
                 # During transaction verification, a PaymentHistory object is being created.
-                create_history = PaymentHistory.objects.create(sender=sender, agent_account_number=receiver_number,
-                date_sent=date_sent, amount=amount, recipient=recipient, transaction_status=transaction_status)
+                create_history = PaymentHistory.objects.create(
+                    sender=sender, agent_account_number=receiver_number,
+                    date_sent=date_sent, amount=amount, 
+                    recipient=recipient, transaction_status=transaction_status
+                    )
                 create_history.save()
                 return Response (response_data, status=status.HTTP_200_OK)
             recipient = get_agent_name.name
@@ -177,38 +193,21 @@ def verify_transaction(request, transaction_id):
             date_sent = response_data['customer']['created_at']
             sender = response_data['customer']['name']
             transaction_status = 'Failed'
-            create_history = PaymentHistory.objects.create(sender=sender, agent_account_number=receiver_number,
-            date_sent=date_sent, amount=amount, recipient=recipient, transaction_status=transaction_status)
+            create_history = PaymentHistory.objects.create(
+                sender=sender, agent_account_number=receiver_number,
+                date_sent=date_sent, amount=amount,
+                recipient=recipient, transaction_status=transaction_status)
             create_history.save()
             verify_apartment.is_available = True
             verify_apartment.save()
-        return Response({'Error':'Payment Failed, Try Again!'}, status=status.HTTP_400_BAD_REQUEST)     
+        return Response({
+            'Error':'Payment Failed, Try Again!'}, 
+            status=status.HTTP_400_BAD_REQUEST
+            )     
     return Response ('BAD REQUEST', status=status.HTTP_400_BAD_REQUEST)
 
 
-"""An endpoint to list User's transaction history"""
-class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
-    serializer_class = UserHistorySerializer
-    queryset = PaymentHistory.objects.all()
-    lookup_field = 'history_id'
-    permisssion_classes = [AllowAny]
-    pagination_class = CustomPagination
-    def get(self, request):
-        check = PaymentHistory.objects.filter(sender=request.user.name)
-        history = []
-        for checkup in check:
-            context = {
-                'Sent to': checkup.recipient,
-                'Agent account Number': checkup.agent_account_number,
-                'Amount': checkup.amount,
-                'Date': checkup.history_time,
-                'Sent By': checkup.sender,
-                'Transaction Status': checkup.transaction_status,
-                'Alert Time': checkup.date_sent
-            }
-            history.append(context)
-                
-        return Response(history, status=status.HTTP_200_OK)
+
 
 """An endpoint through which an agent could withdraw from his wallet"""
 @api_view(['GET', 'POST'])
@@ -225,9 +224,15 @@ def agent_withdrawal(request):
         acct_id = serializer.validated_data['account_id']
         account_id = User.objects.get(user_id=acct_id)
         if account_id.email !=email:
-            return Response({'message':'Invalid Email input, enter the correct email!'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                'message':'Invalid Email input, enter the correct email!'}, 
+                status=status.HTTP_404_NOT_FOUND
+                )
         elif account_id is None:
-            return Response({'message':'Incorrect Account ID!'}, status=status.HTTP_404_NOT_FOUND) 
+            return Response({
+                'message':'Incorrect Account ID!'}, 
+                status=status.HTTP_404_NOT_FOUND
+                ) 
         elif int(amount) > int(account_id.balance):
             raise ValueError("Insufficient fund")
         auth_token = FLUTTERWAVE_KEY
@@ -249,6 +254,9 @@ def agent_withdrawal(request):
         response_data = response.json()
         return Response(response_data['status'])
 
+
+
+
 """An endpoint to get Agent's Wallet balance
 """
 @api_view(['GET'])
@@ -260,7 +268,7 @@ def dashboard(request):
     return Response(context, status=status.HTTP_200_OK)
 
 
-
+"""User Transaction History endpoint connected to socket.io via Room connection"""
 class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):  
     serializer_class = UserHistorySerializer
     queryset = PaymentHistory.objects.all()
@@ -287,8 +295,10 @@ class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):
                 'Transaction Status': checkup.transaction_status,
                 'Alert Time': checkup.date_sent
             }
-            data.append(checkup) 
-            return Response(data)
+            data.append(context) 
+            return Response(data, status=status.HTTP_200_OK)
+
+
 
 class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):  
     serializer_class = UserHistorySerializer
@@ -312,5 +322,5 @@ class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
                 'Alert Time': checkup.date_sent
             }
             data.append(context) 
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
         
