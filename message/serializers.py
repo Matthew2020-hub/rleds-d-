@@ -17,7 +17,6 @@ class ContactUsSerailizer(serializers.Serializer):
     sender = serializers.EmailField()
     message = serializers.CharField()
 
-
     def __str__(self):
         return self.sender
 

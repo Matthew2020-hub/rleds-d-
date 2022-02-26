@@ -16,5 +16,5 @@ class ApartmentSearchSerializer(serializers.Serializer):
     price_range = serializers.CharField()
     category = serializers.CharField()
 
-    def __strr__(self):
+    def __str__(self):
         return self.category

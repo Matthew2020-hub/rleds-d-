@@ -75,7 +75,7 @@ class CreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.C
         get_token = User.objects.get(email = user_data['email'])
         token = RefreshToken.for_user(get_token).access_token
         current_site = get_current_site(request).domain
-        absurl = f'http://127.0.0.1:8000/api/v1/email-verify?token={token}' 
+        absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={token}' 
         email_body = 'Hi'+ ''+ get_token.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
         data = {
             'email_body': email_body,'to_email':get_token.email,

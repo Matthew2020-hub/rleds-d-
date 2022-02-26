@@ -84,7 +84,10 @@ def contact_us(request):
             ['housefree189@gmail.com'],
             fail_silently=False
         )
-        return Response({'message':'Thank you for your message, we will get back to you shortyly'}, status=status.HTTP_201_CREATED)
+        return Response({
+        'message':'Thank you for your message, we will get back to you shortyly'}, 
+        status=status.HTTP_201_CREATED
+        )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetUserMessages(APIView):
@@ -100,8 +103,8 @@ class GetUserMessages(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 class GetMessages(APIView):
-    # authentication_classes = [TokenAuthentication]
-    permission_classes = [AllowAny]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     @swagger_auto_schema(responses={200: MessageSerializer(many=True)})
     def get(self, request):
         user = get_object_or_404(User, email='akinolatolulope21@gmail.com')
