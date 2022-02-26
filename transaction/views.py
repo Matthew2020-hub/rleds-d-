@@ -1,5 +1,4 @@
 import os
-from tkinter import ALL
 from django.shortcuts import get_object_or_404, render
 from locale import currency
 from multiprocessing import AuthenticationError, context
