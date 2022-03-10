@@ -17,11 +17,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'entry', 'password', 'name', 'country', 'password2', 'phone_number', 'user_id']
         extra_kwargs = {
-            'password2': {
+            'password':{ 
                 'write_only':True
-            
             },
-            'password': {
+            'password2': {
                 'write_only':True
             
             },
@@ -46,16 +45,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
             Rooms.objects.get(user=user)
         except Exception as e:
             Rooms.objects.create(user=user)
-            print(Rooms.user)
         try:
              Room.objects.get(user=user)
-             print(Room)
         except Exception as e:
             Room.objects.create(user=user) 
-     
-        #     print(Rooms.objects.get(user=request.user))
-        # Room.objects.create(user=user)
-
         return user 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

@@ -57,72 +57,79 @@ environ.Env.read_env('housefree.env')
 from_email= os.environ.get('EMAIL_HOST_USER')
 
 """An endpoint to create user and to GET list of all users"""
-class CreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
+class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = CustomUserSerializer
     queryset = User.objects.filter(entry='Tenant')
     lookup_field = 'email'
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
-        print(request.user)
         check = User.objects.filter(entry='Tenant')
         return self.list(check)
+class UserRegistration(APIView):
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
         user = serializer.save()
-        get_token = User.objects.get(email = user_data['email'])
-        token = RefreshToken.for_user(get_token).access_token
-        current_site = get_current_site(request).domain
-        absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={token}' 
-        email_body = 'Hi'+ ''+ get_token.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
-        data = {
-            'email_body': email_body,'to_email':get_token.email,
-            'subject': 'Verify your email'
+        user_token = Token.objects.create(user=user)
+        context = {
+            'token': user_token.key,
+            'message': 'Check your email and verify'
         }
-        send_mail(
-        subject = 'verify email',
-        message = email_body,
-        from_email= from_email,
-        recipient_list= [get_token.email],
-        fail_silently=False
-        )
-        return Response(user_data, status=status.HTTP_201_CREATED)
+        return Response(context, status=status.HTTP_201_CREATED)
+@api_view(['GET'])
+def refreshToken( request, email):
+    get_token = get_object_or_404(User, email = email)
+    if get_token.is_verify is True:
+        return Response('User already verified', status=status.HTTP_208_ALREADY_REPORTED)
+    email_verification_token = RefreshToken.for_user(get_token).access_token
+    current_site = get_current_site(request).domain
+    absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}' 
+    email_body = 'Hi'+ ''+ get_token.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
+    data = {
+        'email_body': email_body,'to_email':get_token.email,
+        'subject': 'Verify your email'
+    }
+    send_mail(
+    subject = 'verify email',
+    message = email_body,
+    from_email= from_email,
+    recipient_list= [get_token.email],
+    fail_silently=False
+    )
+    return Response('Check your email for verification', status=status.HTTP_200_OK)
 
 """Verify user email endpoint"""
-class VerifyEmail(generics.GenericAPIView):
-    serializer_class = CustomUserSerializer
-    queryset = User.objects.all()
-    lookup_field = 'email'
+class VerifyEmail(APIView):
     permisssion_classes = [AllowAny]
     def get(self, request):
-        serializer = CustomUserSerializer
         token = request.GET.get('token')
         access_token_str = str(token)
-        print(request.user)
         try:
-            access_token_obj = AccessToken(access_token_str)
+            # access token verification
+            access_token_obj = AccessToken(access_token_str) 
         except Exception as e:
             return Response(
-        'Token already expired', 
+        'No token Input or Token already expired', 
         status= status.HTTP_400_BAD_REQUEST
         )
         user_id = access_token_obj['user_id']
         user = get_object_or_404(User, user_id=user_id)
         if not user.is_verify:
             user.is_verify = True
-            user.save()
-         
+            user.save()   
         return Response({
             'email': 'Email successfully activated, kindly return to the login page'}, 
             status=status.HTTP_200_OK
             )
 
 """An endpoint to GET a specific user, Update user info and delete a user's record"""
-class CreateUpdateDestroyAPIView(
+class CreateDestroyAPIView(
     generics.GenericAPIView, mixins.ListModelMixin, 
-    mixins.UpdateModelMixin, mixins.DestroyModelMixin
+    mixins.DestroyModelMixin
     ):
     serializer_class =CustomUserSerializer
     queryset =User.objects.filter(entry='Tenant')
@@ -220,8 +227,8 @@ def login(request):
         'message': 'Email is not yet verified, kindly do that!'}, 
         status= status.HTTP_401_UNAUTHORIZED
         )
-    token = Token.objects.get_or_create(user=Account)[0].key
-    if Account and Account.is_active is True:
+    token = Token.objects.get(user=Account).key
+    if token and Account.is_active is True:
         return Response({'token':token}, status= status.HTTP_200_OK)
     else:
         return Response({

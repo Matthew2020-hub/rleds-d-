@@ -84,7 +84,7 @@ async def print_message(sid, data):
 
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 def make_payment(request):
     serializer = PaymentSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
@@ -148,7 +148,7 @@ def make_payment(request):
 
 
 """An endpoint to verify payment by calling futterwave's verification endpoint"""
-@api_view(['GET','POST']) 
+@api_view(['GET']) 
 def verify_transaction(request, transaction_id):
  
     response = requests.get(
@@ -209,7 +209,7 @@ def verify_transaction(request, transaction_id):
 
 
 """An endpoint through which an agent could withdraw from his wallet"""
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 def agent_withdrawal(request):
     serializer = WithdrawalSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):

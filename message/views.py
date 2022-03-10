@@ -108,9 +108,7 @@ class GetMessages(APIView):
     @swagger_auto_schema(responses={200: MessageSerializer(many=True)})
     def get(self, request):
         user = get_object_or_404(User, email='akinolatolulope21@gmail.com')
-        print(user)
         room = get_object_or_404(Room, user=user)
-        print(room)
         messages =room.messages
         serializer = MessageSerializer(messages, many=True)
         response = {}

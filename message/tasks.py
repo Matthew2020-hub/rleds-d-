@@ -4,9 +4,19 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.mail import send_mail
+from time import sleep
+from celery import shared_task
 
+@shared_task
+def sleepy(duration):
+    sleep(duration)
+    return None
+
+
+@shared_task
 @api_view(['POST','GET'])
 def contact_us(request):
+    sleep(2)
     serializer = ContactUsSerailizer(data=request.data)
     if serializer.is_valid(raise_exception = True):
         sender = serializer.validated_data['sender']
@@ -18,9 +28,9 @@ def contact_us(request):
             recipient_list=
             ['housefree189@gmail.com'],
             fail_silently=False
-        )
+        ).delay()
         return Response({
         'message':'Thank you for your message, we will get back to you shortyly'}, 
-        status=status.HTTP_201_CREATED
+        status=status.HTTP_200_OK
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
