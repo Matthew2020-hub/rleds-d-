@@ -23,7 +23,7 @@ from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework import generics
 from rest_auth.views import LoginView as RestLoginView
 from django.contrib.auth import logout, login
@@ -51,13 +51,15 @@ from drf_yasg.utils import swagger_auto_schema
 import os
 import environ
 from transaction.models import Rooms
+import django.contrib.auth.password_validation as validators
+from django.core.exceptions import ValidationError
 
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 from_email= os.environ.get('EMAIL_HOST_USER')
 
 """An endpoint to create user and to GET list of all users"""
-class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = CustomUserSerializer
     queryset = User.objects.filter(entry='Tenant')
     lookup_field = 'email'
@@ -66,21 +68,29 @@ class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     def get(self, request):
         check = User.objects.filter(entry='Tenant')
         return self.list(check)
-class UserRegistration(APIView):
+class Registration(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
-        user_data = serializer.data
-        user = serializer.save()
-        user_token = Token.objects.create(user=user)
-        context = {
-            'token': user_token.key,
-            'message': 'Check your email and verify'
+        password = serializer.validated_data['password']
+        try:
+            validators.validate_password(password)
+            user = serializer.save()
+            user_token = Token.objects.create(user=user)
+            context = {
+                'token': user_token.key,
+                'message': 'Check your email and verify',
+                "data": serializer.data
         }
-        return Response(context, status=status.HTTP_201_CREATED)
+            return Response(context, status=status.HTTP_201_CREATED)
+        except ValidationError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+       
+
 @api_view(['GET'])
+# @permission_classes(IsAuthenticated)
 def refreshToken( request, email):
     get_token = get_object_or_404(User, email = email)
     if get_token.is_verify is True:
@@ -127,32 +137,22 @@ class VerifyEmail(APIView):
             )
 
 """An endpoint to GET a specific user, Update user info and delete a user's record"""
-class CreateDestroyAPIView(
-    generics.GenericAPIView, mixins.ListModelMixin, 
-    mixins.DestroyModelMixin
-    ):
+class GET_AND_DELETE_USER(APIView):
     serializer_class =CustomUserSerializer
-    queryset =User.objects.filter(entry='Tenant')
-    lookup_field = 'user_id'
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request, user_id):
-        queryset = User.objects.filter(user_id = user_id)
-        article = get_object_or_404(queryset)
+        article = get_object_or_404(User, user_id=user_id)
         serializer = CustomUserSerializer(article)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, user_id):
-        query = User.objects.get(user_id=user_id)
-        if query is not None:
-            return self.destroy(request)
-        return Response('Invalid user ID', status= status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(User, user_id=user_id)
+        user.delete()
+        return Response('User is successfully deleted', status=status.HTTP_200_OK)
 
 """A Custom Password reset view"""
-class PasswordResetAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin):
-    serializer_class = CustomPasswordResetSerializer
-    queryset = User.objects.all()
-    lookup_field = 'user_id'
+class PasswordReset(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def put(self, request, user_id):
@@ -161,48 +161,20 @@ class PasswordResetAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixin
         email = serializer.validated_data['email']
         phone_number = serializer.validated_data['phone_number']
         password = serializer.validated_data['password']
-        get_user = get_object_or_404(User, email=email, phone_number=phone_number)
-        for user in get_user:
-            user.password = password
-            user.set_password(password)
-            user.save()
+        try:
+            validators.validate_password(password)
+            serializer.save()
+            get_user = get_object_or_404(User, email=email, user_id=user_id)
+            get_user.password = password
+            get_user.set_password(password)
+            get_user.save()
             return Response(
                 'Password change is successful, return to login page', 
                 status= status.HTTP_200_OK
                 )
-"""
-To prevent logging out a user unnecessarily, user's data retrieved from google
- is being saved in JWT with an expiration time
-"""
-class SetLoginView(APIView):
-        def post(self, request):
-            try:
-                serializer = LoginSerializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                email = serializer.validated_data['email']
-                password = serializer.validated_data['password']
-                query = User.objects.filter(entry='Tenant')
-                queryset = query.objects.get(email=email)
-                if not queryset.check_password(password):
-                    raise AuthenticationFailed("Incorrect Password")
-                payload = {
-                    "user": queryset.email,
-                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-                    "iat": datetime.datetime.utcnow()
-                }
-                token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-                response = Response()
-                response.set_cookie(key='jwt', value=token, httponly=True)
-                response.data = {
-                    'jwt': token
-                }           
-                return Response(response, status= status.HTTP_200_OK)
-            except User.DoesNotExist:
-                return Response({
-                "error": _("User with this email does not exist!")}, 
-                status=status.HTTP_404_NOT_FOUND
-                )
-
+        except ValidationError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+   
 
 """
 N.B: A custom login View where user signs in manually, i.e., without google authentication
@@ -210,36 +182,39 @@ N.B: A custom login View where user signs in manually, i.e., without google auth
 @swagger_auto_schema(methods=['post'], request_body=LoginSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def login(request):
+def login_user(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
     password = serializer.validated_data['password']
-    Account = get_object_or_404(User, email=email)
-    Account.backend = 'django.contrib.auth.backends.ModelBackend'    
-    if not Account.check_password(password):
+    user = get_object_or_404(User, email=email)
+    user.backend = 'django.contrib.auth.backends.ModelBackend'    
+    if not user.check_password(password):
         return Response({
         "message": "Incorrect Login credentials"},
-        status=status.HTTP_401_UNAUTHORIZED
+        status=status.HTTP_404_NOT_FOUND
         )
-    if not Account.is_verify is True:
+    if not user.is_verify is True:
         return Response({
         'message': 'Email is not yet verified, kindly do that!'}, 
-        status= status.HTTP_401_UNAUTHORIZED
+        status= status.HTTP_400_BAD_REQUEST
         )
-    token = Token.objects.get(user=Account).key
-    if token and Account.is_active is True:
-        return Response({'token':token}, status= status.HTTP_200_OK)
-    else:
-        return Response({
+    if user.is_active is True:
+        try:
+            token, created = Token.objects.get_or_create(user=user)
+            login(request, user)
+            return Response({'token':token.key}, status= status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response('Token matching query does not exist', status=status.HTTP_404_NOT_FOUND)
+        
+    return Response({
         "message": "Account not active, kindly register!!"}, 
-        status=status.HTTP_401_UNAUTHORIZED
+        status=status.HTTP_403_FORBIDDEN
         )
 
 
 @api_view(["GET"])
-def logout(request):
-    print(request.user)
+def user_logout(request):
     try:
         request.user.auth_token.delete()
         logout(request)
@@ -251,17 +226,6 @@ def logout(request):
 
 
 
-"""A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
-"""
-class LogoutView(APIView):
-    def post(self, request):
-        response = Response()
-        response.delete_cookie('jwt')
-        response.data = {
-            "message": "Logout successfully"
-        }
-        return response
-
 """Agent's Login Athorization Endpoint With Google Token and saving user's info in COOKIES
 """
 @api_view(['POST'])
@@ -269,6 +233,8 @@ def validate_authorization_code(request):
     serializer = GetAcessTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     authorization_code = serializer.validated_data['code']
+    # google authorization code is encoded which needs to be decoded before access_token 
+    # could be generated to retrieve logged-in user's info
     uncoded = unquote(authorization_code)
     if authorization_code  is None:
         return Response({
@@ -290,6 +256,7 @@ def validate_authorization_code(request):
         status=status.HTTP_400_BAD_REQUEST
         )
     access_token = response.json()['access_token']
+    # retrieve user's info from google
     response = requests.get(
     'https://www.googleapis.com/oauth2/v3/userinfo',
     params={'access_token': access_token}
@@ -297,14 +264,15 @@ def validate_authorization_code(request):
     if not response.ok:
         raise ValidationError('Failed to obtain user info from Google.')
     result = response.json()
-    login = User.objects.get(email=result['email'])
-    if login is None:
+    user_login = User.objects.get(email=result['email'])
+    if user_login is None:
         raise AuthenticationError("User with this email doesn't exist, kindly sign up")
     payload = {
-          "user": login.email,
+          "user": user_login.email,
            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             "iat": datetime.datetime.utcnow()
                 }
+    # user's info is been saved in a jwt-cookie to prevent logout user unnecessarily
     token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
     response = Response()
     response.set_cookie(key='jwt', value=token, httponly=True)
@@ -336,7 +304,9 @@ class CookiesLoginView(APIView):
             login(request, Account)
         return Response('Logged in successfully', status = status.HTTP_200_OK)
 
-"""Delete JWT TOKEN WITH LOGOUT VIEW"""
+
+"""A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
+"""
 class LogoutView(APIView):
     def post(self, request):
         response = Response()
@@ -347,58 +317,18 @@ class LogoutView(APIView):
         return response
 
 
-"""An endpoint to create user and to GET list of all users"""
-class AgentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
-    serializer_class = AgentSerializer
-    queryset = User.objects.filter(entry='Agent')
-    lookup_field = 'email'
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
-    def get(self, request):
-        check = User.objects.filter(entry='Agent')
-        return self.list(check)
-    def post(self, request):
-        serializer = AgentSerializer(data=request.data)  
-        serializer.is_valid(raise_exception=True)
-        user_data = serializer.data
-        user = self.create(request)
-        get_token = User.objects.get(email = user_data['email'])
-        token = RefreshToken.for_user(get_token).access_token
-        current_site = get_current_site(request).domain
-        absurl = f'http://127.0.0.1:8000/api/v1/email-verify?token={token}' 
-        email_body = 'Hi'+''+get_token.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
-        data = {
-            'email_body': email_body,
-            'to_email':get_token.email,
-            'subject': 'Verify your email'
-        }
-        send_mail(
-        subject = 'verify email',
-        message = email_body,
-        from_email= from_email,
-        recipient_list=[get_token.email],
-        fail_silently=False
-        )
-        return Response(user_data, status=status.HTTP_201_CREATED)
-
 """An endpoint to GET a specific agent, Update agent info and delete an agent's record"""
-class AgentCreateUpdateDestroyAPIView(
-    generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin, 
-    mixins.DestroyModelMixin
-    ):
-    serializer_class = AgentSerializer
-    queryset = User.objects.filter(entry='Agent')
-    lookup_field = 'user_id'
+class GET_AND_DELETE_AGENT(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request, user_id):
         get_agent = get_object_or_404(User, user_id=user_id)
         serializer = AgentSerializer(get_agent)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, user_id):
-        query = get_object_or_404(User, user_id=user_id)
-        if query:
-            return self.destroy(request)
+        agent = get_object_or_404(User, user_id=user_id)
+        agent.delete()
+        return Response('Agent deleted successfully', status=status.HTTP_200_OK)
 
 

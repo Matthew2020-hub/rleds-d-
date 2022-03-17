@@ -24,7 +24,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 'write_only':True
             
             },
-
         }          
     def save(self):
         user = User(
