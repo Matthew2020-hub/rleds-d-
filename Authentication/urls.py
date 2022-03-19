@@ -6,7 +6,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 # from allauth.account.views import confirm_email
 from  .views import (
-    GET_AND_DELETE_AGENT, GET_AND_DELETE_USER, ListUserAPIView, PasswordReset, 
+    GET_AND_DELETE_AGENT, GET_AND_DELETE_USER, GenerateOTP, ListUserAPIView, PasswordReset, 
     LogoutView, CookiesLoginView,  Registration, VerifyEmail)
 
 urlpatterns = [
@@ -17,6 +17,8 @@ urlpatterns = [
     path('api/v1/google-token/validate/', views.validate_authorization_code, name="code_validation"),
     path('api/v1/logout/', views.user_logout, name="logout"),
     path('api/v1/forget_password/<uuid:user_id>', PasswordReset.as_view()),
+    path('api/v1/get-OTP/<str:phone_number>', GenerateOTP.as_view(), name='get-OTP'),
+    path('api/v1/verify-OTP/<str:code>', views.validate_OTP, name='verify-OTP'),
     path('api/v1/user/get/<uuid:user_id>', GET_AND_DELETE_USER.as_view()),
     path('api/v1/agent/get/<uuid:user_id>', GET_AND_DELETE_AGENT.as_view()),
     path('api/v1/logout-jwt/', LogoutView.as_view()),

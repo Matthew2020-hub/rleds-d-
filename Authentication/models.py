@@ -91,3 +91,10 @@ class User(AbstractUser):
 
 
         
+
+class VerifyCode(models.Model):
+    code = models.CharField(max_length=8, verbose_name=" Verification Code ")
+    add_time = models.DateTimeField(verbose_name=' Generation time ', auto_now_add=True)
+
+    class Meta:
+        ordering = ["-add_time"]

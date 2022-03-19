@@ -31,6 +31,7 @@ class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin,
     def post(self, request):
         return self.create(request)
 
+
 """An endpoint to get, delete and update a particular endpoint"""
 class ApartmentCreateUpdateDestroyAPIView(
     generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin, 
@@ -43,26 +44,26 @@ class ApartmentCreateUpdateDestroyAPIView(
     permisssion_classes = [IsAuthenticated]
 
     def get(self, request, apartment_id):
-        queryset = Apartment.objects.filter(apartment_id = apartment_id)
-        article = get_object_or_404(queryset)
+        article = get_object_or_404(Apartment, apartment_id=apartment_id )
         serializer = ApartmentSerializer(article)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, apartment_id):
         query = get_object_or_404(Apartment, apartment_id=apartment_id)
         serializer = ApartmentSerializer(query, data=request.data)   
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response('Data update was successful', status=status.HTTP_200_OK)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response('Data update was successful', status=status.HTTP_200_OK)
 
     def delete(self, request, apartment_id):
         query = get_object_or_404(Apartment, apartment_id=apartment_id)
-        return self.destroy(request)
+        self.destroy(query)
+        return Response('Apartment deleted successfully', status=status.HTTP_204_NO_CONTENT)
 
 """ An endpoint to list the apartment search result
 """
 class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
-    serializer_class = ApartmentSerializer
+    serializer_class = ApartmentSearchSerializer
     lookup_field = 'location'
     pagination_class = CustomPagination
     queryset = Apartment.objects.all()
@@ -70,15 +71,15 @@ class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixin
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
         serializer = ApartmentSearchSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            location = serializer.validated_data['location']
-            price_range = serializer.validated_data['price_range']
-            category = serializer.validated_data['category']
-            query = get_object_or_404(
-                Apartment, location=location, price=price_range, 
-                category=category
-                )
-            if query.is_available is True:
-                return self.list(query)
-            return Response('No result found', status=status.HTTP_204_NO_CONTENT)
-        raise ValueError('No valid Input')
+        serializer.is_valid(raise_exception=True)
+        location = serializer.validated_data['location']
+        price_range = serializer.validated_data['price_range']
+        category = serializer.validated_data['category']
+        apartment = get_object_or_404(
+             Apartment, location=location, price=price_range, 
+            category=category
+            )
+        if apartment.is_available is True:
+            return self.list(apartment, status=status.HTTP_200_OK
+            )
+        return Response('No result found', status=status.HTTP_204_NO_CONTENT)

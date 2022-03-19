@@ -1,9 +1,10 @@
 from dataclasses import fields
+from pyexpat import model
 from random import choice, choices
 from re import U
 from django.forms import CharField
 from django.shortcuts import redirect
-from .models import User
+from .models import User, VerifyCode
 import requests
 from rest_framework import serializers
 from rest_auth.serializers import PasswordResetSerializer
@@ -70,6 +71,27 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
 class GetAcessTokenSerializer(serializers.Serializer):
     code = serializers.CharField()
    
+
+class VerifyCodeSerializer(serializers.Serializer):
+
+    class Meta:
+        model = VerifyCode
+        fields = "__all__"
+
+
+#     email = serializers.EmailField(required=True)
+#     def validate_email(self, email):
+  
+#         if User.objects.filter(email = email).count():
+#             raise serializers.ValidationError(' This email has been registered ')
+#             # Verify that the email number is legal
+#         if not re.match(EMAIL_REGEX, email):
+#             raise serializers.ValidationError(' Mailbox format error ')
+#                 # Verification code sending frequency
+#         one_minute_age = datetime.now() - timedelta(hours=0, minutes=1, seconds=0)
+#         if VerifyCode.objects.filter(add_time__gt=one_minute_age, email=email).count():
+#                 raise serializers.ValidationError(' Please send again in a minute ')
+#         return email
 class AgentSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
     class Meta:

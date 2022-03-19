@@ -1,5 +1,6 @@
 from audioop import reverse
 from lib2to3.pgen2.tokenize import TokenError
+# from multiprocessing.connection import Client
 from django.shortcuts import render
 from http.client import responses
 from lib2to3.pgen2 import token
@@ -9,9 +10,9 @@ import re
 from django.forms import ValidationError
 from django.shortcuts import render
 from .serializers import (LoginSerializer, GetAcessTokenSerializer,
-CustomPasswordResetSerializer, AgentSerializer, 
+CustomPasswordResetSerializer, AgentSerializer, VerifyCodeSerializer, 
 CustomUserSerializer)
-from .models import User
+from .models import User, VerifyCode
 from message.models import Room
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, viewsets
@@ -53,10 +54,78 @@ import environ
 from transaction.models import Rooms
 import django.contrib.auth.password_validation as validators
 from django.core.exceptions import ValidationError
+from random import choice, random
+from twilio.rest import Client
+from dev.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
+from random import randint
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
 
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 from_email= os.environ.get('EMAIL_HOST_USER')
+
+
+
+
+
+class GenerateOTP(APIView):
+    permission_classes = [AllowAny] # Allow everyone to register
+    serializer_class = VerifyCodeSerializer # Related pre send verification logic
+    def generate_code(self):
+  
+        seeds = "1234567890abcdefghijklmnopqrstuvwxyz"
+        otp = randint(000000,999999)
+        return otp
+        # otp = choice(seeds).range(6)
+        # print(otp)
+        # return otp
+        # random_str = []
+        # for i in range(6):
+        #     random_str.append(choice(seeds))
+        #     print(random_str)
+        #     return "".join(random_str)
+    def post(self, request, phone_number):
+        code = self.generate_code()
+        get_object_or_404(User, phone_number=phone_number)
+        VerifyCode.objects.create(code=code)
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+        message = client.messages.create(
+            body= f"This is your OTP {code}",
+            from_=f"{TWILIO_NUMBER}",
+            to=f"{phone_number}"
+        )
+        print(message.body)
+        return Response("OTP sent, check your phone", status=status.HTTP_200_OK)
+
+
+@permission_classes(AllowAny)
+@api_view(['GET'])
+def validate_OTP(self, code):
+    verify_records = get_object_or_404(VerifyCode, code=code)
+    if verify_records:
+    # Determine whether the verification code is expired
+        five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5) # obtain 5 Minutes ago
+        print(five_minutes_ago)
+        if verify_records.add_time > five_minutes_ago:
+            
+            return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
+    # Determine whether the verification code is correct
+        if verify_records.code != code:
+            return Response(' Verification code error ', status=status.HTTP_400_BAD_REQUEST)
+        verify_records.delete()
+        return Response("OTP code is valid", status=status.HTTP_200_OK)
+    return Response("NO user found", status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
+
+
+
 
 """An endpoint to create user and to GET list of all users"""
 class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
@@ -163,7 +232,6 @@ class PasswordReset(APIView):
         password = serializer.validated_data['password']
         try:
             validators.validate_password(password)
-            serializer.save()
             get_user = get_object_or_404(User, email=email, user_id=user_id)
             get_user.password = password
             get_user.set_password(password)

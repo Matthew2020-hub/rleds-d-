@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x
 # os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 CLOUDINARY_URL= os.environ.get('CLOUDINARY_URL')
@@ -176,19 +176,14 @@ AUTH_USER_MODEL = 'Authentication.User'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
+ALLOWED_HOSTS = []
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -274,6 +269,11 @@ SWAGGER_SETTINGS = {
 
 
 
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_NUMBER = os.getenv("TWILIO_NUMBER")
+
+
 
 
 # CELERY STUFF
@@ -286,7 +286,7 @@ CELERY_TIMEZONE = 'Africa/Nigeria'
 SITE_ID = 1
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
 SERVER_EMAIL = os.environ.get('EMAIL_HOST_USER')
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
