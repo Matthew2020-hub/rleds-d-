@@ -90,8 +90,6 @@ social-auth-app-django==5.0.0
 social-auth-core==4.2.0
 sqlparse==0.4.2
 twilio==7.7.1
-Twisted==22.1.0
-twisted-iocpsupport==1.0.2
 txaio==21.2.1
 typing_extensions==4.0.1
 tzdata==2021.5
