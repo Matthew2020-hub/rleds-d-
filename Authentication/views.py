@@ -1,6 +1,5 @@
 from audioop import reverse
 from lib2to3.pgen2.tokenize import TokenError
-# from multiprocessing.connection import Client
 from django.shortcuts import render
 from http.client import responses
 from lib2to3.pgen2 import token
@@ -33,7 +32,6 @@ from dev.settings import SOCIAL_AUTH_GOOGLE_KEY, SOCIAL_AUTH_GOOGLE_SECRET, redi
 from rest_framework import status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.shortcuts import redirect
 from django.shortcuts import redirect, render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -43,7 +41,6 @@ import jwt, datetime
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from .utils import Util
-from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.http import unquote
 from django.contrib.auth import authenticate
@@ -51,7 +48,6 @@ from django.contrib import messages
 from drf_yasg.utils import swagger_auto_schema
 import os
 import environ
-from transaction.models import Rooms
 import django.contrib.auth.password_validation as validators
 from django.core.exceptions import ValidationError
 from random import choice, random
@@ -74,21 +70,13 @@ class GenerateOTP(APIView):
     permission_classes = [AllowAny] # Allow everyone to register
     serializer_class = VerifyCodeSerializer # Related pre send verification logic
     def generate_code(self):
-  
-        seeds = "1234567890abcdefghijklmnopqrstuvwxyz"
+        # generate a random OTP
         otp = randint(000000,999999)
         return otp
-        # otp = choice(seeds).range(6)
-        # print(otp)
-        # return otp
-        # random_str = []
-        # for i in range(6):
-        #     random_str.append(choice(seeds))
-        #     print(random_str)
-        #     return "".join(random_str)
     def post(self, request, phone_number):
         code = self.generate_code()
         get_object_or_404(User, phone_number=phone_number)
+        # Genrated OTP must be created as an object in the database
         VerifyCode.objects.create(code=code)
         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
@@ -106,25 +94,14 @@ class GenerateOTP(APIView):
 def validate_OTP(self, code):
     verify_records = get_object_or_404(VerifyCode, code=code)
     if verify_records:
-    # Determine whether the verification code is expired
-        five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5) # obtain 5 Minutes ago
-        print(five_minutes_ago)
+        five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5)
         if verify_records.add_time > five_minutes_ago:
-            
+            # The OTP expires after five minutes of created and then deleted from the database
+            verify_records.delete()
             return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
-    # Determine whether the verification code is correct
-        if verify_records.code != code:
-            return Response(' Verification code error ', status=status.HTTP_400_BAD_REQUEST)
+        # To keep the database safe, the OTP is deleted after validation
         verify_records.delete()
         return Response("OTP code is valid", status=status.HTTP_200_OK)
-    return Response("NO user found", status=status.HTTP_404_NOT_FOUND)
-
-
-
-
-
-
-
 
 
 """An endpoint to create user and to GET list of all users"""
@@ -159,7 +136,7 @@ class Registration(APIView):
        
 
 @api_view(['GET'])
-# @permission_classes(IsAuthenticated)
+@permission_classes(AllowAny)
 def refreshToken( request, email):
     get_token = get_object_or_404(User, email = email)
     if get_token.is_verify is True:
@@ -228,21 +205,21 @@ class PasswordReset(APIView):
         serializer = CustomPasswordResetSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
-        phone_number = serializer.validated_data['phone_number']
         password = serializer.validated_data['password']
-        try:
-            validators.validate_password(password)
-            get_user = get_object_or_404(User, email=email, user_id=user_id)
-            get_user.password = password
-            get_user.set_password(password)
-            get_user.save()
-            return Response(
-                'Password change is successful, return to login page', 
-                status= status.HTTP_200_OK
-                )
-        except ValidationError as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-   
+        get_user = get_object_or_404(User, email=email, user_id=user_id)
+        if password.lower() == password or password.upper() == password or password.isalnum()\
+        or not any(i.isdigit() for i in password):
+            raise serializers.ValidationError({
+                'password':'your password is weak',
+                'Hint': 'It must be alphanumeric, must contain an Upper and Lower case character and it must be a minimum of 8 characters long '
+            })
+        get_user.password = password
+        get_user.set_password(password)
+        get_user.save()
+        return Response(
+            'Password change is successful, return to login page', 
+            status= status.HTTP_200_OK
+            )
 
 """
 N.B: A custom login View where user signs in manually, i.e., without google authentication

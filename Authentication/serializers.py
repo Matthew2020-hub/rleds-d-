@@ -12,6 +12,7 @@ from django_countries.fields import CountryField
 from django.contrib import messages
 from message.models import Room
 from transaction.models import Rooms
+import re
 class CustomUserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'}, write_only=True)
     class Meta:
@@ -33,10 +34,21 @@ class CustomUserSerializer(serializers.ModelSerializer):
             country=self.validated_data['country'],
             phone_number=self.validated_data['phone_number'],     
         )
+        email=self.validated_data['email']
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
+        EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
+        if not re.match(EMAIL_REGEX, email):
+            raise serializers.ValidationError(' Mailbox format error ')
         if password != password2:
             raise serializers.ValidationError({'password':'Passwords must match.'})
+        if len(password) < 8 or password.lower() == password or password.upper() == password or password.isalnum()\
+        or not any(i.isdigit() for i in password):
+            raise serializers.ValidationError({
+                'password':'your password is weak',
+                'Hint': 'It must be alphanumeric, must contain an Upper and Lower case character and minimum of 8 characters long '
+            })
+
         user.set_password(password)
         user.entry ='Tenant'
         user.is_active = True
@@ -61,10 +73,11 @@ class LoginSerializer(serializers.Serializer):
     def __str__(self):
         return self.email
 
-class CustomPasswordResetSerializer(PasswordResetSerializer):
+class CustomPasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    phone_number = serializers.CharField()
-    password = serializers.CharField(style={'input-type':'password'}, trim_whitespace=False)
+    password =  serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'}, write_only=True)
+
+
 
 """Serializer which gets access token from Google
 """
@@ -78,20 +91,6 @@ class VerifyCodeSerializer(serializers.Serializer):
         model = VerifyCode
         fields = "__all__"
 
-
-#     email = serializers.EmailField(required=True)
-#     def validate_email(self, email):
-  
-#         if User.objects.filter(email = email).count():
-#             raise serializers.ValidationError(' This email has been registered ')
-#             # Verify that the email number is legal
-#         if not re.match(EMAIL_REGEX, email):
-#             raise serializers.ValidationError(' Mailbox format error ')
-#                 # Verification code sending frequency
-#         one_minute_age = datetime.now() - timedelta(hours=0, minutes=1, seconds=0)
-#         if VerifyCode.objects.filter(add_time__gt=one_minute_age, email=email).count():
-#                 raise serializers.ValidationError(' Please send again in a minute ')
-#         return email
 class AgentSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
     class Meta:
@@ -114,6 +113,12 @@ class AgentSerializer(serializers.ModelSerializer):
         password2 = self.validated_data['password2']
         if password != password2:
             raise serializers.ValidationError({'password':'Passwords must match.'})
+        if len(password) < 8 or password.lower() == password or password.upper() == password or password.isalnum()\
+            or not any(i.isdigit() for i in password):
+            raise serializers.ValidationError({
+                'password':'your password is weak',
+                'Hint': 'It must be alphanumeric, must contain an Upper and Lower case character and minimum of 8 characters long '
+            })
         user.set_password(password)
         user.entry = 'Agent'
         user.is_active = True
