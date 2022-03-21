@@ -268,13 +268,9 @@ SWAGGER_SETTINGS = {
 }
 
 
-
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_NUMBER = os.getenv("TWILIO_NUMBER")
-
-
-
+EMAIL_BACKEND = 'django_mailjet.backends.MailjetBackend'
+MAILJET_API_KEY = os.environ.get('MJ_API_KEY')
+MAILJET_API_SECRET = os.environ.get('MJ_API_SECRET')
 
 # CELERY STUFF
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
@@ -285,10 +281,10 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Africa/Nigeria'
 SITE_ID = 1
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
-SERVER_EMAIL = os.environ.get('EMAIL_HOST_USER')
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = '587'
+SERVER_EMAIL = 'in-v3.mailjet.com'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = '443'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True

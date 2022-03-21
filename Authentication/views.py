@@ -52,7 +52,7 @@ import django.contrib.auth.password_validation as validators
 from django.core.exceptions import ValidationError
 from random import choice, random
 from twilio.rest import Client
-from dev.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
+# from dev.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
 from random import randint
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -64,10 +64,15 @@ from_email= os.environ.get('EMAIL_HOST_USER')
 
 
 
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
+TWILIO_NUMBER = os.environ.get("TWILIO_NUMBER")
+
+
 
 
 class GenerateOTP(APIView):
-    permission_classes = [AllowAny] # Allow everyone to register
+    permission_classes = [IsAuthenticated] # Allow everyone to register
     serializer_class = VerifyCodeSerializer # Related pre send verification logic
     def generate_code(self):
         # generate a random OTP
@@ -136,7 +141,7 @@ class Registration(APIView):
        
 
 @api_view(['GET'])
-@permission_classes(AllowAny)
+@permission_classes([AllowAny])
 def refreshToken( request, email):
     get_token = get_object_or_404(User, email = email)
     if get_token.is_verify is True:

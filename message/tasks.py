@@ -26,9 +26,9 @@ def contact_us(request):
             message = message,
             from_email= sender,
             recipient_list=
-            ['housefree189@gmail.com'],
+            ['free_house@yahoo.com'],
             fail_silently=False
-        ).delay()
+        )
         return Response({
         'message':'Thank you for your message, we will get back to you shortyly'}, 
         status=status.HTTP_200_OK

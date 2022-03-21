@@ -1,4 +1,5 @@
 # Create your views here.
+from ensurepip import version
 from urllib import response
 from django.shortcuts import get_object_or_404, render
 from rest_framework import status
@@ -70,25 +71,65 @@ async def print_message(sid, data):
 
 
 
-@api_view(['POST','GET'])
+
+# import the mailjet wrapper
+from mailjet_rest import Client
+import os
+
+# Get your environment Mailjet keys
+
+from mailjet_rest import Client
+import os
+
+
+
+@api_view(['POST'])
 def contact_us(request):
     serializer = ContactUsSerailizer(data=request.data)
-    if serializer.is_valid(raise_exception = True):
-        sender = serializer.validated_data['sender']
-        message = serializer.validated_data['message']
-        send_mail(
-            subject = 'Contact Form mail ' ,
-            message = message,
-            from_email= sender,
-            recipient_list=
-            ['housefree189@gmail.com'],
-            fail_silently=False
-        )
-        return Response({
-        'message':'Thank you for your message, we will get back to you shortyly'}, 
-        status=status.HTTP_201_CREATED
-        )
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception = True)
+    sender = serializer.validated_data['sender']
+    message = serializer.validated_data['message']
+
+    api_key = os.environ['MJ_API_KEY']
+    api_secret = os.environ['MJ_API_SECRET']
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    data = {
+    'Messages': [
+        {
+        "From": {
+            "Email": f"{sender}",
+            "Name": "Me"
+        },
+        "To": [
+            {
+            "Email": "free_house@yahoo.com",
+            "Name": "You"
+            }
+        ],
+        "Subject": "Contact Form Mail",
+        "TextPart": "Greetings from Mailjet!",
+        "HTMLPart": f"<h3>{message}</h3>"
+        }
+    ]
+    }
+    result = mailjet.send.create(data=data)
+    print(result.status_code)
+    return Response(result.json(), 
+        status=status.HTTP_201_CREATED)
+
+
+    # send_mail(
+    #     subject = 'Contact Form mail ' ,
+    #     message = message,
+    #     from_email= sender,
+    #     recipient_list=
+    #     ['free_house@yahoo.com'],
+    #     fail_silently=False
+    # )
+    # return Response({
+    #     'message':'Thank you for your message, we will get back to you shortyly'}, 
+    #     status=status.HTTP_201_CREATED
+    # )
 
 class GetUserMessages(APIView):
     permission_classes = [AllowAny]
