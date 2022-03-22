@@ -113,25 +113,24 @@ def contact_us(request):
     ]
     }
     result = mailjet.send.create(data=data)
-    print(result.status_code)
     return Response(result.json(), 
         status=status.HTTP_201_CREATED)
 
-@api_view(['GET'])
-def validate_email(self):
-    mailjet = Client(auth=(api_key, api_secret), version='v3')
-    data = {
-    'EmailType': "bulk",
-    'IsDefaultSender': "false",
-    'Name': "Marketing sender",
-    'Email': "wrecodde@gmail.com"
-    }
-    result = mailjet.sender.create(data=data)
-    response = result.json()
+# @api_view(['GET'])
+# def validate_email(self):
+#     mailjet = Client(auth=(api_key, api_secret), version='v3')
+#     data = {
+#     'EmailType': "bulk",
+#     'IsDefaultSender': "false",
+#     'Name': "Marketing sender",
+#     'Email': "wrecodde@gmail.com"
+#     }
+#     result = mailjet.sender.create(data=data)
+#     response = result.json()
 
-    id = result['Data']['ID']
-    results = mailjet.sender.get(id=id)
-    return Response(results.json(), status=status.HTTP_200_OK)
+#     id = result['Data']['ID']
+#     results = mailjet.sender.get(id=id)
+#     return Response(results.json(), status=status.HTTP_200_OK)
 
 class GetUserMessages(APIView):
     permission_classes = [AllowAny]

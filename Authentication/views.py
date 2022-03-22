@@ -103,7 +103,7 @@ class GenerateOTP(APIView):
             ],
             "Subject": "Email Verification",
             "TextPart": "This is your OTP below!",
-            "HTMLPart":  f"This is your OT: {code}"
+            "HTMLPart":  f"This is your OTP: {code}"
             }
         ]
         }
