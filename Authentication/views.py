@@ -56,12 +56,14 @@ from random import choice, random
 from random import randint
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-
+from mailjet_rest import Client
 
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 from_email= os.environ.get('EMAIL_HOST_USER')
 
+api_key = os.environ.get('MJ_API_KEY')
+api_secret = os.environ.get('MJ_API_SECRET')      
 
 
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
@@ -81,6 +83,8 @@ class GenerateOTP(APIView):
     def post(self, request, email):
         code = self.generate_code()
         user = get_object_or_404(User, email=email)
+        if user.is_verify is False:
+            return Response('This user email has not been verified kindly return to the Registration page!', status=status.HTTP_401_UNAUTHORIZED)
         # Genrated OTP must be created as an object in the database
         VerifyCode.objects.create(code=code)
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -104,14 +108,6 @@ class GenerateOTP(APIView):
         ]
         }
         result = mailjet.send.create(data=data)
-        # client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-
-        # message = client.messages.create(
-        #     body= f"This is your OTP {code}",
-        #     from_=f"{TWILIO_NUMBER}",
-        #     to=f"{phone_number}"
-        # )
-        # print(message.body)
         return Response("OTP sent, check your phone", status=status.HTTP_200_OK)
 
 
@@ -160,9 +156,7 @@ class Registration(APIView):
         except ValidationError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
-api_key = os.environ['MJ_API_KEY']
-api_secret = os.environ['MJ_API_SECRET']       
-from mailjet_rest import Client
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def refreshToken( request, email):
