@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x
 # os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 CLOUDINARY_URL= os.environ.get('CLOUDINARY_URL')
@@ -292,3 +292,30 @@ EMAIL_PORT = '443'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
+
+
+
+
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# # 'django_mailjet.backends.MailjetBackend'
+# MAILJET_API_KEY = os.environ.get('MJ_API_KEY')
+# MAILJET_API_SECRET = os.environ.get('MJ_API_SECRET')
+
+# # CELERY STUFF
+# CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+# # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'Africa/Nigeria'
+# SITE_ID = 1
+# DEFAULT_FROM_EMAIL = 'free_house@yahoo.com'
+# SERVER_EMAIL = 'smtp.mail.yahoo.com'
+# # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.mail.yahoo.com'
+# EMAIL_PORT = '587'
+# EMAIL_HOST_USER = 'free_house@yahoo.com'
+# EMAIL_HOST_PASSWORD = 'Respect@1242'
+# EMAIL_USE_TLS = True
+# # EMAIL_USE_SSL = True

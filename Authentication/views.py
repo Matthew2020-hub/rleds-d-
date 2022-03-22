@@ -51,7 +51,7 @@ import environ
 import django.contrib.auth.password_validation as validators
 from django.core.exceptions import ValidationError
 from random import choice, random
-from twilio.rest import Client
+# from twilio.rest import Client
 # from dev.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
 from random import randint
 from datetime import datetime, timedelta
@@ -78,19 +78,40 @@ class GenerateOTP(APIView):
         # generate a random OTP
         otp = randint(000000,999999)
         return otp
-    def post(self, request, phone_number):
+    def post(self, request, email):
         code = self.generate_code()
-        get_object_or_404(User, phone_number=phone_number)
+        user = get_object_or_404(User, email=email)
         # Genrated OTP must be created as an object in the database
         VerifyCode.objects.create(code=code)
-        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        data = {
+        'Messages': [
+            {
+            "From": {
+                "Email": f"akinolatolulope24@gmail.com",
+                "Name": "freehouse"
+            },
+            "To": [
+                {
+                "Email": f"{user.email}",
+                "Name": f"{user.name}"
+                }
+            ],
+            "Subject": "Email Verification",
+            "TextPart": "This is your OTP below!",
+            "HTMLPart":  f"This is your OT: {code}"
+            }
+        ]
+        }
+        result = mailjet.send.create(data=data)
+        # client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-        message = client.messages.create(
-            body= f"This is your OTP {code}",
-            from_=f"{TWILIO_NUMBER}",
-            to=f"{phone_number}"
-        )
-        print(message.body)
+        # message = client.messages.create(
+        #     body= f"This is your OTP {code}",
+        #     from_=f"{TWILIO_NUMBER}",
+        #     to=f"{phone_number}"
+        # )
+        # print(message.body)
         return Response("OTP sent, check your phone", status=status.HTTP_200_OK)
 
 
@@ -138,9 +159,11 @@ class Registration(APIView):
             return Response(context, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-       
 
-@api_view(['GET'])
+api_key = os.environ['MJ_API_KEY']
+api_secret = os.environ['MJ_API_SECRET']       
+from mailjet_rest import Client
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def refreshToken( request, email):
     get_token = get_object_or_404(User, email = email)
@@ -154,14 +177,38 @@ def refreshToken( request, email):
         'email_body': email_body,'to_email':get_token.email,
         'subject': 'Verify your email'
     }
-    send_mail(
-    subject = 'verify email',
-    message = email_body,
-    from_email= from_email,
-    recipient_list= [get_token.email],
-    fail_silently=False
-    )
-    return Response('Check your email for verification', status=status.HTTP_200_OK)
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    data = {
+    'Messages': [
+        {
+        "From": {
+            "Email": f"akinolatolulope24@gmail.com",
+            "Name": "freehouse"
+        },
+        "To": [
+            {
+            "Email": f"{get_token.email}",
+            "Name": f"{get_token.name}"
+            }
+        ],
+        "Subject": "Email Verification",
+        "TextPart": "Click on the below link to verify your Email!",
+        "HTMLPart":  email_body
+        }
+    ]
+    }
+    result = mailjet.send.create(data=data)
+    # print(result.status_code)
+    return Response(result.json(), 
+        status=status.HTTP_201_CREATED)
+    # send_mail(
+    # subject = 'verify email',
+    # message = email_body,
+    # from_email= from_email,
+    # recipient_list= [get_token.email],
+    # fail_silently=False
+    # )
+    # return Response('Check your email for verification', status=status.HTTP_200_OK)
 
 """Verify user email endpoint"""
 class VerifyEmail(APIView):

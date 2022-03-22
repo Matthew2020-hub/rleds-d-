@@ -80,7 +80,8 @@ import os
 
 from mailjet_rest import Client
 import os
-
+api_key = os.environ['MJ_API_KEY']
+api_secret = os.environ['MJ_API_SECRET']
 
 
 @api_view(['POST'])
@@ -90,8 +91,7 @@ def contact_us(request):
     sender = serializer.validated_data['sender']
     message = serializer.validated_data['message']
 
-    api_key = os.environ['MJ_API_KEY']
-    api_secret = os.environ['MJ_API_SECRET']
+   
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
     data = {
     'Messages': [
@@ -117,19 +117,21 @@ def contact_us(request):
     return Response(result.json(), 
         status=status.HTTP_201_CREATED)
 
+@api_view(['GET'])
+def validate_email(self):
+    mailjet = Client(auth=(api_key, api_secret), version='v3')
+    data = {
+    'EmailType': "bulk",
+    'IsDefaultSender': "false",
+    'Name': "Marketing sender",
+    'Email': "wrecodde@gmail.com"
+    }
+    result = mailjet.sender.create(data=data)
+    response = result.json()
 
-    # send_mail(
-    #     subject = 'Contact Form mail ' ,
-    #     message = message,
-    #     from_email= sender,
-    #     recipient_list=
-    #     ['free_house@yahoo.com'],
-    #     fail_silently=False
-    # )
-    # return Response({
-    #     'message':'Thank you for your message, we will get back to you shortyly'}, 
-    #     status=status.HTTP_201_CREATED
-    # )
+    id = result['Data']['ID']
+    results = mailjet.sender.get(id=id)
+    return Response(results.json(), status=status.HTTP_200_OK)
 
 class GetUserMessages(APIView):
     permission_classes = [AllowAny]
