@@ -80,8 +80,8 @@ import os
 
 from mailjet_rest import Client
 import os
-api_key = os.environ['MJ_API_KEY']
-api_secret = os.environ['MJ_API_SECRET']
+api_key = os.environ.get('MJ_API_KEY')
+api_secret = os.environ.get('MJ_API_SECRET')
 
 
 @api_view(['POST'])
@@ -149,8 +149,8 @@ class GetMessages(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     @swagger_auto_schema(responses={200: MessageSerializer(many=True)})
-    def get(self, request):
-        user = get_object_or_404(User, email='akinolatolulope21@gmail.com')
+    def get(self, request, email):
+        user = get_object_or_404(User, email=email)
         room = get_object_or_404(Room, user=user)
         messages =room.messages
         serializer = MessageSerializer(messages, many=True)
