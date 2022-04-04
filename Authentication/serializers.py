@@ -45,8 +45,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
         if len(password) < 8 or password.lower() == password or password.upper() == password or password.isalnum()\
         or not any(i.isdigit() for i in password):
             raise serializers.ValidationError({
-                'password':'your password is weak',
-                'Hint': 'It must be alphanumeric, must contain an Upper and Lower case character and minimum of 8 characters long '
+                'password':'Your Password Is Weak',
+                'Hint': 'Min. 8 characters, 1 letter, 1 number and 1 special character'
             })
 
         user.set_password(password)

@@ -44,12 +44,13 @@ class CustomUserManager(UserManager):
         """
         Create and save a SuperUser with the given email and password.
         """
-        user = self.create_user(email=email, password=password
+        user = self._create_user(email=email, password=password
         )
         user.is_admin = True
         user.is_staff = True
         user.is_superuser = True
-        user.is_active = False
+        user.is_active = True
+        user.is_verified = True
         user.save(using=self.db)
         return user
 

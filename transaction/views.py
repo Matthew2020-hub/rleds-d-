@@ -1,12 +1,14 @@
 import os
+from urllib import response
+from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 from locale import currency
-from multiprocessing import AuthenticationError, context
+from multiprocessing import AuthenticationError
 import re
 from unicodedata import name
 from django.forms import ValidationError
-from django.http import request
 from django.shortcuts import render
+import phonenumbers
 from Authentication.models import User
 from apartment.models import Apartment
 from apartment.pagination import CustomPagination
@@ -120,6 +122,7 @@ def make_payment(request):
                 "tx_ref":''+str(randint(111111,999999)),
                 "amount":amount,
                 "currency":"NGN",
+                # after payment flutterwave will call this endpoint and append to it transaction id and transaction ref
                 "redirect_url":"http://localhost:8000/api/v1/verify_transaction/",
                 "payment_options":"card",
                 "meta":{
@@ -142,11 +145,8 @@ def make_payment(request):
             response = requests.post(url, json=data, headers=hed)
             response_data = response.json()
             link=response_data['data']['link']
-            return Response(link)
+            return Response(link, status=status.HTTP_200_OK)
         
-
-
-
 """An endpoint to verify payment by calling futterwave's verification endpoint"""
 @api_view(['GET']) 
 def verify_transaction(request, transaction_id):
@@ -157,20 +157,20 @@ def verify_transaction(request, transaction_id):
     )
     json_response = response.json()
     response_data = json_response['data']
+    get_agent_name = get_object_or_404(User, user_id=response_data['meta']['consumer_id'])
     if response_data['status'] == 'successful':
         amount = response_data['amount']
         agent = response_data['meta']['consumer_id']
         house_detail = response_data['meta']['house_location']
-        verify_apartment = get_object_or_404(Apartment,location = house_detail)
+        verify_apartment = get_object_or_404(Apartment, location = house_detail)
         # After a successful payment, a house availability must be set to none 
         # -to avoid multiple users paying for a single apartment or building
         if verify_apartment is not None:
             verify_apartment.is_available = False
             verify_apartment.save()
-            verify = get_object_or_404(User, user_id=agent)
-            verify.balance +=amount
-            verify.save()
-            get_agent_name = get_object_or_404(User, user_id=response_data['meta']['consumer_id'])
+            user = get_object_or_404(User, user_id=agent)
+            user.balance +=amount
+            user.save()  
             if get_agent_name:
                 recipient = get_agent_name.name
                 receiver_number = response_data['meta']['consumer_id']
@@ -186,24 +186,24 @@ def verify_transaction(request, transaction_id):
                     )
                 create_history.save()
                 return Response (response_data, status=status.HTTP_200_OK)
-            recipient = get_agent_name.name
-            receiver_number = response_data['meta']['consumer_id']
-            amount = response_data['amount']
-            date_sent = response_data['customer']['created_at']
-            sender = response_data['customer']['name']
-            transaction_status = 'Failed'
-            create_history = PaymentHistory.objects.create(
-                sender=sender, agent_account_number=receiver_number,
-                date_sent=date_sent, amount=amount,
-                recipient=recipient, transaction_status=transaction_status)
-            create_history.save()
-            verify_apartment.is_available = True
-            verify_apartment.save()
-        return Response({
-            'Error':'Payment Failed, Try Again!'}, 
-            status=status.HTTP_400_BAD_REQUEST
-            )     
-    return Response ('BAD REQUEST', status=status.HTTP_400_BAD_REQUEST)
+     # A payment history object with a transaction status is  Failed is created
+    recipient = get_agent_name.name
+    receiver_number = response_data['meta']['consumer_id']
+    amount = response_data['amount']
+    date_sent = response_data['customer']['created_at']
+    sender = response_data['customer']['name']
+    transaction_status = 'Failed'
+    create_history = PaymentHistory.objects.create(
+    sender=sender, agent_account_number=receiver_number,
+    date_sent=date_sent, amount=amount,
+    recipient=recipient, transaction_status=transaction_status)
+    create_history.save()
+    verify_apartment.is_available = True
+    verify_apartment.save()        
+    return Response({
+        'Error':'Payment Failed, Try Again!'}, 
+        status=status.HTTP_400_BAD_REQUEST
+        )   
 
 
 
@@ -245,7 +245,7 @@ def agent_withdrawal(request):
             "currency": currency,
             "currency":"NGN",
             "reference":''+str(randint(111111,999999)),
-            "callback_url":"http://localhost:8000/view/",
+            "callback_url":"http://localhost:8000/api/v1/verify_transaction/",
             "debit_currency":debit_currency,
             }
         url = ' https://api.flutterwave.com/v3/transfers'

@@ -4,13 +4,15 @@ from django.urls import path, include, re_path
 from .import views
 from django.conf import settings
 from django.conf.urls.static import static
+# from django.contrib import admin
 # from allauth.account.views import confirm_email
 from  .views import (
     GET_AND_DELETE_AGENT, GET_AND_DELETE_USER, GenerateOTP, ListUserAPIView, PasswordReset, 
-    LogoutView, CookiesLoginView,  Registration, VerifyEmail)
+    LogoutView, CookiesLoginView,  userRegistration,agentRegistration, VerifyEmail)
 
 urlpatterns = [
-    path('api/v1/registration/', Registration.as_view(), name='register'),
+    path('api/v1/user/registration/', userRegistration.as_view(), name='user-register'),
+    path('api/v1/agent/registration/', agentRegistration.as_view(), name='agent-register'),
     path('api/v1/user/all/', ListUserAPIView.as_view(), name='get-users'),
     path('api/v1/refresh-token/<str:email>', views.refreshToken, name='refresh-token'),
     path('api/v1/login/', views.login_user, name='login'),
