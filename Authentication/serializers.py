@@ -14,10 +14,16 @@ from message.models import Room
 from transaction.models import Rooms
 import re
 class CustomUserSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'}, write_only=True)
+    password2 = serializers.CharField(
+        max_length=100, min_length=8, 
+        style={'input_type':'password'}, write_only=True
+        )
     class Meta:
         model = User
-        fields = ['email', 'entry', 'password', 'name', 'country', 'password2', 'phone_number', 'user_id']
+        fields = [
+            'email', 'entry', 'password', 'name', 
+            'country', 'password2', 'phone_number', 'user_id'
+            ]
         extra_kwargs = {
             'password':{ 
                 'write_only':True
@@ -34,16 +40,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
             country=self.validated_data['country'],
             phone_number=self.validated_data['phone_number'],     
         )
-        email=self.validated_data['email']
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
-        EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
-        if not re.match(EMAIL_REGEX, email):
-            raise serializers.ValidationError(' Mailbox format error ')
+
         if password != password2:
             raise serializers.ValidationError({'password':'Passwords must match.'})
-        if len(password) < 8 or password.lower() == password or password.upper() == password or password.isalnum()\
-        or not any(i.isdigit() for i in password):
+        if len(password) < 8 or password.lower() == password\
+            or password.upper() == password or password.isalnum()\
+            or not any(i.isdigit() for i in password):
             raise serializers.ValidationError({
                 'password':'Your Password Is Weak',
                 'Hint': 'Min. 8 characters, 1 letter, 1 number and 1 special character'
@@ -53,14 +57,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.entry ='Tenant'
         user.is_active = True
         user.save()
-        try:
-            Rooms.objects.get(user=user)
-        except Exception as e:
-            Rooms.objects.create(user=user)
-        try:
-             Room.objects.get(user=user)
-        except Exception as e:
-            Room.objects.create(user=user) 
+        # try:
+        #     Rooms.objects.get(user=user)
+        # except Exception as e:
+        Rooms.objects.create(user=user)
+        # try:
+        #      Room.objects.get(user=user)
+        # except Exception as e:
+        Room.objects.create(user=user) 
         return user 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -75,7 +79,11 @@ class LoginSerializer(serializers.Serializer):
 
 class CustomPasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password =  serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'}, write_only=True)
+    password =  serializers.CharField(
+        max_length=100, min_length=8, 
+        style={'input_type':'password'}, 
+        write_only=True
+        )
 
 
 
@@ -95,7 +103,11 @@ class AgentSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
     class Meta:
         model = User
-        fields = ['email', 'entry', 'password', 'name', 'country', 'password2', 'phone_number', 'home_address', 'user_id']
+        fields = [
+            'email', 'entry', 'password', 'name', 
+            'country', 'password2', 'phone_number', 
+            'home_address', 'user_id'
+            ]
         extra_kwargs = {
             'password2': {
                 'write_only':True
@@ -113,7 +125,8 @@ class AgentSerializer(serializers.ModelSerializer):
         password2 = self.validated_data['password2']
         if password != password2:
             raise serializers.ValidationError({'password':'Passwords must match.'})
-        if len(password) < 8 or password.lower() == password or password.upper() == password or password.isalnum()\
+        if len(password) < 8 or password.lower() == password\
+            or password.upper() == password or password.isalnum()\
             or not any(i.isdigit() for i in password):
             raise serializers.ValidationError({
                 'password':'your password is weak',

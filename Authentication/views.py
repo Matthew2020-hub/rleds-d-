@@ -24,7 +24,6 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework import generics
 from rest_auth.views import LoginView as RestLoginView
 from django.contrib.auth import logout, login
 from django.utils.translation import gettext_lazy as _
@@ -197,8 +196,21 @@ class GET_AND_DELETE_USER(APIView):
         return Response('User is successfully deleted', status=status.HTTP_200_OK)
 
 
- 
+"""An endpoint to GET a specific agent, Update agent info and delete an agent's record"""
+class GET_AND_DELETE_AGENT(APIView):
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
+    def get(self, request, user_id):
+        get_agent = get_object_or_404(User, user_id=user_id)
+        serializer = AgentSerializer(get_agent)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request, user_id):
+        agent = get_object_or_404(User, user_id=user_id)
+        agent.delete()
+        return Response('Agent deleted successfully', status=status.HTTP_204_NO_CONTENT)
+ 
+# OTP is generated for the forget password endpoint
 class GenerateOTP(APIView):
     permission_classes = [IsAuthenticated] # Allow everyone to register
     serializer_class = VerifyCodeSerializer # Related pre send verification logic
@@ -235,7 +247,7 @@ class GenerateOTP(APIView):
         ]
         }
         result = mailjet.send.create(data=data)
-        return Response("OTP sent, check your phone", status=status.HTTP_200_OK)
+        return Response("OTP sent, check your email", status=status.HTTP_200_OK)
 
 
 @permission_classes(AllowAny)
@@ -275,6 +287,54 @@ class PasswordReset(APIView):
             'Password change is successful, return to login page', 
             status= status.HTTP_200_OK
             )
+
+
+
+
+""" Login Athorization Endpoint With Google Token and saving user's info in COOKIES
+"""
+@api_view(['POST'])
+def validate_authorization_code(request):
+    serializer = GetAcessTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    authorization_code = serializer.validated_data['code']
+    # google authorization code is encoded which needs to be decoded before access_token 
+    # could be generated to retrieve logged-in user's info
+    uncoded = unquote(authorization_code)
+    if authorization_code  is None:
+        return Response({
+        "message": "Error occured due to Invalid authorization code"}, 
+        status=status.HTTP_204_NO_CONTENT
+        )
+    data = {
+            'code': uncoded ,
+            'project_id': project_id,
+            'client_id': SOCIAL_AUTH_GOOGLE_KEY,
+            'client_secret': SOCIAL_AUTH_GOOGLE_SECRET,
+            'redirect_uri': redirect_uri,
+            'grant_type': 'authorization_code'
+    }
+    response = requests.post('https://oauth2.googleapis.com/token', data=data)
+    if not response.ok:
+        return Response({
+        'message':'Failed to obtain access token from Google'}, 
+        status=status.HTTP_400_BAD_REQUEST
+        )
+    access_token = response.json()['access_token']
+    # retrieve user's info from google
+    response = requests.get(
+    'https://www.googleapis.com/oauth2/v3/userinfo',
+    params={'access_token': access_token}
+    )
+    if not response.ok:
+        raise ValidationError('Failed to obtain user info from Google.')
+    result = response.json()
+    user_login = User.objects.get(email=result['email'])
+    if user_login is None:
+        raise AuthenticationError("User with this email doesn't exist, kindly sign up")
+    token, created = Token.objects.get_or_create(user=user_login)
+    return Response({'Token':token.key}, status= status.HTTP_200_OK)    
+
 
 """
 N.B: A custom login View where user signs in manually, i.e., without google authentication
@@ -324,58 +384,6 @@ def user_logout(request):
 
 
 
-"""Agent's Login Athorization Endpoint With Google Token and saving user's info in COOKIES
-"""
-@api_view(['POST'])
-def validate_authorization_code(request):
-    serializer = GetAcessTokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    authorization_code = serializer.validated_data['code']
-    # google authorization code is encoded which needs to be decoded before access_token 
-    # could be generated to retrieve logged-in user's info
-    uncoded = unquote(authorization_code)
-    if authorization_code  is None:
-        return Response({
-        "message": "Error occured due to Invalid authorization code"}, 
-        status=status.HTTP_204_NO_CONTENT
-        )
-    data = {
-            'code': uncoded ,
-            'project_id': project_id,
-            'client_id': SOCIAL_AUTH_GOOGLE_KEY,
-            'client_secret': SOCIAL_AUTH_GOOGLE_SECRET,
-            'redirect_uri': redirect_uri,
-            'grant_type': 'authorization_code'
-    }
-    response = requests.post('https://oauth2.googleapis.com/token', data=data)
-    if not response.ok:
-        return Response({
-        'message':'Failed to obtain access token from Google'}, 
-        status=status.HTTP_400_BAD_REQUEST
-        )
-    access_token = response.json()['access_token']
-    # retrieve user's info from google
-    response = requests.get(
-    'https://www.googleapis.com/oauth2/v3/userinfo',
-    params={'access_token': access_token}
-    )
-    if not response.ok:
-        raise ValidationError('Failed to obtain user info from Google.')
-    result = response.json()
-    user_login = User.objects.get(email=result['email'])
-    if user_login is None:
-        raise AuthenticationError("User with this email doesn't exist, kindly sign up")
-    payload = {
-          "user": user_login.email,
-           "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-            "iat": datetime.datetime.utcnow()
-                }
-    # user's info is been saved in a jwt-cookie to prevent logout user unnecessarily
-    token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-    response = Response()
-    response.set_cookie(key='jwt', value=token, httponly=True)
-    return Response(result, status=status.HTTP_200_OK)
-
 
 """
 Handling the login view with Cookies and JWT decoding
@@ -417,18 +425,6 @@ class LogoutView(APIView):
         return response
 
 
-"""An endpoint to GET a specific agent, Update agent info and delete an agent's record"""
-class GET_AND_DELETE_AGENT(APIView):
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
-    def get(self, request, user_id):
-        get_agent = get_object_or_404(User, user_id=user_id)
-        serializer = AgentSerializer(get_agent)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, user_id):
-        agent = get_object_or_404(User, user_id=user_id)
-        agent.delete()
-        return Response('Agent deleted successfully', status=status.HTTP_204_NO_CONTENT)
 
 
