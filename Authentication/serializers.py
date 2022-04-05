@@ -60,7 +60,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         # try:
         #     Rooms.objects.get(user=user)
         # except Exception as e:
-        Rooms.objects.create(user=user)
+        # Rooms.objects.create(user=user)
         # try:
         #      Room.objects.get(user=user)
         # except Exception as e:
