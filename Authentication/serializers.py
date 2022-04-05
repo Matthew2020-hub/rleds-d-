@@ -56,14 +56,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.entry ='Tenant'
         user.is_active = True
-        user.save()
-        # try:
-        #     Rooms.objects.get(user=user)
-        # except Exception as e:
-        # Rooms.objects.create(user=user)
-        # try:
-        #      Room.objects.get(user=user)
-        # except Exception as e:
         Room.objects.create(user=user) 
         return user 
 class LoginSerializer(serializers.Serializer):
