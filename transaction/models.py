@@ -27,7 +27,7 @@ class Payment(models.Model):
 def generate_short_id(size=9, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'):
     return ''.join(random.choice(chars) for _ in range(size))
 class Rooms(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.CharField(max_length=255, null=True)
     room_id = models.CharField(max_length=255, default=generate_short_id(), unique=True)
 
 class PaymentHistory(models.Model):
