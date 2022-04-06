@@ -12,7 +12,7 @@ from .serializers import (LoginSerializer, GetAcessTokenSerializer,
 CustomPasswordResetSerializer, AgentSerializer, VerifyCodeSerializer, 
 CustomUserSerializer)
 from .models import User, VerifyCode
-from message.models import Room
+# from message.models import Room
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, viewsets
 from rest_framework.response import Response
