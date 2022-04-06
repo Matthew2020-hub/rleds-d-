@@ -88,7 +88,6 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
         return self.list(check)
 class userRegistration(APIView):
     authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
