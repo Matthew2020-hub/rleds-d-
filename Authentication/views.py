@@ -191,6 +191,8 @@ class GET_AND_DELETE_USER(APIView):
 
     def delete(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
+        token = Token.objects.get(user=user)
+        token.delete()
         user.delete()
         return Response('User is successfully deleted', status=status.HTTP_200_OK)
 
@@ -206,6 +208,8 @@ class GET_AND_DELETE_AGENT(APIView):
 
     def delete(self, request, user_id):
         agent = get_object_or_404(User, user_id=user_id)
+        token = Token.objects.get_or_create(user=agent)[0].key
+        token.delete()
         agent.delete()
         return Response('Agent deleted successfully', status=status.HTTP_204_NO_CONTENT)
  
