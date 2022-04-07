@@ -213,10 +213,22 @@ class VerifyEmail(APIView):
             )
 
 """An endpoint to GET a specific user, Update user info and delete a user's record"""
-class GET_AND_DELETE_USER(APIView):
+class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    serializer_class = CustomUserSerializer
+    queryset = User.objects.filter(entry='Tenant')
+    lookup_field = 'email'
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
+    def get(self, request):
+        check = User.objects.filter(entry='Tenant')
+        return self.list(check)
+
+class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.DestroyModelMixin):
     serializer_class =CustomUserSerializer
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+    queryset = User.objects.filter(entry='Tenant')
+    lookup_field = 'email'
     def get(self, request, user_id):
         article = get_object_or_404(User, user_id=user_id)
         serializer = CustomUserSerializer(article)
@@ -226,7 +238,7 @@ class GET_AND_DELETE_USER(APIView):
         user = get_object_or_404(User, user_id=user_id)
         token = Token.objects.get(user=user)
         token.delete()
-        user.delete()
+        self.destroy(request)
         return Response('User is successfully deleted', status=status.HTTP_200_OK)
 
 

@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 # from django.contrib import admin
 # from allauth.account.views import confirm_email
 from  .views import (
-    GET_AND_DELETE_AGENT, GET_AND_DELETE_USER, GenerateOTP, ListUserAPIView, PasswordReset, 
+    GET_AND_DELETE_AGENT, GET_AND_DELETE_USER, GET_AND_DELETE_userAPIView, GenerateOTP, ListUserAPIView, PasswordReset, 
     LogoutView, CookiesLoginView,  userRegistration,agentRegistration, VerifyEmail)
 
 urlpatterns = [
@@ -21,7 +21,7 @@ urlpatterns = [
     path('api/v1/forget_password/<uuid:user_id>', PasswordReset.as_view()),
     path('api/v1/get-OTP/<str:email>', GenerateOTP.as_view(), name='get-OTP'),
     path('api/v1/verify-OTP/<str:code>', views.validate_OTP, name='verify-OTP'),
-    path('api/v1/user/get/<uuid:user_id>', GET_AND_DELETE_USER.as_view()),
+    path('api/v1/user/get/<uuid:user_id>', GET_AND_DELETE_userAPIView.as_view()),
     path('api/v1/agent/get/<uuid:user_id>', GET_AND_DELETE_AGENT.as_view()),
     path('api/v1/logout-jwt/', LogoutView.as_view()),
     path('api/v1/login/cookies/', CookiesLoginView.as_view()),
