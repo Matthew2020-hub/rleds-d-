@@ -228,7 +228,7 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     queryset = User.objects.filter(entry='Tenant')
-    lookup_field = 'email'
+    lookup_field = 'user_id'
     def get(self, request, user_id):
         article = get_object_or_404(User, user_id=user_id)
         serializer = CustomUserSerializer(article)
