@@ -88,13 +88,16 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
         return self.list(check)
 class userRegistration(APIView):
     authentication_classes = [TokenAuthentication]
+    permission_classes=[AllowAny]
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        user_token = Token.objects.create(user=user)
+        
+        user_token = Token.objects.get_or_create(user=user)
+        
         context = {
-            'token': user_token.key,
+            'token': user_token[0].key,
             'message': 'Check your email and verify',
             "data": serializer.data
     }
@@ -111,7 +114,7 @@ class agentRegistration(APIView):
         user = serializer.save()
         user_token = Token.objects.create(user=user)
         context = {
-            'token': user_token.key,
+            'token': user_token[0].key,
             'message': 'Check your email and verify',
             "data": serializer.data
     }
