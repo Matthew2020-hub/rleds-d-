@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 # from django.contrib import admin
 # from allauth.account.views import confirm_email
 from  .views import (
-    GET_AND_DELETE_AGENT, GET_AND_DELETE_USER, GET_AND_DELETE_userAPIView, GenerateOTP, ListUserAPIView, PasswordReset, 
+    GET_AND_DELETE_AGENT, GET_AND_DELETE_userAPIView, GenerateOTP, ListUserAPIView, PasswordReset, 
     LogoutView, CookiesLoginView,  userRegistration,agentRegistration, VerifyEmail)
 
 urlpatterns = [
