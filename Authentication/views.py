@@ -236,8 +236,8 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
 
     def delete(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
-        token = Token.objects.get(key='token').user
-        token.delete()
+        # token = Token.objects.get(key='token').user
+        # token.delete()
         self.destroy(request)
         return Response('User is successfully deleted', status=status.HTTP_200_OK)
 
