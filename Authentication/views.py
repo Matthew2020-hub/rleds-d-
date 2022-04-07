@@ -113,11 +113,41 @@ class agentRegistration(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         user_token = Token.objects.create(user=user)
+        email_verification_token = RefreshToken.for_user(user).access_token
+        absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}' 
+        email_body = 'Hi '+ ' ' + user.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
+        data = {
+            'email_body': email_body,'to_email':user.email,
+            'subject': 'Verify your email'
+        }
+        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        data = {
+        'Messages': [
+            {
+            "From": {
+                "Email": f"akinolatolulope24@gmail.com",
+                "Name": "freehouse"
+            },
+            "To": [
+                {
+                "Email": f"{user.email}",
+                "Name": f"{user.name}"
+                }
+            ],
+            "Subject": "Email Verification",
+            "TextPart": "Click on the below link to verify your Email!",
+            "HTMLPart":  email_body
+            }
+        ]
+        }
+
+        result = mailjet.send.create(data=data)
         context = {
             'token': user_token[0].key,
             'message': 'Check your email and verify',
             "data": serializer.data
-    }
+        }
+       
         return Response(context, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
