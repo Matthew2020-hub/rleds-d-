@@ -57,8 +57,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.entry ='Tenant'
         user.is_active = True
         user.save()
-        room = Room.objects.get_or_create(user=user)[0]
-        room.save()
+        
+        # room = Room.objects.create(user=user)
+        # room.save()
         return user 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
