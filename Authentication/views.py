@@ -325,7 +325,7 @@ def validate_OTP(self, code):
 """A Custom Password reset view"""
 class PasswordReset(APIView):
     permisssion_classes = [AllowAny]
-    def put(self, request, user_id):
+    def put(self, request):
         response = request.GET.get('OTP')
         try:
             verify_OTP = get_object_or_404(VerifyCode, response)
