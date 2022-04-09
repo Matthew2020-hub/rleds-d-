@@ -78,7 +78,7 @@ class CustomPasswordResetSerializer(serializers.Serializer):
         style={'input_type':'password'}, 
         write_only=True
         )
-    comfirm_password = serializers.CharField(
+    confirm_password = serializers.CharField(
         max_length=100, min_length=8, 
         style={'input_type':'password'}, 
         write_only=True
