@@ -73,8 +73,12 @@ class LoginSerializer(serializers.Serializer):
         return self.email
 
 class CustomPasswordResetSerializer(serializers.Serializer):
-    email = serializers.EmailField()
     password =  serializers.CharField(
+        max_length=100, min_length=8, 
+        style={'input_type':'password'}, 
+        write_only=True
+        )
+    comfirm_password = serializers.CharField(
         max_length=100, min_length=8, 
         style={'input_type':'password'}, 
         write_only=True
@@ -132,3 +136,8 @@ class AgentSerializer(serializers.ModelSerializer):
         user.is_active = True
         user.save()
         return user 
+
+
+
+class GenrateOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()

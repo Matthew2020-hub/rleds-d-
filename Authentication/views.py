@@ -1,4 +1,5 @@
 from audioop import reverse
+import email
 from lib2to3.pgen2.tokenize import TokenError
 from django.shortcuts import render
 from http.client import responses
@@ -10,7 +11,7 @@ from django.forms import ValidationError
 from django.shortcuts import render
 from .serializers import (LoginSerializer, GetAcessTokenSerializer,
 CustomPasswordResetSerializer, AgentSerializer, VerifyCodeSerializer, 
-CustomUserSerializer)
+CustomUserSerializer, GenrateOTPSerializer)
 from .models import User, VerifyCode
 # from message.models import Room
 from django.shortcuts import get_object_or_404
@@ -261,21 +262,31 @@ class GET_AND_DELETE_AGENT(APIView):
  
 # OTP is generated for the forget password endpoint
 class GenerateOTP(APIView):
-    permission_classes = [IsAuthenticated] # Allow everyone to register
+    permission_classes = [AllowAny] # Allow everyone to register
     serializer_class = VerifyCodeSerializer # Related pre send verification logic
     def generate_code(self):
         # generate a random OTP
         otp = randint(000000,999999)
         return otp
-    def post(self, request, email):
+    def post(self, request):
         code = self.generate_code()
-        user = get_object_or_404(User, email=email)
-        if user.is_verify is False:
+        serializer = GenrateOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        check_user = get_object_or_404(User, email=email)
+        print(check_user.email)
+        if check_user.is_verify is False:
             return Response('This user email has not been verified kindly return to the Registration page!',
             status=status.HTTP_401_UNAUTHORIZED)
         # Genrated OTP must be created as an object in the database
         VerifyCode.objects.create(code=code)
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        absurl = f'https://freehouses.herokuapp.com/api/v1/forget_password?OTP={code}' 
+        email_body = 'Hi '+ ' ' + check_user.name+':\n'+ 'Click on this link to change your password' '\n'+ absurl
+        data = {
+        'email_body': email_body,'to_email':check_user.email,
+        'subject': 'Verify your email'
+        }
         data = {
         'Messages': [
             {
@@ -285,18 +296,20 @@ class GenerateOTP(APIView):
             },
             "To": [
                 {
-                "Email": f"{user.email}",
-                "Name": f"{user.name}"
+                "Email": f"{check_user.email}",
+                "Name": f"{check_user.name}"
                 }
             ],
             "Subject": "Email Verification With OTP",
             "TextPart": "This is your OTP below!",
-            "HTMLPart":  f"This is your OTP: {code}"
+            "HTMLPart":  email_body
             }
         ]
         }
         result = mailjet.send.create(data=data)
-        return Response("OTP sent, check your email", status=status.HTTP_200_OK)
+        response = result.json()
+        return Response({'message':"OTP sent, check your email", 
+        'response': response.json()}, status=status.HTTP_200_OK)
 
 
 @permission_classes(AllowAny)
@@ -315,13 +328,24 @@ def validate_OTP(self, code):
 
 """A Custom Password reset view"""
 class PasswordReset(APIView):
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
+    permisssion_classes = [AllowAny]
     def put(self, request, user_id):
+        response = request.GET.get('OTP')
+        try:
+            verify_OTP = get_object_or_404(VerifyCode, response)
+            five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5)
+            if verify_OTP.add_time > five_minutes_ago:
+            # The OTP expires after five minutes of created and then deleted from the database
+                verify_OTP.delete()
+                return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
+        except VerifyCode.DoesNotExist:
+            return Response('Invalid OTP or OTP has expired', status=status.HTTP_404_NOT_FOUND)
         serializer = CustomPasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
         password = serializer.validated_data['password']
+        password2 = serializer.validated_data['confirm_password']
+        if password != password2:
+            return Response({'Error': 'Password must match!'}, status=status.HTTP_400_BAD_REQUEST)
         get_user = get_object_or_404(User, email=email, user_id=user_id)
         if password.lower() == password or password.upper() == password or password.isalnum()\
         or not any(i.isdigit() for i in password):
