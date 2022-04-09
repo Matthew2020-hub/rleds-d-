@@ -445,8 +445,6 @@ def login_user(request):
 @api_view(["GET"])
 def user_logout(request):
     try:
-        response = Response()
-        response.delete_cookie('jwt')
         request.user.auth_token.delete()
         logout(request)
         return Response({"success": _("Successfully logged out.")},
