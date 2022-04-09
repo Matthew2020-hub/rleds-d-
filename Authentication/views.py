@@ -263,13 +263,10 @@ class GET_AND_DELETE_AGENT(APIView):
 # OTP is generated for the forget password endpoint
 class GenerateOTP(APIView):
     permission_classes = [AllowAny] # Allow everyone to register
-    serializer_class = VerifyCodeSerializer # Related pre send verification logic
-    def generate_code(self):
-        # generate a random OTP
-        otp = randint(000000,999999)
-        return otp
+    serializer_class = GenrateOTPSerializer # Related pre send verification logic
+  
     def post(self, request):
-        code = self.generate_code()
+        code = randint(000000,999999)
         serializer = GenrateOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
