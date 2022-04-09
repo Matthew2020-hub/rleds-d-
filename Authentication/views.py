@@ -305,8 +305,7 @@ class GenerateOTP(APIView):
         }
         result = mailjet.send.create(data=data)
         response = result.json()
-        return Response({'message':"OTP sent, check your email", 
-        'response': response.json()}, status=status.HTTP_200_OK)
+        return Response({'message':"OTP sent, check your email"}, status=status.HTTP_200_OK)
 
 
 @permission_classes(AllowAny)
