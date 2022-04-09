@@ -329,7 +329,7 @@ class PasswordReset(APIView):
         response = request.GET.get('OTP')
         email = request.GET.get('email')
         try:
-            verify_OTP = get_object_or_404(VerifyCode, response)
+            verify_OTP = get_object_or_404(VerifyCode, code=response)
             five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5)
             if verify_OTP.add_time > five_minutes_ago:
             # The OTP expires after five minutes of created and then deleted from the database
