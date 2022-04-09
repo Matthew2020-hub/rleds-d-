@@ -278,7 +278,7 @@ class GenerateOTP(APIView):
         # Genrated OTP must be created as an object in the database
         VerifyCode.objects.create(code=code)
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
-        absurl = f'https://freehouses.herokuapp.com/api/v1/forget_password?OTP={code}' 
+        absurl = f'https://freehouses.herokuapp.com/api/v1/forget_password?OTP={code}&email={email}' 
         email_body = 'Hi '+ ' ' + check_user.name+':\n'+ 'Click on this link to change your password' '\n'+ absurl
         data = {
         'email_body': email_body,'to_email':check_user.email,
@@ -327,6 +327,7 @@ class PasswordReset(APIView):
     permisssion_classes = [AllowAny]
     def put(self, request):
         response = request.GET.get('OTP')
+        email = request.GET.get('email')
         try:
             verify_OTP = get_object_or_404(VerifyCode, response)
             five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5)
@@ -342,7 +343,7 @@ class PasswordReset(APIView):
         password2 = serializer.validated_data['confirm_password']
         if password != password2:
             return Response({'Error': 'Password must match!'}, status=status.HTTP_400_BAD_REQUEST)
-        get_user = get_object_or_404(User, email=email, user_id=user_id)
+        get_user = get_object_or_404(User, email=email)
         if password.lower() == password or password.upper() == password or password.isalnum()\
         or not any(i.isdigit() for i in password):
             raise serializers.ValidationError({
