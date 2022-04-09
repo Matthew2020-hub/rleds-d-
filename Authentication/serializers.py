@@ -141,3 +141,7 @@ class AgentSerializer(serializers.ModelSerializer):
 
 class GenrateOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
+
+    def __str__(self):
+        return self.email
