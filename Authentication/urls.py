@@ -20,7 +20,6 @@ urlpatterns = [
     path('api/v1/logout/', views.user_logout, name="logout"),
     path('api/v1/forget_password/', PasswordReset.as_view()),
     path('api/v1/get-OTP/', GenerateOTP.as_view(), name='get-OTP'),
-    path('api/v1/verify-OTP/<str:code>', views.validate_OTP, name='verify-OTP'),
     path('api/v1/user/get/<uuid:user_id>', GET_AND_DELETE_userAPIView.as_view()),
     path('api/v1/agent/get/<uuid:user_id>', GET_AND_DELETE_AGENT.as_view()),
     path('api/v1/logout-jwt/', LogoutView.as_view()),

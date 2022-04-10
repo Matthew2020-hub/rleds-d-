@@ -276,8 +276,11 @@ class GenerateOTP(APIView):
             return Response('This user email has not been verified kindly return to the Registration page!',
             status=status.HTTP_401_UNAUTHORIZED)
         # Genrated OTP must be created as an object in the database
+        # OTP is unique for every user
         VerifyCode.objects.create(code=code)
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        # OTP generated is sent to the User's email and clicking the email will grant the user an access to change-password endpoint
+        # There's no special reason for using the generated OTP against the conventional token for the reset-password endpoint
         absurl = f'https://freehouses.herokuapp.com/api/v1/forget_password?OTP={code}&email={email}' 
         email_body = 'Hi '+ ' ' + check_user.name+':\n'+ 'Click on this link to change your password' '\n'+ absurl
         data = {
@@ -303,24 +306,11 @@ class GenerateOTP(APIView):
             }
         ]
         }
+
         result = mailjet.send.create(data=data)
         response = result.json()
         return Response({'message':"OTP sent, check your email"}, status=status.HTTP_200_OK)
-
-
-@permission_classes(AllowAny)
-@api_view(['GET'])
-def validate_OTP(self, code):
-    verify_records = get_object_or_404(VerifyCode, code=code)
-    if verify_records:
-        five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5)
-        if verify_records.add_time > five_minutes_ago:
-            # The OTP expires after five minutes of created and then deleted from the database
-            verify_records.delete()
-            return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
-        # To keep the database safe, the OTP is deleted after validation
-        verify_records.delete()
-        return Response("OTP code is valid", status=status.HTTP_200_OK)       
+      
 
 """A Custom Password reset view"""
 class PasswordReset(APIView):
@@ -335,28 +325,29 @@ class PasswordReset(APIView):
             # The OTP expires after five minutes of created and then deleted from the database
                 verify_OTP.delete()
                 return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
+            serializer = CustomPasswordResetSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            password = serializer.validated_data['password']
+            password2 = serializer.validated_data['confirm_password']
+            if password != password2:
+                return Response({'Error': 'Password must match!'}, status=status.HTTP_400_BAD_REQUEST)
+            get_user = get_object_or_404(User, email=email)
+            if password.lower() == password or password.upper() == password or password.isalnum()\
+            or not any(i.isdigit() for i in password):
+                raise serializers.ValidationError({
+                    'password':'Your Password Is Weak',
+                    'Hint': 'Min. 8 characters, 1 letter, 1 number and 1 special character'
+                })
+            get_user.password = password
+            get_user.set_password(password)
+            get_user.save()
+            return Response(
+                'Password change is successful, return to login page', 
+                status= status.HTTP_200_OK
+                )
+
         except VerifyCode.DoesNotExist:
             return Response('Invalid OTP or OTP has expired', status=status.HTTP_404_NOT_FOUND)
-        serializer = CustomPasswordResetSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        password = serializer.validated_data['password']
-        password2 = serializer.validated_data['confirm_password']
-        if password != password2:
-            return Response({'Error': 'Password must match!'}, status=status.HTTP_400_BAD_REQUEST)
-        get_user = get_object_or_404(User, email=email)
-        if password.lower() == password or password.upper() == password or password.isalnum()\
-        or not any(i.isdigit() for i in password):
-            raise serializers.ValidationError({
-                'password':'Your Password Is Weak',
-                'Hint': 'Min. 8 characters, 1 letter, 1 number and 1 special character'
-            })
-        get_user.password = password
-        get_user.set_password(password)
-        get_user.save()
-        return Response(
-            'Password change is successful, return to login page', 
-            status= status.HTTP_200_OK
-            )
 
 
 
