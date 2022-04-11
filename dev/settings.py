@@ -308,5 +308,5 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 
-TIME_ZONE = 'Africa/Nigeria'
+TIME_ZONE = 'Africa/Lagos'
 USE_TZ = True
