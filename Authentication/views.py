@@ -392,6 +392,7 @@ def validate_authorization_code(request):
     'https://www.googleapis.com/oauth2/v3/userinfo',
     params={'access_token': access_token}
     )
+    print(response.json())
     if not response.ok:
         raise ValidationError('Failed to obtain user info from Google.')
     result = response.json()
