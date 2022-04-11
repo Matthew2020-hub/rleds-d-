@@ -380,6 +380,7 @@ def validate_authorization_code(request):
             'grant_type': 'authorization_code'
     }
     response = requests.post('https://oauth2.googleapis.com/token', data=data)
+    print(response.json())
     if not response.ok:
         return Response({
         'message':'Failed to obtain access token from Google'}, 
@@ -394,13 +395,13 @@ def validate_authorization_code(request):
     if not response.ok:
         raise ValidationError('Failed to obtain user info from Google.')
     result = response.json()
-    user_login = User.objects.get(email=result['email'])
-    if user_login is None:
+    try:
+        user_login = get_object_or_404(User, email=result['email'])
+        token, created = Token.objects.get_or_create(user=user_login)
+        return Response({'Token':token.key}, status= status.HTTP_200_OK) 
+    except User.DoesNotExist:
         raise AuthenticationError("User with this email doesn't exist, kindly sign up")
-    token, created = Token.objects.get_or_create(user=user_login)
-    return Response({'Token':token.key}, status= status.HTTP_200_OK)    
-
-
+          
 """
 N.B: A custom login View where user signs in manually, i.e., without google authentication
  """
