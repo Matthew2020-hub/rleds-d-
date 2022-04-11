@@ -61,7 +61,7 @@ from random import randint
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from mailjet_rest import Client
-import time
+from datetime import time
 
 env = environ.Env()
 environ.Env.read_env('housefree.env')
@@ -321,7 +321,9 @@ class PasswordReset(APIView):
         try:
             verify_OTP = get_object_or_404(VerifyCode, code=response)
             five_minutes_ago = timedelta(minutes=5)
-            code_time_check =  time.now() - verify_OTP.add_time
+            t = time.localtime()
+            current_time = time.strftime("%H:%M:%S", t)
+            code_time_check  = current_time - verify_OTP.add_time
             if  code_time_check > five_minutes_ago:
             # The OTP expires after five minutes of created and then deleted from the database
                 verify_OTP.delete()
