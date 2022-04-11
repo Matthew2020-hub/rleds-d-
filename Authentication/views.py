@@ -1,6 +1,7 @@
 from audioop import reverse
 import email
 from lib2to3.pgen2.tokenize import TokenError
+from time import time
 from django.shortcuts import render
 from http.client import responses
 from lib2to3.pgen2 import token
@@ -60,6 +61,7 @@ from random import randint
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from mailjet_rest import Client
+import time
 
 env = environ.Env()
 environ.Env.read_env('housefree.env')
@@ -264,14 +266,12 @@ class GET_AND_DELETE_AGENT(APIView):
 class GenerateOTP(APIView):
     permission_classes = [AllowAny] # Allow everyone to register
     serializer_class = GenrateOTPSerializer # Related pre send verification logic
-  
     def post(self, request):
         code = randint(000000,999999)
         serializer = GenrateOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         check_user = get_object_or_404(User, email=email)
-        print(check_user.email)
         if check_user.is_verify is False:
             return Response('This user email has not been verified kindly return to the Registration page!',
             status=status.HTTP_401_UNAUTHORIZED)
@@ -320,8 +320,9 @@ class PasswordReset(APIView):
         email = request.GET.get('email')
         try:
             verify_OTP = get_object_or_404(VerifyCode, code=response)
-            five_minutes_ago = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(minutes=5)
-            if verify_OTP.add_time > five_minutes_ago:
+            five_minutes_ago = timedelta(minutes=5)
+            code_time_check =  time.now() - verify_OTP.add_time
+            if  code_time_check > five_minutes_ago:
             # The OTP expires after five minutes of created and then deleted from the database
                 verify_OTP.delete()
                 return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
