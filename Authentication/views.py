@@ -62,6 +62,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from mailjet_rest import Client
 from datetime import time
+from django.utils import timezone
 
 env = environ.Env()
 environ.Env.read_env('housefree.env')
@@ -321,7 +322,7 @@ class PasswordReset(APIView):
         try:
             verify_OTP = get_object_or_404(VerifyCode, code=response)
             five_minutes_ago = timedelta(minutes=5)
-            t = time.now()
+            t = timezone.now()
             current_time = time.strftime("%H:%M:%S", t)
             code_time_check  = current_time - verify_OTP.add_time
             if  code_time_check > five_minutes_ago:
