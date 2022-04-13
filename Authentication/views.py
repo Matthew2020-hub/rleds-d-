@@ -225,6 +225,7 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
+        # 
         check = User.objects.filter(entry='Tenant')
         return self.list(check)
 
