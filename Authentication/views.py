@@ -317,7 +317,7 @@ class GenerateOTP(APIView):
 def verify_otp(request):
     serializer = VerifyOTPSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    otp = serializer.validated_data['OTP']
+    otp = serializer.validated_data['otp']
     try:
             verify_OTP = get_object_or_404(VerifyCode, code=otp)
             five_minutes_ago = timedelta(minutes=5)
