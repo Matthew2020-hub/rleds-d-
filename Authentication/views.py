@@ -323,7 +323,7 @@ class PasswordReset(APIView):
             verify_OTP = get_object_or_404(VerifyCode, code=response)
             five_minutes_ago = timedelta(minutes=5)
             t = timezone.now()
-            current_time = datetime.now()
+            current_time = datetime.now(timezone.utc)
             print(current_time)
             code_time_check  = current_time - verify_OTP.add_time
             if  code_time_check > five_minutes_ago:
