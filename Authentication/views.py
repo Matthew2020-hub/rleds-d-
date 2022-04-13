@@ -322,9 +322,8 @@ class PasswordReset(APIView):
         try:
             verify_OTP = get_object_or_404(VerifyCode, code=response)
             five_minutes_ago = timedelta(minutes=5)
-            t = timezone.now()
+            # 'timezone.utc' is used in datetime.now() while tryingt to compare 2 different time
             current_time = datetime.now(timezone.utc)
-            print(current_time)
             code_time_check  = current_time - verify_OTP.add_time
             if  code_time_check > five_minutes_ago:
             # The OTP expires after five minutes of created and then deleted from the database

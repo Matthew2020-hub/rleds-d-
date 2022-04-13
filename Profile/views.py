@@ -1,5 +1,5 @@
 from distutils.log import error
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required 
 from Authentication.models import User
 from .serializers import ProfileSerializer
@@ -13,14 +13,17 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 # Create your views here.
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def profile(request):
     try:
-        email = request.user.email
-        name = request.user.name
+        user_id = Token.objects.get(key=request.auth.key).user_id
+        user = get_object_or_404(User, user_id)
+        email = user.email
+        full_name = user.name
         context = {
             'email': email,
-            'full_name': name
+            'full_name': full_name
         }
         return Response(context,status=status.HTTP_200_OK)
-    except Exception as e:
+    except User.DoesNotExist:
         return Response('User does not exist!', status=status.HTTP_204_NO_CONTENT)
