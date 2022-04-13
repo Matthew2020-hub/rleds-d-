@@ -18,7 +18,7 @@ urlpatterns = [
     path('api/v1/login/', views.login_user, name='login'),
     path('api/v1/google-token/validate/oauth2callback', views.validate_authorization_code, name="code_validation"),
     path('api/v1/logout/', views.user_logout, name="logout"),
-    path('api/v1/login/', views.verify_otp, name='login'),
+    path('api/v1/verify-OTP/', views.verify_otp, name='login'),
     path('api/v1/forget_password/', PasswordReset.as_view()),
     path('api/v1/get-OTP/', GenerateOTP.as_view(), name='get-OTP'),
     path('api/v1/user/get/<uuid:user_id>', GET_AND_DELETE_userAPIView.as_view()),

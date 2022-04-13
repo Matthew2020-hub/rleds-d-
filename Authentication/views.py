@@ -283,7 +283,7 @@ class GenerateOTP(APIView):
         # OTP generated is sent to the User's email and clicking the email will grant the user an access to change-password endpoint
         # There's no special reason for using the generated OTP against the conventional token for the reset-password endpoint
         absurl = f'https://freehouses.herokuapp.com/api/v1/verify-OTP?email={email}' 
-        email_body = 'Hi '+ ' ' + check_user.name + ' ' + f'this your OTP: {code} \n' + 'Click on this link to change your password' '\n'+ absurl
+        email_body = 'Hi '+ ' ' + check_user.name + ' ' + f'this your OTP: {code}' '\n' + 'Click on this link to change your password' '\n'+ absurl
         data = {
         'email_body': email_body,'to_email':check_user.email,
         'subject': 'Verify your email'
