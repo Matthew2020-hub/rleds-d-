@@ -90,6 +90,12 @@ class CustomPasswordResetSerializer(serializers.Serializer):
 """
 class GetAcessTokenSerializer(serializers.Serializer):
     code = serializers.CharField()
+
+class VerifyOTPSerializer(serializers.Serializer):
+    code = serializers.CharField()
+
+    def __str__(self):
+        return self.code
    
 
 class VerifyCodeSerializer(serializers.Serializer):

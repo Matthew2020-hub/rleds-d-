@@ -12,7 +12,7 @@ from django.forms import ValidationError
 from django.shortcuts import render
 from .serializers import (LoginSerializer, GetAcessTokenSerializer,
 CustomPasswordResetSerializer, AgentSerializer, VerifyCodeSerializer, 
-CustomUserSerializer, GenrateOTPSerializer)
+CustomUserSerializer, GenrateOTPSerializer, VerifyOTPSerializer)
 from .models import User, VerifyCode
 # from message.models import Room
 from django.shortcuts import get_object_or_404
@@ -282,8 +282,8 @@ class GenerateOTP(APIView):
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
         # OTP generated is sent to the User's email and clicking the email will grant the user an access to change-password endpoint
         # There's no special reason for using the generated OTP against the conventional token for the reset-password endpoint
-        absurl = f'https://freehouses.herokuapp.com/api/v1/forget_password?OTP={code}&email={email}' 
-        email_body = 'Hi '+ ' ' + check_user.name+':\n'+ 'Click on this link to change your password' '\n'+ absurl
+        absurl = f'https://freehouses.herokuapp.com/api/v1/verify-OTP?email={email}' 
+        email_body = 'Hi '+ ' ' + check_user.name + ' ' + 'this your OTP: {code} \n' + 'Click on this link to change your password' '\n'+ absurl
         data = {
         'email_body': email_body,'to_email':check_user.email,
         'subject': 'Verify your email'
@@ -311,16 +311,15 @@ class GenerateOTP(APIView):
         result = mailjet.send.create(data=data)
         response = result.json()
         return Response({'message':"OTP sent, check your email"}, status=status.HTTP_200_OK)
-      
 
-"""A Custom Password reset view"""
-class PasswordReset(APIView):
-    permisssion_classes = [AllowAny]
-    def put(self, request):
-        response = request.GET.get('OTP')
-        email = request.GET.get('email')
-        try:
-            verify_OTP = get_object_or_404(VerifyCode, code=response)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_otp(request):
+    serializer = VerifyOTPSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    otp = serializer.validated_data['OTP']
+    try:
+            verify_OTP = get_object_or_404(VerifyCode, code=otp)
             five_minutes_ago = timedelta(minutes=5)
             # 'timezone.utc' is used in datetime.now() while tryingt to compare 2 different time
             current_time = datetime.now(timezone.utc)
@@ -329,6 +328,20 @@ class PasswordReset(APIView):
             # The OTP expires after five minutes of created and then deleted from the database
                 verify_OTP.delete()
                 return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
+            verify_OTP.delete()
+            return Response('OTP is valid')
+
+    except VerifyCode.DoesNotExist:
+        return Response('Invalid OTP or OTP has expired', status=status.HTTP_404_NOT_FOUND)
+
+
+"""A Custom Password reset view"""
+class PasswordReset(APIView):
+    permisssion_classes = [AllowAny]
+    def put(self, request):
+        email = request.GET.get('email')
+        try:
+            get_object_or_404(User, email=email)
             serializer = CustomPasswordResetSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             password = serializer.validated_data['password']
@@ -353,8 +366,8 @@ class PasswordReset(APIView):
                 status= status.HTTP_200_OK
                 )
 
-        except VerifyCode.DoesNotExist:
-            return Response('Invalid OTP or OTP has expired', status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response('User Not Found', status=status.HTTP_404_NOT_FOUND)
 
 
 
