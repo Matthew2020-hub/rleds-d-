@@ -324,6 +324,7 @@ class PasswordReset(APIView):
             five_minutes_ago = timedelta(minutes=5)
             t = timezone.now()
             current_time = time.strftime("%H:%M:%S", t)
+            print(current_time)
             code_time_check  = current_time - verify_OTP.add_time
             if  code_time_check > five_minutes_ago:
             # The OTP expires after five minutes of created and then deleted from the database
@@ -333,9 +334,11 @@ class PasswordReset(APIView):
             serializer.is_valid(raise_exception=True)
             password = serializer.validated_data['password']
             password2 = serializer.validated_data['confirm_password']
+            print(password)
             if password != password2:
                 return Response({'Error': 'Password must match!'}, status=status.HTTP_400_BAD_REQUEST)
             get_user = get_object_or_404(User, email=email)
+            print(get_user)
             if password.lower() == password or password.upper() == password or password.isalnum()\
             or not any(i.isdigit() for i in password):
                 raise serializers.ValidationError({
@@ -344,6 +347,7 @@ class PasswordReset(APIView):
                 })
             get_user.password = password
             get_user.set_password(password)
+            print(get_user.password)
             get_user.save()
             return Response(
                 'Password change is successful, return to login page', 
