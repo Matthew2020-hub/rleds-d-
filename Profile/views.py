@@ -11,7 +11,8 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
-# Create your views here.
+
+# User profile's endpoint
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile(request):
