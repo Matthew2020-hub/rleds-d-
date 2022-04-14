@@ -109,6 +109,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'htpps://spokane-blinds.netlify.app/'
+    'https://spokane-topaz.vercel.app/'
 ]
 
 
