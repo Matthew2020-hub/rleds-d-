@@ -267,7 +267,7 @@ class GET_AND_DELETE_AGENT(APIView):
 # OTP is generated for the forget password endpoint
 class GenerateOTP(APIView):
     permission_classes = [AllowAny] # Allow everyone to register
-    serializer_class = GenrateOTPSerializer # Related pre send verification logic
+    serializer_class = GenrateOTPSerializer 
     def post(self, request):
         code = randint(000000,999999)
         serializer = GenrateOTPSerializer(data=request.data)
@@ -283,7 +283,7 @@ class GenerateOTP(APIView):
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
         # OTP generated is sent to the User's email and clicking the email will grant the user an access to change-password endpoint
         # There's no special reason for using the generated OTP against the conventional token for the reset-password endpoint
-        absurl = f'https://freehouses.herokuapp.com/api/v1/verify-OTP?email={email}' 
+        absurl = f'https://spokane-topaz.vercel.app/otp?email={email}' 
         email_body = 'Hi '+ ' ' + check_user.name + ' ' + f'this your OTP: {code}' '\n' + 'Click on this link to change your password' '\n'+ absurl
         data = {
         'email_body': email_body,'to_email':check_user.email,
@@ -322,7 +322,7 @@ def verify_otp(request):
     try:
             verify_OTP = get_object_or_404(VerifyCode, code=otp)
             five_minutes_ago = timedelta(minutes=5)
-            # 'timezone.utc' is used in datetime.now() while tryingt to compare 2 different time
+            # 'timezone.utc' is used in datetime.now() while trying to compare 2 different time
             current_time = datetime.now(timezone.utc)
             code_time_check  = current_time - verify_OTP.add_time
             if  code_time_check > five_minutes_ago:
