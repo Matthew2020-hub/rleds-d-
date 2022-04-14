@@ -16,8 +16,8 @@ from rest_framework.decorators import api_view, permission_classes
 @permission_classes([IsAuthenticated])
 def profile(request):
     try:
-        user_id = Token.objects.get(key=request.auth.key).user_id
-        user = get_object_or_404(User, user_id)
+        get_user = Token.objects.get(key='token').user
+        user = get_object_or_404(User, get_user)
         email = user.email
         full_name = user.name
         context = {
