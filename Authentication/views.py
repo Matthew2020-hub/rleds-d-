@@ -111,7 +111,7 @@ class userRegistration(APIView):
 
 class agentRegistration(APIView):
     authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
+    permisssion_classes = [AllowAny]
     def post(self, request):
         serializer = AgentSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
