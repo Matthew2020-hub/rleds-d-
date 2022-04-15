@@ -25,6 +25,6 @@ urlpatterns = [
     path('api/v1/agent/get/<uuid:user_id>', GET_AND_DELETE_AGENT.as_view()),
     path('api/v1/logout-jwt/', LogoutView.as_view()),
     path('api/v1/login/cookies/', CookiesLoginView.as_view()),
-    path('api/v1/email-verify/', VerifyEmail.as_view(), name="verify-email"),
+    path('api/v1/email-verify', VerifyEmail.as_view(), name="verify-email"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
