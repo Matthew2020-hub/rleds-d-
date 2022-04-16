@@ -75,6 +75,7 @@ api_secret = os.environ.get('MJ_API_SECRET')
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.environ.get("TWILIO_NUMBER")
+GOOGLE_TOKEN_URL = os.environ.get("GOOGLE_TOKEN_URL")
 
 
 
@@ -400,7 +401,7 @@ def validate_authorization_code(request):
             'redirect_uri': redirect_uri,
             'grant_type': 'authorization_code'
     }
-    response = requests.post('https://oauth2.googleapis.com/token', data=data)
+    response = requests.post(f'{GOOGLE_TOKEN_URL}', data=data)
     print(response.json())
     if not response.ok:
         return Response({
