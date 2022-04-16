@@ -395,12 +395,10 @@ def validate_authorization_code(request):
         )
     data = {
             'code': uncoded ,
-            'project_id': project_id,
             'client_id': SOCIAL_AUTH_GOOGLE_KEY,
             'client_secret': SOCIAL_AUTH_GOOGLE_SECRET,
             'redirect_uri': redirect_uri,
-            'grant_type': 'authorization_code',
-            'scope':'read'
+            'grant_type': 'authorization_code'
     }
     response = requests.post(f'{GOOGLE_TOKEN_URL}', data=data)
     print(response.json())
