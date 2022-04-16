@@ -377,7 +377,7 @@ class PasswordReset(APIView):
         except User.DoesNotExist:
             return Response('User Not Found', status=status.HTTP_404_NOT_FOUND)
 
-
+# dnvnfne
 
 
 """ Login Athorization Endpoint With Google Token and saving user's info in COOKIES
