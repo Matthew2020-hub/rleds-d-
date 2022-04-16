@@ -29,10 +29,10 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_auth.views import LoginView as RestLoginView
 from django.contrib.auth import logout, login
 from django.utils.translation import gettext_lazy as _
-from dev.settings import (
-    SOCIAL_AUTH_GOOGLE_KEY, SOCIAL_AUTH_GOOGLE_SECRET, 
-    redirect_uri, project_id
-)
+# from dev.settings import (
+#     SOCIAL_AUTH_GOOGLE_KEY, SOCIAL_AUTH_GOOGLE_SECRET, 
+#     redirect_uri, project_id
+# )
 from rest_framework import status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -78,6 +78,11 @@ TWILIO_NUMBER = os.environ.get("TWILIO_NUMBER")
 GOOGLE_TOKEN_URL = os.environ.get("GOOGLE_TOKEN_URL")
 
 
+
+SOCIAL_AUTH_GOOGLE_KEY = os.environ.get('GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_SECRET =os.environ.get('GOOGLE_CLIENT_KEY')
+redirect_uri = os.environ.get('redirect_uri')
+project_id = os.environ.get('project_id')
 
 
 
