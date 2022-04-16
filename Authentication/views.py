@@ -146,6 +146,7 @@ class agentRegistration(APIView):
         }
 
         result = mailjet.send.create(data=data)
+        print(result.json())
         agent_token = Token.objects.get_or_create(user=user)
         context = {
             'token': agent_token[0].key,
@@ -380,9 +381,11 @@ def validate_authorization_code(request):
     serializer = GetAcessTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     authorization_code = serializer.validated_data['code']
+    print(authorization_code)
     # google authorization code is encoded which needs to be decoded before access_token 
     # could be generated to retrieve logged-in user's info
     uncoded = unquote(authorization_code)
+    print(uncoded)
     if authorization_code  is None:
         return Response({
         "message": "Error occured due to Invalid authorization code"}, 
