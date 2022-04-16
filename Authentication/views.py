@@ -399,7 +399,7 @@ def validate_authorization_code(request):
             'redirect_uri': redirect_uri,
             'grant_type': 'authorization_code'
     }
-    response = requests.post('https://oauth2.googleapis.com/token', data=data)
+    response = requests.post('https://oauth2.googleapis.com/v4/token', data=data)
     print(response.json())
     if not response.ok:
         return Response({
