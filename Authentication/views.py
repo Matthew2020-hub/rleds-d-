@@ -223,8 +223,7 @@ class VerifyEmail(APIView):
             'email': 'Email successfully activated, kindly return to the login page'}, 
             status=status.HTTP_200_OK
             )
-
-"""An endpoint to GET a specific user, Update user info and delete a user's record"""
+"""An endpoint to list available Users"""
 class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = CustomUserSerializer
     queryset = User.objects.filter(entry='Tenant')
@@ -232,10 +231,22 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
-        # 
-        check = User.objects.filter(entry='Tenant')
-        return self.list(check)
+        user_list = User.objects.filter(entry='Tenant')
+        return self.list(user_list)
 
+
+"""An endpoint to list available Agents"""
+class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    serializer_class = CustomUserSerializer
+    queryset = User.objects.filter(entry='Agent')
+    lookup_field = 'email'
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
+    def get(self, request):
+        list_agent = User.objects.filter(entry='Agent')
+        return self.list(list_agent)
+
+"""An endpoint to GET or delete a user's record"""
 class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.DestroyModelMixin):
     serializer_class =CustomUserSerializer
     authentication_classes = [TokenAuthentication]
