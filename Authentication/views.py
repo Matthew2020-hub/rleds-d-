@@ -67,18 +67,12 @@ from django.utils import timezone
 env = environ.Env()
 environ.Env.read_env('housefree.env')
 from_email= os.environ.get('EMAIL_HOST_USER')
-
 api_key = os.environ.get('MJ_API_KEY')
 api_secret = os.environ.get('MJ_API_SECRET')      
-
-
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.environ.get("TWILIO_NUMBER")
 GOOGLE_TOKEN_URL = os.environ.get("GOOGLE_TOKEN_URL")
-
-
-
 SOCIAL_AUTH_GOOGLE_KEY = os.environ.get('GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_SECRET =os.environ.get('GOOGLE_CLIENT_KEY')
 redirect_uri = os.environ.get('redirect_uri')
@@ -96,6 +90,8 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     def get(self, request):
         check = User.objects.filter(entry='Tenant')
         return self.list(check)
+
+
 class userRegistration(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes=[AllowAny]
@@ -103,17 +99,13 @@ class userRegistration(APIView):
         serializer = CustomUserSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        
-        user_token = Token.objects.get_or_create(user=user)
-        
+        user_token = Token.objects.get_or_create(user=user)    
         context = {
             'token': user_token[0].key,
             'message': 'Check your email and verify',
             "data": serializer.data
     }
         return Response(context, status=status.HTTP_201_CREATED)
-
-
 
 class agentRegistration(APIView):
     authentication_classes = [TokenAuthentication]
@@ -122,7 +114,6 @@ class agentRegistration(APIView):
         serializer = AgentSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-    
         email_verification_token = RefreshToken.for_user(user).access_token
         absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}' 
         email_body = 'Hi '+ ' ' + user.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
@@ -150,17 +141,16 @@ class agentRegistration(APIView):
             }
         ]
         }
-
         result = mailjet.send.create(data=data)
-        print(result.json())
         agent_token = Token.objects.get_or_create(user=user)
         context = {
             'token': agent_token[0].key,
             'message': 'Check your email and verify',
             "data": serializer.data
         }
-       
         return Response(context, status=status.HTTP_201_CREATED)
+
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -200,6 +190,9 @@ def refreshToken( request, email):
     return Response(result.json(), 
         status=status.HTTP_201_CREATED)
 
+
+
+
 """Verify user email endpoint"""
 class VerifyEmail(APIView):
     permisssion_classes = [AllowAny]
@@ -223,6 +216,10 @@ class VerifyEmail(APIView):
             'email': 'Email successfully activated, kindly return to the login page'}, 
             status=status.HTTP_200_OK
             )
+
+
+
+
 """An endpoint to list available Users"""
 class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = CustomUserSerializer
@@ -235,6 +232,8 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
         return self.list(user_list)
 
 
+
+
 """An endpoint to list available Agents"""
 class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = CustomUserSerializer
@@ -245,6 +244,9 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     def get(self, request):
         list_agent = User.objects.filter(entry='Agent')
         return self.list(list_agent)
+
+
+
 
 """An endpoint to GET or delete a user's record"""
 class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.DestroyModelMixin):
@@ -260,10 +262,13 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
 
     def delete(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
-        # token = Token.objects.get(key='token').user
-        # token.delete()
+        token = Token.objects.get(key='request.auth.key').user
+        token.delete()
         self.destroy(request)
         return Response('User is successfully deleted', status=status.HTTP_200_OK)
+
+
+
 
 
 """An endpoint to GET a specific agent, Update agent info and delete an agent's record"""
@@ -282,6 +287,10 @@ class GET_AND_DELETE_AGENT(APIView):
         agent.delete()
         return Response('Agent deleted successfully', status=status.HTTP_204_NO_CONTENT)
  
+
+
+
+
 # OTP is generated for the forget password endpoint
 class GenerateOTP(APIView):
     permission_classes = [AllowAny] # Allow everyone to register
@@ -331,6 +340,11 @@ class GenerateOTP(APIView):
         response = result.json()
         return Response({'message':"OTP sent, check your email"}, status=status.HTTP_200_OK)
 
+
+
+
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp(request):
@@ -338,20 +352,22 @@ def verify_otp(request):
     serializer.is_valid(raise_exception=True)
     otp = serializer.validated_data['otp']
     try:
-            verify_OTP = get_object_or_404(VerifyCode, code=otp)
-            five_minutes_ago = timedelta(minutes=5)
-            # 'timezone.utc' is used in datetime.now() while trying to compare 2 different time
-            current_time = datetime.now(timezone.utc)
-            code_time_check  = current_time - verify_OTP.add_time
-            if  code_time_check > five_minutes_ago:
-            # The OTP expires after five minutes of created and then deleted from the database
-                verify_OTP.delete()
-                return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
+        verify_OTP = get_object_or_404(VerifyCode, code=otp)
+        five_minutes_ago = timedelta(minutes=5)
+        # 'timezone.utc' is used in datetime.now() while trying to compare 2 different time
+        current_time = datetime.now(timezone.utc)
+        code_time_check  = current_time - verify_OTP.add_time
+        if  code_time_check > five_minutes_ago:
+        # The OTP expires after five minutes of created and then deleted from the database
             verify_OTP.delete()
-            return Response('OTP is valid')
-
+            return Response(' The verification code has expired ', status=status.HTTP_403_FORBIDDEN)
+        verify_OTP.delete()
+        return Response('OTP is valid')
     except VerifyCode.DoesNotExist:
         return Response('Invalid OTP or OTP has expired', status=status.HTTP_404_NOT_FOUND)
+
+
+
 
 
 """A Custom Password reset view"""
@@ -365,11 +381,9 @@ class PasswordReset(APIView):
             serializer.is_valid(raise_exception=True)
             password = serializer.validated_data['password']
             password2 = serializer.validated_data['confirm_password']
-            print(password)
             if password != password2:
                 return Response({'Error': 'Password must match!'}, status=status.HTTP_400_BAD_REQUEST)
             get_user = get_object_or_404(User, email=email)
-            print(get_user)
             if password.lower() == password or password.upper() == password or password.isalnum()\
             or not any(i.isdigit() for i in password):
                 raise serializers.ValidationError({
@@ -378,17 +392,16 @@ class PasswordReset(APIView):
                 })
             get_user.password = password
             get_user.set_password(password)
-            print(get_user.password)
             get_user.save()
             return Response(
                 'Password change is successful, return to login page', 
                 status= status.HTTP_200_OK
                 )
-
         except User.DoesNotExist:
             return Response('User Not Found', status=status.HTTP_404_NOT_FOUND)
 
-# dnvnfne
+
+
 
 
 """ Login Athorization Endpoint With Google Token and saving user's info in COOKIES
@@ -440,6 +453,11 @@ def validate_authorization_code(request):
         return Response({'Token':token.key}, status= status.HTTP_200_OK) 
     except User.DoesNotExist:
         raise AuthenticationError("User with this email doesn't exist, kindly sign up")
+
+
+
+
+
           
 """
 N.B: A custom login View where user signs in manually, i.e., without google authentication
@@ -474,9 +492,13 @@ def login_user(request):
         )
 
 
+
+
+"""User logout Endpoint"""
 @api_view(["GET"])
 def user_logout(request):
     try:
+        # Token created during login is deleted before user is being logged out
         request.user.auth_token.delete()
         logout(request)
         return Response({"success": _("Successfully logged out.")},
@@ -488,44 +510,44 @@ def user_logout(request):
 
 
 
-"""
-Handling the login view with Cookies and JWT decoding
-"""
-class CookiesLoginView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
-    def get(self, request):
-        token = request.COOKIES.get('jwt')
-        if not token:
-            raise AuthenticationFailed('Unauthenticated')
-        try:
-            payload = jwt.decode(token, 'secret', algorithms='HS256')
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated')
-        user = User.objects.filter(email=payload['user']).first()
-        Account = get_object_or_404(User, email=user.email)
-        Account.backend = 'django.contrib.auth.backends.ModelBackend'    
-        if not Account.is_verify is True:
-            return Response({
-            'message': 'Email is not yet verified, kindly do that!'}, 
-            status= status.HTTP_401_UNAUTHORIZED
-            )
-        token = Token.objects.get_or_create(user=Account)[0].key
-        if Account.is_active:
-            login(request, Account)
-        return Response('Logged in successfully', status = status.HTTP_200_OK)
+# """
+# Handling the login view with Cookies and JWT decoding
+# """
+# class CookiesLoginView(APIView):
+#     authentication_classes = [TokenAuthentication]
+#     permisssion_classes = [IsAuthenticated]
+#     def get(self, request):
+#         token = request.COOKIES.get('jwt')
+#         if not token:
+#             raise AuthenticationFailed('Unauthenticated')
+#         try:
+#             payload = jwt.decode(token, 'secret', algorithms='HS256')
+#         except jwt.ExpiredSignatureError:
+#             raise AuthenticationFailed('Unauthenticated')
+#         user = User.objects.filter(email=payload['user']).first()
+#         Account = get_object_or_404(User, email=user.email)
+#         Account.backend = 'django.contrib.auth.backends.ModelBackend'    
+#         if not Account.is_verify is True:
+#             return Response({
+#             'message': 'Email is not yet verified, kindly do that!'}, 
+#             status= status.HTTP_401_UNAUTHORIZED
+#             )
+#         token = Token.objects.get_or_create(user=Account)[0].key
+#         if Account.is_active:
+#             login(request, Account)
+#         return Response('Logged in successfully', status = status.HTTP_200_OK)
 
 
-"""A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
-"""
-class LogoutView(APIView):
-    def get(self, request):
-        response = Response()
-        response.delete_cookie('jwt')
-        response.data = {
-            "message": "Logout successfully"
-        }
-        return response
+# """A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
+# """
+# class LogoutView(APIView):
+#     def get(self, request):
+#         response = Response()
+#         response.delete_cookie('jwt')
+#         response.data = {
+#             "message": "Logout successfully"
+#         }
+#         return response
 
 
 

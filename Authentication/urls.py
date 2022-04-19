@@ -8,9 +8,8 @@ from django.conf.urls.static import static
 # from allauth.account.views import confirm_email
 from  .views import (
     GET_AND_DELETE_AGENT, GET_AND_DELETE_userAPIView, GenerateOTP,
-    ListUserAPIView,ListAgentAPIView, PasswordReset, 
-    LogoutView, CookiesLoginView,  userRegistration,
-    agentRegistration, VerifyEmail
+    ListUserAPIView, ListAgentAPIView, PasswordReset, 
+    userRegistration, agentRegistration, VerifyEmail
     )
 
 urlpatterns = [
@@ -27,8 +26,8 @@ urlpatterns = [
     path('api/v1/get-OTP/', GenerateOTP.as_view(), name='get-OTP'),
     path('api/v1/user/get/<uuid:user_id>', GET_AND_DELETE_userAPIView.as_view()),
     path('api/v1/agent/get/<uuid:user_id>', GET_AND_DELETE_AGENT.as_view()),
-    path('api/v1/logout-jwt/', LogoutView.as_view()),
-    path('api/v1/login/cookies/', CookiesLoginView.as_view()),
+    # path('api/v1/logout-jwt/', LogoutView.as_view()),
+    # path('api/v1/login/cookies/', CookiesLoginView.as_view()),
     path('api/v1/email-verify', VerifyEmail.as_view(), name="verify-email"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

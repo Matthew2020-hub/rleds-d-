@@ -110,7 +110,7 @@ class AgentSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'email', 'entry', 'password', 'name', 
-            'country', 'password2', 'phone_number', 
+            'country', 'password2', 'phone_number','agent_location',
             'home_address', 'user_id'
             ]
         extra_kwargs = {
@@ -124,7 +124,8 @@ class AgentSerializer(serializers.ModelSerializer):
             name=self.validated_data['name'],
             country=self.validated_data['country'],
             phone_number=self.validated_data['phone_number'], 
-            home_address=self.validated_data['home_address'],     
+            home_address=self.validated_data['home_address'],
+            agent_location=self.validated_data['agent_location'],     
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
