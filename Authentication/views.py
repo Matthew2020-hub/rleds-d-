@@ -1,15 +1,5 @@
-from audioop import reverse
-import email
-from lib2to3.pgen2.tokenize import TokenError
-from time import time
-from django.shortcuts import render
-from http.client import responses
-from lib2to3.pgen2 import token
 from multiprocessing import AuthenticationError
-from os import access
-import re
 from django.forms import ValidationError
-from django.shortcuts import render
 from .serializers import (LoginSerializer, GetAcessTokenSerializer,
 CustomPasswordResetSerializer, AgentSerializer, VerifyCodeSerializer, 
 CustomUserSerializer, GenrateOTPSerializer, VerifyOTPSerializer)
@@ -26,7 +16,6 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_auth.views import LoginView as RestLoginView
 from django.contrib.auth import logout, login
 from django.utils.translation import gettext_lazy as _
 # from dev.settings import (
@@ -54,14 +43,12 @@ import os
 import environ
 import django.contrib.auth.password_validation as validators
 from django.core.exceptions import ValidationError
-from random import choice, random
 # from twilio.rest import Client
 # from dev.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
 from random import randint
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from mailjet_rest import Client
-from datetime import time
 from django.utils import timezone
 
 env = environ.Env()
@@ -496,6 +483,7 @@ def login_user(request):
 
 """User logout Endpoint"""
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def user_logout(request):
     try:
         # Token created during login is deleted before user is being logged out
