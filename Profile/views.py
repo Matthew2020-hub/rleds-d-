@@ -25,13 +25,20 @@ def profile(request):
             phone_number = str(user.phone_number)
             profile_image = user.profile_image
             background_image = user.background_image
+            if profile_image.exists and  background_image.exists():
+                context = {
+                    'email': email,
+                    'full_name': full_name,
+                    'phone_number': phone_number,
+                    'profile_image': profile_image,
+                    'background_image': background_image
+                }
+                return Response(context,status=status.HTTP_200_OK)
             context = {
                 'email': email,
                 'full_name': full_name,
-                'phone_number': phone_number,
-                'profile_image': profile_image,
-                'background_image': background_image
-            }
+                'phone_number': phone_number
+                }
             return Response(context,status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response('User does not exist!', status=status.HTTP_204_NO_CONTENT)
