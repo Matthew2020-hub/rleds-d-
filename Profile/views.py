@@ -25,10 +25,14 @@ def profile(request):
             phone_number = str(user.phone_number)
             profile_image = user.profile_image
             background_image = user.background_image
+            entry_type = user.entry
             context = {
                 'email': email,
                 'full_name': full_name,
-                'phone_number': phone_number
+                'phone_number': phone_number,
+                'entry': entry_type,
+                'background_image': background_image,
+                'profile_image': profile_image
                 }
             return Response(context,status=status.HTTP_200_OK)
         except User.DoesNotExist:
