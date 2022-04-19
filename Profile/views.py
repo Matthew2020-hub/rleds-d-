@@ -22,7 +22,7 @@ def profile(request):
             user = get_object_or_404(User, name=get_user.name)
             email = user.email
             full_name = user.name
-            phone_number = user.phone_number
+            phone_number = str(user.phone_number)
             profile_image = user.profile_image
             background_image = user.background_image
             context = {
