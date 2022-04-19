@@ -66,7 +66,6 @@ class User(AbstractUser):
     name = models.CharField(max_length=20, blank=True, null=True, verbose_name='Full Name')
     profile_image = models.ImageField(upload_to = 'profile/', blank=True)
     background_image = models.ImageField(upload_to = 'profile/', blank=True)
-    home_address = models.CharField( max_length=150, null=True,  blank=True)
     agent_location = models.CharField( max_length=150, null=True,  blank=True)
     balance = models.FloatField(default=0, validators=[minimum_amount, ])
     country = CountryField()
@@ -94,7 +93,9 @@ class User(AbstractUser):
 
 
         
-
+# a model  object for OTP. Once a random 6-digits number is generated, 
+# the verifycode object is called to save the instance of the code 
+# which would be used for OTP verification
 class VerifyCode(models.Model):
     code = models.CharField(max_length=8, verbose_name=" Verification Code ")
     add_time = models.DateTimeField(verbose_name=' Generation time ', auto_now_add=True)

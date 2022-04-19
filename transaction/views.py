@@ -150,7 +150,6 @@ def make_payment(request):
 """An endpoint to verify payment by calling futterwave's verification endpoint"""
 @api_view(['GET']) 
 def verify_transaction(request, transaction_id):
- 
     response = requests.get(
         f'https://api.flutterwave.com/v3/transactions/{transaction_id}/verify',
         headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {FLUTTERWAVE_KEY}'},
@@ -267,59 +266,59 @@ def dashboard(request):
     return Response(context, status=status.HTTP_200_OK)
 
 
-# """User Transaction History endpoint connected to socket.io via Room connection"""
-# class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):  
-#     serializer_class = UserHistorySerializer
-#     queryset = PaymentHistory.objects.all()
-#     lookup_field = 'history_id'
-#     pagination_class = CustomPagination
-#     authentication_classes = [TokenAuthentication]
-#     permisssion_classes = [AllowAny]
-#     @swagger_auto_schema(responses={200: UserHistorySerializer(many=True)})
-#     def get(self, request, user_id):
-#         user = get_object_or_404(User, user_id=user_id)
-#         room = get_object_or_404(Rooms, user=user)
-#         messages =room.messages
-#         serializer = UserHistorySerializer(messages, many=True)
-#         check = PaymentHistory.objects.filter(sender=room.user.name)
-#         messages =room.messages
-#         data = []
-#         for checkup in check:
-#             context = {
-#                 'Sent to': checkup.recipient,
-#                 'Agent account Number': checkup.agent_account_number,
-#                 'Amount': checkup.amount,
-#                 'Date': checkup.history_time,
-#                 'Sent By': checkup.sender,
-#                 'Transaction Status': checkup.transaction_status,
-#                 'Alert Time': checkup.date_sent
-#             }
-#             data.append(context) 
-#             return Response(data, status=status.HTTP_200_OK)
+"""User Transaction History endpoint connected to socket.io via Room connection"""
+class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):  
+    serializer_class = UserHistorySerializer
+    queryset = PaymentHistory.objects.all()
+    lookup_field = 'history_id'
+    pagination_class = CustomPagination
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [AllowAny]
+    @swagger_auto_schema(responses={200: UserHistorySerializer(many=True)})
+    def get(self, request, user_id):
+        user = get_object_or_404(User, user_id=user_id)
+        room = get_object_or_404(Rooms, user=user)
+        messages =room.messages
+        serializer = UserHistorySerializer(messages, many=True)
+        check = PaymentHistory.objects.filter(sender=room.user.name)
+        messages =room.messages
+        data = []
+        for checkup in check:
+            context = {
+                'Sent to': checkup.recipient,
+                'Agent account Number': checkup.agent_account_number,
+                'Amount': checkup.amount,
+                'Date': checkup.history_time,
+                'Sent By': checkup.sender,
+                'Transaction Status': checkup.transaction_status,
+                'Alert Time': checkup.date_sent
+            }
+            data.append(context) 
+            return Response(data, status=status.HTTP_200_OK)
 
 
 
-# class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):  
-#     serializer_class = UserHistorySerializer
-#     queryset = PaymentHistory.objects.all()
-#     lookup_field = 'history_id'
-#     pagination_class = CustomPagination
-#     authentication_classes = [TokenAuthentication]
-#     permisssion_classes = [AllowAny]
-#     @swagger_auto_schema(responses={200: UserHistorySerializer(many=True)})
-#     def get(self, request):
-#         history = PaymentHistory.objects.all()
-#         data = []
-#         for checkup in history:
-#             context = {
-#                 'Sent to': checkup.recipient,
-#                 'Agent account Number': checkup.agent_account_number,
-#                 'Amount': checkup.amount,
-#                 'Date': checkup.history_time,
-#                 'Sent By': checkup.sender,
-#                 'Transaction Status': checkup.transaction_status,
-#                 'Alert Time': checkup.date_sent
-#             }
-#             data.append(context) 
-#         return Response(data, status=status.HTTP_200_OK)
+class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):  
+    serializer_class = UserHistorySerializer
+    queryset = PaymentHistory.objects.all()
+    lookup_field = 'history_id'
+    pagination_class = CustomPagination
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [AllowAny]
+    @swagger_auto_schema(responses={200: UserHistorySerializer(many=True)})
+    def get(self, request):
+        history = PaymentHistory.objects.all()
+        data = []
+        for checkup in history:
+            context = {
+                'Sent to': checkup.recipient,
+                'Agent account Number': checkup.agent_account_number,
+                'Amount': checkup.amount,
+                'Date': checkup.history_time,
+                'Sent By': checkup.sender,
+                'Transaction Status': checkup.transaction_status,
+                'Alert Time': checkup.date_sent
+            }
+            data.append(context) 
+        return Response(data, status=status.HTTP_200_OK)
         
