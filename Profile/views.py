@@ -15,7 +15,7 @@ from rest_framework.decorators import (
 @api_view(['GET','PUT'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def profile(request, email):
+def profile(request):
     if request.method =='GET':
         try:
             get_user = Token.objects.get(key=request.auth.key).user
