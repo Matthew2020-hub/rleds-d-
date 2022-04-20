@@ -24,8 +24,13 @@ def profile(request):
             full_name = user.name
             phone_number = str(user.phone_number)
             profile_image = user.profile_image
+            print(profile_image)
             background_image = user.background_image
             entry_type = user.entry
+            print(entry_type)
+            if not background_image and not profile_image:
+                background_image = 'https://www.rocketmortgage.com/resources-cmsassets/RocketMortgage.com/Article_Images/Large_Images/TypesOfHomes/types-of-homes-hero.jpg'
+                profile_image = 'https://www.rocketmortgage.com/resources-cmsassets/RocketMortgage.com/Article_Images/Large_Images/TypesOfHomes/types-of-homes-hero.jpg'
             context = {
                 'email': email,
                 'full_name': full_name,
