@@ -486,7 +486,7 @@ def login_user(request):
 @permission_classes([AllowAny])
 def user_logout(request):
     try:
-        # Token created during login is deleted before user is being logged out
+        # Token created during login is deleted before user is being loggeddd out
         request.user.auth_token.delete()
         logout(request)
         return Response({"success": _("Successfully logged out.")},
