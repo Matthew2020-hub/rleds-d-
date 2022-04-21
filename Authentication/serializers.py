@@ -58,7 +58,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.is_active = True
         user.save()
         
-        # room = Room.objects.create(user=user)
+        Room.objects.create(user=user)
         # room.save()
         return user 
 class LoginSerializer(serializers.Serializer):
@@ -111,7 +111,7 @@ class AgentSerializer(serializers.ModelSerializer):
         fields = [
             'email', 'entry', 'password', 'name', 
             'country', 'password2', 'phone_number','agent_location',
-            'home_address', 'user_id'
+            'user_id'
             ]
         extra_kwargs = {
             'password2': {
@@ -124,7 +124,6 @@ class AgentSerializer(serializers.ModelSerializer):
             name=self.validated_data['name'],
             country=self.validated_data['country'],
             phone_number=self.validated_data['phone_number'], 
-            home_address=self.validated_data['home_address'],
             agent_location=self.validated_data['agent_location'],     
         )
         password = self.validated_data['password']
@@ -148,7 +147,5 @@ class AgentSerializer(serializers.ModelSerializer):
 
 class GenrateOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
-
-
     def __str__(self):
         return self.email

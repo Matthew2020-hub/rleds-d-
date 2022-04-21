@@ -31,6 +31,8 @@ class Rooms(models.Model):
     room_id = models.CharField(max_length=255, default=generate_short_id(), unique=True)
 
 class PaymentHistory(models.Model):
+
+    
     history_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
     room = models.ForeignKey(Rooms, related_name="messages",on_delete=models.CASCADE, null=True)
     sender = models.CharField(blank=False, max_length=30, null=True)
