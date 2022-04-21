@@ -13,7 +13,7 @@ from rest_framework.decorators import (
 
 # User profile's endpoint
 @api_view(['GET','PUT'])
-@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def profile(request):
     if request.method =='GET':
         try:
