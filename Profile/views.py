@@ -14,7 +14,6 @@ from rest_framework.decorators import (
 # User profile's endpoint
 @api_view(['GET','PUT'])
 @permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
 def profile(request):
     if request.method =='GET':
         try:
