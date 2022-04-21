@@ -17,6 +17,8 @@ from rest_framework.decorators import (
 def profile(request):
     if request.method =='GET':
         try:
+            print(request.auth)
+            print(request.auth.key)
             get_user = Token.objects.get(key= request.auth).user
             user = get_object_or_404(User, name=get_user.name)
             email = user.email
