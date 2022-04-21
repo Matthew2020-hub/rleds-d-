@@ -13,11 +13,11 @@ from rest_framework.decorators import (
 
 # User profile's endpoint
 @api_view(['GET','PUT'])
-@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def profile(request):
     if request.method =='GET':
         try:
-            get_user = Token.objects.get(key=request.rest_auth.key).user
+            get_user = Token.objects.get(key=request.auth.key).user
             user = get_object_or_404(User, name=get_user.name)
             email = user.email
             full_name = user.name
