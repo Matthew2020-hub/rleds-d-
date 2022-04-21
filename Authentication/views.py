@@ -483,10 +483,10 @@ def login_user(request):
 
 """User logout Endpoint"""
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def user_logout(request):
     try:
-        # Token created during login is deleted before user is being loggeddd out
+        # Token created during login is deleted before user is being logged out
         request.user.auth_token.delete()
         logout(request)
         return Response({"success": _("Successfully logged out.")},

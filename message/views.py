@@ -79,7 +79,7 @@ async def connect(sid, env, auth):
         await sio.emit("connect", f"Connected as {sid}")
 
 #communication with orm 
-def store_and_return_message(request):
+def store_and_return_message(data):
     data = data
     if "room_id" in data:
         room_id = data["room_id"]
