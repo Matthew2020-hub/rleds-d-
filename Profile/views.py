@@ -19,9 +19,9 @@ def profile(request):
         try:
             # my_token = request.META.get('HTTP_AUTHORIZATION').split()[1]
             # print
-            print(request.auth)
-            get_user = Token.objects.get(key="token").user
-            user = get_object_or_404(User, name=get_user.name)
+            get_user = Token.objects.get(key= request.auth)
+            print(get_user.user)
+            user = get_object_or_404(User, name=get_user.user.name)
             email = user.email
             full_name = user.name
             phone_number = str(user.phone_number)
