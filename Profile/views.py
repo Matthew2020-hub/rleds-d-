@@ -14,12 +14,12 @@ from rest_framework.decorators import (
 # User profile's endpoint
 @api_view(['GET','PUT'])
 @permission_classes([IsAuthenticated])
-def profile(request):
+def profile(request, email):
     if request.method =='GET':
         try:
             # my_token = request.META.get('HTTP_AUTHORIZATION').split()[1]omo
-            get_user = Token.objects.get(key="token").user
-            user = get_object_or_404(User, name=get_user.name)
+            # get_user = Token.objects.get(key="token").user
+            user = get_object_or_404(User, email=email)
             email = user.email
             full_name = user.name
             phone_number = str(user.phone_number)
