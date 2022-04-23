@@ -57,4 +57,8 @@ def profile(request, email):
             phone_number=phone_number, agent_location=location
             )
         if get_user:
-            return Response('Profile Update is sucessful', status=status.HTTP_200_OK)
+            context = {
+                'message': 'Profile Update is sucessful',
+                'data': serializer.data
+            }
+            return Response(context, status=status.HTTP_200_OK)
