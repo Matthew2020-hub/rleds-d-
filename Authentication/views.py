@@ -86,7 +86,7 @@ class userRegistration(APIView):
         serializer = CustomUserSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        user_token = Token.objects.get_or_create(user=user)    
+        user_token = Token.objects.get_or_create(user=user)
         context = {
             'token': user_token[0].key,
             'message': 'Check your email and verify',
@@ -458,6 +458,7 @@ def login_user(request):
     email = serializer.validated_data['email']
     password = serializer.validated_data['password']
     user = get_object_or_404(User, email=email)
+    user.is_verify=True
     user.backend = 'django.contrib.auth.backends.ModelBackend'    
     if not user.check_password(password):
         return Response({

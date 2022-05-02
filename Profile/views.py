@@ -17,14 +17,11 @@ from rest_framework.decorators import (
 def profile(request, email):
     if request.method =='GET':
         try:
-            # my_token = request.META.get('HTTP_AUTHORIZATION').split()[1]omo
-            # get_user = Token.objects.get(key="token").user
             user = get_object_or_404(User, email=email)
             email = user.email
             full_name = user.name
             phone_number = str(user.phone_number)
             profile_image = user.profile_image
-            print(profile_image)
             background_image = user.background_image
             entry_type = user.entry
             
@@ -51,14 +48,15 @@ def profile(request, email):
         profile_image = serializer.validated_data['Profile_image']
         background_image = serializer.validated_data['Background_image']
         location = serializer.validated_data['Location']
-        get_user = User.objects.filter(email=email).update(
-            name=name, profile_image=profile_image,
-            background_image=background_image, email=user_email, 
-            phone_number=phone_number, agent_location=location
-            )
-        if get_user:
-            context = {
-                'message': 'Profile Update is sucessful',
-                'data': serializer.data
+        get_user = User.objects.filter(email=email)
+        get_user.name=name
+        get_user.profile_image=profile_image
+        get_user.background_image=background_image
+        get_user.email=user_email
+        get_user.phone_number=phone_number
+        get_user.agent_location=location
+        context = {
+            'message': 'Profile Update is sucessful',
+            'data': serializer.data
             }
-            return Response(context, status=status.HTTP_200_OK)
+        return Response(context, status=status.HTTP_200_OK)

@@ -7,12 +7,12 @@ from cloudinary.models import CloudinaryField
 
 class Apartment(models.Model):
     
-    ORDER_TYPE = [
-        ( 'All', 'All'),
-        ('Active','Active'),
-        ('Closed','Closed')
-    ]
-    order_type = models.CharField(choices=ORDER_TYPE, max_length=10)
+    # ORDER_TYPE = [
+    #     ( 'All', 'All'),
+    #     ('Active','Active'),
+    #     ('Closed','Closed')
+    # ]
+    # order_type = models.CharField(choices=ORDER_TYPE, null=True, default='All',max_length=10)
     apartment_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
     aparment_title = models.CharField(max_length=40, null=True, verbose_name='Apartment Title')
     category = models.CharField(max_length=50, null=True, blank=False)

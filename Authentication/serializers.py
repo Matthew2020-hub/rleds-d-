@@ -58,7 +58,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.is_active = True
         user.save()
         
-        Room.objects.create(user=user)
+        Room.objects.get_or_create(user=user)
         # room.save()
         return user 
 class LoginSerializer(serializers.Serializer):
