@@ -50,7 +50,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.save()
         Room.objects.get_or_create(user=user)
         return user 
-# yfyugl
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(
