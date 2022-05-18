@@ -520,16 +520,16 @@ def user_logout(request):
 #         return Response('Logged in successfully', status = status.HTTP_200_OK)
 
 
-"""A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
-"""
-class LogoutView(APIView):
-    def get(self, request):
-        response = Response()
-        response.delete_cookie('jwt')
-        response.data = {
-            "message": "Logout successfully"
-        }
-        return response
+# """A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
+# """
+# class LogoutView(APIView):
+#     def get(self, request):
+#         response = Response()
+#         response.delete_cookie('jwt')
+#         response.data = {
+#             "message": "Logout successfully"
+#         }
+#         return response
 
 
 
