@@ -32,6 +32,16 @@ class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin,
         return self.create(request)
 
 
+class ListAllApartmentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    serializer_class = ApartmentSerializer
+    queryset = Apartment.objects.all
+    lookup_field = 'location'
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
+    def get(self, request):
+        all_apartment = Apartment.objects.all
+        return self.list(all_apartment)
+
 """An endpoint to get, delete and update a particular endpoint"""
 class ApartmentCreateUpdateDestroyAPIView(
     generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin, 

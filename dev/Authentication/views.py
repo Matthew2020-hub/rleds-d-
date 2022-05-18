@@ -275,6 +275,9 @@ class GET_AND_DELETE_AGENT(APIView):
         return Response('Agent deleted successfully', status=status.HTTP_204_NO_CONTENT)
  
 
+
+
+
 # OTP is generated for the forget password endpoint
 class GenerateOTP(APIView):
     permission_classes = [AllowAny] # Allow everyone to register
@@ -319,15 +322,16 @@ class GenerateOTP(APIView):
             }
         ]
         }
+
         result = mailjet.send.create(data=data)
-        responses = result.json()
+        response = result.json()
         return Response({'message':"OTP sent, check your email"}, status=status.HTTP_200_OK)
 
 
 
 
 
-"""VERIFY OTP ENDPOINT"""
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp(request):
@@ -436,6 +440,9 @@ def validate_authorization_code(request):
         return Response({'Token':token.key}, status= status.HTTP_200_OK) 
     except User.DoesNotExist:
         raise AuthenticationError("User with this email doesn't exist, kindly sign up")
+
+
+
 
 
           

@@ -3,9 +3,9 @@ from pkg_resources import require
 from rest_framework import serializers
 
 class EditProfileSerializer(serializers.Serializer):
-    Full_name = serializers.CharField(required=False)
-    Phone_number = serializers.CharField(required=False)
-    Email = serializers.EmailField(required=False)
-    Location = serializers.CharField(required=False)
-    Profile_image = serializers.ImageField(required=False)
-    Background_image = serializers.ImageField(required=False)
+    Full_name = serializers.CharField(allow_blank=True)
+    Phone_number = serializers.CharField(allow_null=True)
+    Email = serializers.EmailField(allow_blank=True)
+    Location = serializers.CharField(allow_null=True)
+    Profile_image = serializers.ImageField(allow_null=True)
+    Background_image = serializers.ImageField(allow_null=True)
