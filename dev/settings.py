@@ -113,8 +113,6 @@ MIDDLEWARE = [
 
 # ]   
 
-
-
 ROOT_URLCONF = 'dev.urls'
 
 TEMPLATES = [
