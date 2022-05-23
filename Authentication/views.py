@@ -80,7 +80,6 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
 
 class userRegistration(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes=[AllowAny]
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)  
@@ -412,7 +411,6 @@ def validate_authorization_code(request):
             'redirect_uri': redirect_uri,
             'grant_type': 'authorization_code'
     }
-    print(data)
     response = requests.post(f'{GOOGLE_TOKEN_URL}', data=data)
     print(response.json())
     if not response.ok:

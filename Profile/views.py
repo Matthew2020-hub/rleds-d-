@@ -23,9 +23,12 @@ def profile(request, email):
             phone_number = str(user.phone_number)
             profile_image = user.profile_image
             background_image = user.background_image
-            entry_type = user.entry
-            
+            print(background_image)
+            entry_type = user.entry   
+            print(entry_type)
             if not background_image and not profile_image:
+                print(background_image)
+                
                 background_image = 'https://www.rocketmortgage.com/resources-cmsassets/RocketMortgage.com/Article_Images/Large_Images/TypesOfHomes/types-of-homes-hero.jpg'
                 profile_image = 'https://www.rocketmortgage.com/resources-cmsassets/RocketMortgage.com/Article_Images/Large_Images/TypesOfHomes/types-of-homes-hero.jpg'
             context = {
@@ -36,6 +39,7 @@ def profile(request, email):
                 'background_image': background_image,
                 'profile_image': profile_image
                 }
+            print(context)
             return Response(context,status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response('User does not exist!', status=status.HTTP_204_NO_CONTENT)
