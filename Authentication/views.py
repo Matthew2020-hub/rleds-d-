@@ -299,7 +299,7 @@ class GET_AND_DELETE_AGENT(APIView):
 
     def delete(self, request, user_id):
         agent = get_object_or_404(User, user_id=user_id)
-        token = Token.objects.get_or_create(user=agent)[0].key
+        token = Token.objects.get(user=agent)
         token.delete()
         agent.delete()
         return Response('Agent deleted successfully', status=status.HTTP_204_NO_CONTENT)
@@ -487,11 +487,10 @@ def login_user(request):
         status=status.HTTP_401_UNAUTHORIZED
         )
     if not user.is_verify is True:
-        user.is_verify = True
-        # return Response({
-        # 'message': 'Email is not yet verified, kindly do that!'}, 
-        # status= status.HTTP_400_BAD_REQUEST
-        # )
+        return Response({
+        'message': 'Email is not yet verified, kindly do that!'}, 
+        status= status.HTTP_400_BAD_REQUEST
+        )
     if user.is_active is True:
         token, created = Token.objects.get_or_create(user=user)
         login(request, user)
