@@ -292,13 +292,13 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
 class GET_AND_DELETE_AGENT(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    def get(self, request, user_id):
-        get_agent = get_object_or_404(User, user_id=user_id)
+    def get(self, request, email):
+        get_agent = get_object_or_404(User, email=email)
         serializer = AgentSerializer(get_agent)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, user_id):
-        agent = get_object_or_404(User, user_id=user_id)
+    def delete(self, request, email):
+        agent = get_object_or_404(User, email=email)
         token = Token.objects.get(user=agent)
         token.delete()
         agent.delete()
