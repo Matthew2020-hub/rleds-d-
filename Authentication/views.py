@@ -169,7 +169,7 @@ class agentRegistration(APIView):
 
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def refreshToken( request, email):
     get_token = get_object_or_404(User, email=email)
