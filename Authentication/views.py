@@ -272,13 +272,13 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
     permisssion_classes = [IsAuthenticated]
     queryset = User.objects.filter(entry='Tenant')
     lookup_field = 'user_id'
-    def get(self, request, user_id):
-        article = get_object_or_404(User, user_id=user_id)
+    def get(self, request, email):
+        article = get_object_or_404(User, email=email)
         serializer = CustomUserSerializer(article)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, user_id):
-        user = get_object_or_404(User, user_id=user_id)
+    def delete(self, request, email):
+        user = get_object_or_404(User, email=email)
         token = Token.objects.get(user=user)
         token.delete()
         self.destroy(request)
