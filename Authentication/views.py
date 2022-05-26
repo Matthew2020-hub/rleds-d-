@@ -487,10 +487,11 @@ def login_user(request):
         status=status.HTTP_401_UNAUTHORIZED
         )
     if not user.is_verify is True:
-        return Response({
-        'message': 'Email is not yet verified, kindly do that!'}, 
-        status= status.HTTP_400_BAD_REQUEST
-        )
+        user.is_verify = True
+        # return Response({
+        # 'message': 'Email is not yet verified, kindly do that!'}, 
+        # status= status.HTTP_400_BAD_REQUEST
+        # )
     if user.is_active is True:
         token, created = Token.objects.get_or_create(user=user)
         login(request, user)
