@@ -31,11 +31,15 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
 
 """An endpoint to list all available apartments"""
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def list_apartment(self):
-    check = Apartment.objects.all()
-    return Response(list(check), status=status.HTTP_200_OK)
+class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    serializer_class = ApartmentSerializer
+    queryset = Apartment.objects.all()
+    lookup_field = 'id'
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
+    def list_apartment(self, request):
+        list_all_apartment = Apartment.objects.all()
+        return self.list(list_all_apartment)
 
 
 """An endpoint to get, delete and update a particular endpoint"""
@@ -68,7 +72,7 @@ class ApartmentCreateUpdateDestroyAPIView(
 
 """ An endpoint to list the apartment search result
 """
-class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
+class ApartmentSearchListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = ApartmentSearchSerializer
     lookup_field = 'location'
     pagination_class = CustomPagination
