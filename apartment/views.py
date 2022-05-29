@@ -33,7 +33,7 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def list_apartment(self, request):
+def list_apartment(self):
     check = Apartment.objects.all()
     return list(check)
 
