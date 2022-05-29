@@ -46,19 +46,21 @@ def profile(request, email):
     elif request.method =='PUT':
         serializer = EditProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        name = serializer.validated_data['Full_name']
-        phone_number = serializer.validated_data['Phone_number']
-        user_email = serializer.validated_data['Email']
-        profile_image = serializer.validated_data['Profile_image']
-        background_image = serializer.validated_data['Background_image']
-        location = serializer.validated_data['Location']
-        get_user = User.objects.filter(email=email)
-        get_user.name=name
-        get_user.profile_image=profile_image
-        get_user.background_image=background_image
-        get_user.email=user_email
-        get_user.phone_number=phone_number
-        get_user.agent_location=location
+        print(serializer.data)
+        # name = serializer.validated_data['name']
+        # phone_number = serializer.validated_data['phone_number']
+        # user_email = serializer.validated_data['email']
+        # profile_image = serializer.validated_data['profile_image']
+        # background_image = serializer.validated_data['background_image']
+        # location = serializer.validated_data['Location']
+        get_user = User.objects.filter(email=email).update(**request.data)
+        print(get_user)
+        # get_user.name=name
+        # get_user.profile_image=profile_image
+        # get_user.background_image=background_image
+        # get_user.email=user_email
+        # get_user.phone_number=phone_number
+        # get_user.agent_location=location
         context = {
             'message': 'Profile Update is sucessful',
             'data': serializer.data

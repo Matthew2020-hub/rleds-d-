@@ -26,8 +26,6 @@ urlpatterns = [
     path('api/v1/get-OTP/', GenerateOTP.as_view(), name='get-OTP'),
     path('api/v1/user/get/<str:email>', GET_AND_DELETE_userAPIView.as_view()),
     path('api/v1/agent/get/<str:email>', GET_AND_DELETE_AGENT.as_view()),
-    # path('api/v1/logout-jwt/', LogoutView.as_view()),
-    # path('api/v1/login/cookies/', CookiesLoginView.as_view()),
     path('api/v1/email-verify', VerifyEmail.as_view(), name="verify-email"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

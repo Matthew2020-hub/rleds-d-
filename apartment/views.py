@@ -12,24 +12,30 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view, permission_classes
 from .pagination import CustomPagination
 
-"""An endpoint to post and to list all available apartment"""
-class ApartmentCreateListAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
+"""An endpoint to post or create an apartment"""
+class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
     serializer_class = ApartmentSerializer
     queryset = Apartment.objects.all()
     lookup_field = 'id'
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 
-    def get(self, request):
-        check = Apartment.objects.all()
-        return self.list(check)
-
     def post(self, request):
         return self.create(request)
+
+
+
+"""An endpoint to list all available apartments"""
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_apartment(self, request):
+    check = Apartment.objects.all()
+    return list(check)
 
 
 """An endpoint to get, delete and update a particular endpoint"""
