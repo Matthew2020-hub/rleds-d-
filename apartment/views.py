@@ -37,7 +37,7 @@ class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = 'id'
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    def list_apartment(self, request):
+    def get(self, request):
         list_all_apartment = Apartment.objects.all()
         return self.list(list_all_apartment)
 
