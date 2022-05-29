@@ -35,7 +35,7 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
 @permission_classes([AllowAny])
 def list_apartment(self):
     check = Apartment.objects.all()
-    return list(check)
+    return Response(list(check), status=status.HTTP_200_OK)
 
 
 """An endpoint to get, delete and update a particular endpoint"""
