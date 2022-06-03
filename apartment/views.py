@@ -1,11 +1,8 @@
-import requests
-from unicodedata import category
-from django.shortcuts import render
+
 from django.shortcuts import render
 from .serializers import ApartmentSearchSerializer, ApartmentSerializer
 from .models import Apartment
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers, viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -15,16 +12,24 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from .pagination import CustomPagination
+from Authentication.models import User
 
 """An endpoint to post or create an apartment"""
 class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
     serializer_class = ApartmentSerializer
     queryset = Apartment.objects.all()
     lookup_field = 'id'
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    permisssion_classes = [AllowAny]
 
     def post(self, request):
+        # serializer = ApartmentSerializer(data=request.data)
+        # serializer.is_valid(raise_exception=True)
+        # agent = serializer.validated_data['agent']
+        # verify_user = get_object_or_404(User, name=agent)
+        # if verify_user.entry != "Agent":
+        #     return Response ("Only an agent can post an apartment", status=status.HTTP_401_UNAUTHORIZED)
+        # serializer.save()
         return self.create(request)
 
 

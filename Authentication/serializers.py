@@ -88,7 +88,7 @@ class VerifyOTPSerializer(serializers.Serializer):
         return self.code
    
 
-class VerifyCodeSerializer(serializers.Serializer):
+class VerifyCodeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VerifyCode

@@ -131,34 +131,9 @@ class agentRegistration(APIView):
         serializer = AgentSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        email_verification_token = RefreshToken.for_user(user).access_token
-        absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}' 
-        email_body = 'Hi '+ ' ' + user.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
-        data = {
-            'email_body': email_body,'to_email':user.email,
-            'subject': 'Verify your email'
-        }
-        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
-        data = {
-        'Messages': [
-            {
-            "From": {
-                "Email": f"akinolatolulope24@gmail.com",
-                "Name": "freehouse"
-            },
-            "To": [
-                {
-                "Email": f"{user.email}",
-                "Name": f"{user.name}"
-                }
-            ],
-            "Subject": "Email Verification",
-            "TextPart": "Click on the below link to verify your Email!",
-            "HTMLPart":  email_body
-            }
-        ]
-        }
-        result = mailjet.send.create(data=data)
+        user.is_verify =True
+
+        user.save()
         agent_token = Token.objects.get_or_create(user=user)
         context = {
             'token': agent_token[0].key,
@@ -487,10 +462,11 @@ def login_user(request):
         status=status.HTTP_401_UNAUTHORIZED
         )
     if not user.is_verify is True:
-        return Response({
-        'message': 'Email is not yet verified, kindly do that!'}, 
-        status= status.HTTP_400_BAD_REQUEST
-        )
+        user.is_verify is True
+        # return Response({
+        # 'message': 'Email is not yet verified, kindly do that!'}, 
+        # status= status.HTTP_400_BAD_REQUEST
+        # )
     if user.is_active is True:
         token, created = Token.objects.get_or_create(user=user)
         login(request, user)
@@ -516,50 +492,6 @@ def user_logout(request):
     except (AttributeError, User.DoesNotExist):
         return Response ({"Error": _("User not found, enter a valid token.")},
         status=status.HTTP_404_NOT_FOUND)
-
-
-
-
-# """
-# Handling the login view with Cookies and JWT decoding
-# """
-# class CookiesLoginView(APIView):
-#     authentication_classes = [TokenAuthentication]
-#     permisssion_classes = [IsAuthenticated]
-#     def get(self, request):
-#         token = request.COOKIES.get('jwt')
-#         if not token:
-#             raise AuthenticationFailed('Unauthenticated')
-#         try:
-#             payload = jwt.decode(token, 'secret', algorithms='HS256')
-#         except jwt.ExpiredSignatureError:
-#             raise AuthenticationFailed('Unauthenticated')
-#         user = User.objects.filter(email=payload['user']).first()
-#         Account = get_object_or_404(User, email=user.email)
-#         Account.backend = 'django.contrib.auth.backends.ModelBackend'    
-#         if not Account.is_verify is True:
-#             return Response({
-#             'message': 'Email is not yet verified, kindly do that!'}, 
-#             status= status.HTTP_401_UNAUTHORIZED
-#             )
-#         token = Token.objects.get_or_create(user=Account)[0].key
-#         if Account.is_active:
-#             login(request, Account)
-#         return Response('Logged in successfully', status = status.HTTP_200_OK)
-
-
-# """A JWT LOGOUT VIEW MAINLY FOR HANDLING GOOGLE TOKEN
-# """
-# class LogoutView(APIView):
-#     def get(self, request):
-#         response = Response()
-#         response.delete_cookie('jwt')
-#         response.data = {
-#             "message": "Logout successfully"
-#         }
-#         return response
-
-
 
 
 
