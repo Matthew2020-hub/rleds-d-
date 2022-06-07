@@ -8,18 +8,11 @@ from django.db import models
 import uuid
 from cloudinary.models import CloudinaryField
 from django.contrib.postgres.fields import ArrayField
+from django.forms import JSONField
 
 
 
-# class Media(models.Model):
-#     image_url = models.URLField(
-#         verbose_name="Image URL",
-#         help_text="The url to the uploaded media on cloudinary"
-#     )
 
-#     @property
-#     def apartment(self):
-#         return self.apartments
 class Apartment(models.Model):
     
     CATEGORY_TYPE = [
@@ -29,8 +22,7 @@ class Apartment(models.Model):
         ('Self Contain','Self Contain')
     ]
     apartment_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
-    aparment_title = models.CharField(max_length=40, null=False, verbose_name='Apartment Title')
-    media_url = ArrayField(models.CharField(max_length=200, blank=False))
+    apartment_title = models.CharField(max_length=40, null=False, verbose_name='Apartment Title')
     category = models.CharField(choices=CATEGORY_TYPE, max_length=20)
     videofile = models.FileField(upload_to='video/', blank=False, null=True)
     price = models.CharField(max_length=50, null=False)
@@ -39,12 +31,12 @@ class Apartment(models.Model):
     descriptions = models.CharField(max_length=250, blank=False)
     feautures = models.CharField(max_length=250, blank=False)
     location_info = models.CharField(max_length=250, blank=False)
-    reviews = ArrayField(models.CharField(max_length=250, blank=True))
     is_available = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['category']
-    
 
 
-
+class Media(models.Model):
+    image_url = models.CharField(max_length=500, blank=False)
+    apartment = models.ManyToManyField(Apartment)

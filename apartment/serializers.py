@@ -13,7 +13,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 class ApartmentSearchSerializer(serializers.Serializer):
     location = serializers.CharField()
-    price_range = serializers.CharField()
+    price = serializers.CharField()
     category = serializers.CharField()
 
     def __str__(self):
