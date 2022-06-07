@@ -30,6 +30,7 @@ class Apartment(models.Model):
     agent = models.CharField(max_length=30, null=True)
     descriptions = models.CharField(max_length=250, blank=False)
     feautures = models.CharField(max_length=250, blank=False)
+    reviews = ArrayField(models.CharField(max_length=250, null=True))
     location_info = models.CharField(max_length=250, blank=False)
     is_available = models.BooleanField(default=True)
 
