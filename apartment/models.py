@@ -30,14 +30,16 @@ class Apartment(models.Model):
     agent = models.CharField(max_length=30, null=True)
     descriptions = models.CharField(max_length=250, blank=False)
     feautures = models.CharField(max_length=250, blank=False)
-    reviews = ArrayField(models.CharField(max_length=250, null=True))
     location_info = models.CharField(max_length=250, blank=False)
     is_available = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['category']
 
+    # @property
+    # def choices(self):
+    #     return self.choice_set.all()
 
 class Media(models.Model):
-    image_url = models.CharField(max_length=500, blank=False)
-    apartment = models.ManyToManyField(Apartment)
+    image_url = models.URLField(max_length=500, blank=False)
+    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, related_name="image_url")
