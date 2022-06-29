@@ -19,6 +19,8 @@ import environ
 from decouple import config
 import os
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -209,7 +211,7 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 

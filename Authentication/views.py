@@ -1,8 +1,10 @@
 from multiprocessing import AuthenticationError
 from django.forms import ValidationError
-from .serializers import (LoginSerializer, GetAcessTokenSerializer,
-CustomPasswordResetSerializer, AgentSerializer, VerifyCodeSerializer, 
-CustomUserSerializer, GenrateOTPSerializer, VerifyOTPSerializer)
+from .serializers import (
+    LoginSerializer, GetAcessTokenSerializer,
+    CustomPasswordResetSerializer, AgentSerializer, VerifyCodeSerializer, 
+    CustomUserSerializer, GenrateOTPSerializer, VerifyOTPSerializer
+    )
 from .models import User, VerifyCode
 # from message.models import Room
 from django.shortcuts import get_object_or_404
@@ -33,8 +35,6 @@ from rest_framework.exceptions import AuthenticationFailed
 import jwt, datetime
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from .utils import Util
-from django.core.mail import send_mail
 from django.utils.http import unquote
 from django.contrib.auth import authenticate
 from django.contrib import messages
@@ -124,6 +124,7 @@ class userRegistration(APIView):
     }
         return Response(context, status=status.HTTP_201_CREATED)
 
+
 class agentRegistration(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
@@ -132,7 +133,6 @@ class agentRegistration(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         user.is_verify =True
-
         user.save()
         agent_token = Token.objects.get_or_create(user=user)
         context = {
@@ -181,8 +181,6 @@ def refreshToken( request, email):
     result = mailjet.send.create(data=data)
     return Response(result.json(), 
         status=status.HTTP_201_CREATED)
-
-
 
 
 """Verify user email endpoint"""

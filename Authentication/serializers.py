@@ -43,12 +43,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 'password':'Your Password Is Weak',
                 'Hint': 'Min. 8 characters, 1 Uppercase, 1 lowercase, 1 number, and 1 special character'
             })
-
         user.set_password(password)
         user.entry ='Tenant'
         user.is_active = True
         user.save()
-        Room.objects.get_or_create(user=user)
+        # Room.objects.get_or_create(user=user)
         return user 
 
 class LoginSerializer(serializers.Serializer):
