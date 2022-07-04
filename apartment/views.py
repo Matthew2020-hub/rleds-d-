@@ -27,9 +27,9 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
      
         serializer = ApartmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+       
         agent_name = serializer.validated_data['agent']
-
+        serializer.save()
         try:
             # verify that the person creating an apartment is an agent
             verify_user= User.objects.get(name=agent_name)
