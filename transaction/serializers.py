@@ -11,8 +11,8 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = [
-        'amount', 'email','name', 'phone', 
-        'agent_account_number', 'House_location' 
+        'amount', 'user_email','name', 'phone', 
+        'agent_email', 'apartment_id' 
         ]
         
 def user_paymentHistory_serializer(a) -> dict:

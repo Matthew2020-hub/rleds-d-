@@ -1,3 +1,4 @@
+import email
 import os
 from urllib import response
 from django.conf import settings
@@ -90,15 +91,15 @@ async def print_message(sid, data):
 def make_payment(request):
     serializer = PaymentSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
-        email = serializer.validated_data['email']
+        user_email = serializer.validated_data['email']
         amount = serializer.validated_data['amount']
         phone = serializer.validated_data['phone']
         name = serializer.validated_data['name']
-        house_location = serializer.validated_data['House_location']
+        apartment_id = serializer.validated_data['apartment_id']
         # A try and except is used so to get the specific error as there are many
         # -conditions considered before a payment is allowed
         try:
-            verify_location = get_object_or_404(Apartment, location = house_location)
+            verify_location = get_object_or_404(Apartment, location = apartment_id)
         except Exception as DoesNotExist:
             return Response(
                 'Transaction failed due to incorrect house address. Try again', 
@@ -109,10 +110,10 @@ def make_payment(request):
                 'This Particular house is no more available', 
                 status=status.HTTP_204_NO_CONTENT
                 )
-        agent_account_no = serializer.validated_data['agent_account_number']
+        agent_email = serializer.validated_data['agent_email']
         verify_agent = User.objects.filter(entry='Agent')
         try:
-            verify_acct = get_object_or_404(verify_agent, user_id = agent_account_no)
+            verify_acct = get_object_or_404(verify_agent, email = agent_email)
         except Exception as DoesNotExist:
             return Response('Agent with this Acoount ID does not exist!', status=status.HTTP_204_NO_CONTENT)
         if verify_acct is not None:
@@ -123,15 +124,15 @@ def make_payment(request):
                 "amount":amount,
                 "currency":"NGN",
                 # after payment flutterwave will call this endpoint and append to it transaction id and transaction ref
-                "redirect_url":"http://localhost:8000/api/v1/verify_transaction/",
+                "redirect_url":"https://freehouses.herokuapp.com/api/v1/verify_transaction/",
                 "payment_options":"card",
                 "meta":{
-                        "consumer_id":agent_account_no,
-                        "house_location": house_location,
+                        "consumer_id":apartment_id,
+                        "agent_ID": agent_email,
                         "consumer_mac":"92a3-912ba-1192a"
                         },
                 "customer":{
-                    "email":email,
+                    "email":user_email,
                     "phonenumber":phone,
                     "name":name
                     },

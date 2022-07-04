@@ -19,7 +19,8 @@ class Payment(models.Model):
     phone = PhoneNumberField(null=True, verbose_name='phone number')
     date_created = models.DateTimeField(auto_now_add=True)
     amount = models.CharField(max_length=40, blank=False)
-    agent_account_number = models.CharField(max_length=150, blank=False)
+    agent_email = models.CharField(max_length=150, blank=False)
+    apartment_id = models.CharField(max_length=500, blank=False)
 
     def __str__(self):
         return self.agent_account_number
