@@ -29,16 +29,14 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
         serializer.is_valid(raise_exception=True)
        
         agent_name = serializer.validated_data['agent']
-        serializer.save()
+        # serializer.save()
         try:
             # verify that the person creating an apartment is an agent
             verify_user= User.objects.get(name=agent_name)
             if verify_user.entry != "Agent":
                 return Response ("Only an agent can post an apartment", status=status.HTTP_401_UNAUTHORIZED)
-            apartment= Apartment.objects.create(**request.data)
-            print(apartment.apartment_id)
-            if apartment:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
                
         except User.DoesNotExist: 
             return Response("Agent with this name does not exist", status=status.HTTP_404_NOT_FOUND)
