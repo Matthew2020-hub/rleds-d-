@@ -29,7 +29,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
             location = self.validated_data["location"],
             feautures = self.validated_data["feautures"],
             descriptions = self.validated_data["descriptions"],
-            locatin_info = self.validated_data["location_info"],
+            location_info = self.validated_data["location_info"],
             image_url = self._validated_data["image_url"]
         )
         apartment.save()
