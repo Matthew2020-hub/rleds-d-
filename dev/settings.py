@@ -49,6 +49,9 @@ SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'api/v1/'
 LOGIN_REDIRECT_URL = 'api/v1/profile/'
 LOGIN_URL= 'account/login/'
 
+
+
+
 cloudinary.config( 
   cloud_name = 'housefree', 
   api_key = os.environ.get('API_KEY'), 
@@ -312,3 +315,9 @@ EMAIL_USE_TLS = True
 
 TIME_ZONE = 'Africa/Lagos'
 USE_TZ = True
+
+
+
+
+import dj_database_url
+DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
