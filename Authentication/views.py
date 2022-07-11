@@ -67,19 +67,36 @@ project_id = os.environ.get('project_id')
 
 
 
-"""An endpoint to create user and to GET list of all users"""
 class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    
+    """An endpoint that returns a list of all users
+
+    Returns: HTTP_200_OK and a list of available user
+
+    Raises: HTTP_404_NOT_FOUND if there's no registered or active user in the database
+    """
     serializer_class = CustomUserSerializer
     queryset = User.objects.filter(entry='Tenant')
     lookup_field = 'email'
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
-        check = User.objects.filter(entry='Tenant')
-        return self.list(check)
+        user = User.objects.filter(entry="Tenant")
+        get_user_list = CustomUserSerializer(self.get_queryset, many=True)
+        if get_user_list:
+            return Response (get_user_list.data,status=status.HTTP_200_OK)
+        return Response ("No Tenant is registered yet", status=status.HTTP_404_NOT_FOUND)
 
 
 class userRegistration(APIView):
+    """A user registration class
+    A token is being created for a user after a successful registration
+
+    Returns: HTTP_201_created, a serializer data and a token
+
+    Raises: HTTP_400_Bad_Request and an error message based on the serializer
+    
+    """
     permission_classes=[AllowAny]
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)  
@@ -126,6 +143,14 @@ class userRegistration(APIView):
 
 
 class agentRegistration(APIView):
+    """An agent registration class
+    A token is being created for an agent object after a successful registration
+
+    Returns: HTTP_201_created, a serializer data and a token
+
+    Raises: HTTP_400_Bad_Request and an error message based on the serializer
+    
+    """
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
     def post(self, request):
@@ -147,9 +172,23 @@ class agentRegistration(APIView):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def refreshToken( request, email):
+
+    """A Refresh Token class for email verifcation
+    A JWT refresh token is created for email verification and could be called if peradventure previous token expired
+    and the token is sent to user's email using MAILJET
+    Args:
+        email- a user email is provided and throws an error if email doesn't exist
+    Returns: HTTP_201_created, mailjet data
+
+    Raises: (i) HTTP_404_NOT_FOUND if email doesn't exist
+            (ii) HTTP_500_INTERNAL_SERVER_ERROR if mailjet couldn't send the email    
+    """
+    
     get_token = get_object_or_404(User, email=email)
+
     if get_token.is_verify is True:
         return Response("User's Email already verified", status=status.HTTP_208_ALREADY_REPORTED)
+
     email_verification_token = RefreshToken.for_user(get_token).access_token
     current_site = get_current_site(request).domain
     absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}' 
@@ -178,15 +217,29 @@ def refreshToken( request, email):
         }
     ]
     }
-    result = mailjet.send.create(data=data)
-    return Response(result.json(), 
-        status=status.HTTP_201_CREATED)
+    mailjet_result = mailjet.send.create(data=data)
+    print(mailjet.status_code)
+    if  mailjet_result:
+        return Response(mailjet_result.json(), 
+            status=status.HTTP_201_CREATED)
+    return Response("Email couldn't be sent, try again", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 """Verify user email endpoint"""
 class VerifyEmail(APIView):
+    """Verify Email class
+        verifies user email by verifying the JWT token
+        Args:
+            JWT-refresh-token. Gets the token from the request
+        Response:
+            HTTP_200_OK, if the token is genuine and user with the token exist in the database
+        Raise:
+            HTTP_404_NOT_FOUND, if there's no user with such token in the database
+            HTT_400_BAD_REQUEST, if Token as expired or Token is invalid    
+    """
     permisssion_classes = [AllowAny]
     def get(self, request):
+     
         token = request.GET.get('token')
         access_token_str = str(token)
         try:
@@ -203,29 +256,19 @@ class VerifyEmail(APIView):
             user.is_verify = True
             user.save()   
         return Response({
-            'email': 'Email successfully activated, kindly return to the login page'}, 
+            'email': 'Email verification is successful, kindly return to the login page'}, 
             status=status.HTTP_200_OK
             )
 
 
-
-
-"""An endpoint to list available Users"""
-class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
-    serializer_class = CustomUserSerializer
-    queryset = User.objects.filter(entry='Tenant')
-    lookup_field = 'email'
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
-    def get(self, request):
-        user_list = User.objects.filter(entry='Tenant')
-        return self.list(user_list)
-
-
-
-
-"""An endpoint to list available Agents"""
 class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    
+    """An endpoint that returns a list of all AGENT
+
+    Returns: HTTP_200_OK and a list of available AGENT
+
+    Raises: HTTP_404_NOT_FOUND if there's no registered or active AGENT in the database
+    """
     serializer_class = CustomUserSerializer
     queryset = User.objects.filter(entry='Agent')
     lookup_field = 'email'
@@ -233,24 +276,46 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
         list_agent = User.objects.filter(entry='Agent')
-        return self.list(list_agent)
+        return_agent = AgentSerializer(list_agent, many=True)
+        if return_agent:
+            return Response (
+                return_agent.data,status=status.HTTP_200_OK
+                )
+        return Response ("No available agent in the database", status=status.HTTP_404_NOT_FOUND)
 
 
 
 
-"""An endpoint to GET or delete a user's record"""
 class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.DestroyModelMixin):
+    
+    """An endpoint to GET or delete a user's record"""
     serializer_class =CustomUserSerializer
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     queryset = User.objects.filter(entry='Tenant')
     lookup_field = 'user_id'
     def get(self, request, email):
+        """Returns a user object
+        Args:
+            Email- returns a user data that was provided during registration using the serializer(CustomUserSerializer)
+        Response:
+            HTTP_200_OK, a serailizer data if user exists
+        Raise:
+            HTTP_404, returns not found if a user with provided email doesn't exist in the database
+        """
         article = get_object_or_404(User, email=email)
         serializer = CustomUserSerializer(article)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, email):
+        """Deletes a user object
+        Args:
+            Email- checks the database for the provided email
+        Response:
+            HTTP_200_OK, deletes user's token and user object from the database
+        Raise:
+            HTTP_404, returns not found if a user with provided email doesn't exist in the database
+        """
         user = get_object_or_404(User, email=email)
         token = Token.objects.get(user=user)
         token.delete()
@@ -261,16 +326,33 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
 
 
 
-"""An endpoint to GET a specific agent, Update agent info and delete an agent's record"""
 class GET_AND_DELETE_AGENT(APIView):
+    
+    """An endpoint to GET a specific agent object and DELETE agent's data"""
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request, email):
+        """Returns an AGENT object
+        Args:
+            Email- returns an AGENT data that was provided during registration
+        Response:
+            HTTP_200_OK, a serailizer data if AGENT's data exists
+        Raise:
+            HTTP_404, returns not found if an AGENT with the provided email doesn't exist in the database
+        """
         get_agent = get_object_or_404(User, email=email)
         serializer = AgentSerializer(get_agent)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, email):
+        """Deletes AGENT's object
+        Args:
+            Email- checks the database for the provided email
+        Response:
+            HTTP_200_OK, deletes agent's token and agent's object from the database
+        Raise:
+            HTTP_404, returns not found if an Agent object with the provided email doesn't exist in the database
+        """
         agent = get_object_or_404(User, email=email)
         token = Token.objects.get(user=agent)
         token.delete()

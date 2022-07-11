@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
+from uritemplate import partial
 from Authentication.models import User
 from .serializers import EditProfileSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import (
     api_view, permission_classes, authentication_classes
@@ -13,7 +14,8 @@ from rest_framework.decorators import (
 
 # User profile's endpoint
 @api_view(['GET','PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
+@authentication_classes([TokenAuthentication])
 def profile(request, email):
     if request.method =='GET':
         try:
@@ -45,11 +47,14 @@ def profile(request, email):
             return Response('User does not exist!', status=status.HTTP_204_NO_CONTENT)
               
     elif request.method =='PUT':
-        serializer = EditProfileSerializer(data=request.data)
+        serializer = EditProfileSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        get_user = User.objects.filter(email=email).update(**request.data)
-        context = {
-            'message': 'Profile Update is sucessful',
-            'data': request.data
-            }
-        return Response(context, status=status.HTTP_200_OK)
+        get_user = User.objects.filter(email=email)
+        if get_user:
+            get_user.update(**request.data)
+            context = {
+                'message': 'Profile Update is sucessful',
+                'data': serializer.data
+                }
+            return Response(context, status=status.HTTP_200_OK)
+        return Response("User with this email does not exist", status=status.HTTP_404_NOT_FOUND)
