@@ -1,8 +1,8 @@
-# rleds-d-
+# House-Free
 
 
     Short Description:
-House free is an application that saves house occupants the stress of going for multiple physical physical inspection before seeing house of choice and also reduces the rate at which fraudsters disguising as house agents scam prospective house occupants.
+House free is an application that saves house occupants the stress of going for multiple physical inspection before seeing house of choice and also reduces the rate at which fraudsters disguising as house agents scam prospective house occupants.
 If any fraudulent act is being reported, such agent could be apprehended easily
 
     Full Description:
