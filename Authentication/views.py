@@ -67,7 +67,7 @@ project_id = os.environ.get('project_id')
 
 
 
-class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     
     """An endpoint that returns a list of all users
 
@@ -82,7 +82,7 @@ class ListUserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
         user = User.objects.filter(entry="Tenant")
-        get_user_list = CustomUserSerializer(self.get_queryset, many=True)
+        get_user_list = CustomUserSerializer(user, many=True)
         if get_user_list:
             return Response (get_user_list.data,status=status.HTTP_200_OK)
         return Response ("No Tenant is registered yet", status=status.HTTP_404_NOT_FOUND)

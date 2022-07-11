@@ -8,14 +8,14 @@ from django.conf.urls.static import static
 # from allauth.account.views import confirm_email
 from  .views import (
     GET_AND_DELETE_AGENT, GET_AND_DELETE_userAPIView, GenerateOTP,
-    ListUserAPIView, ListAgentAPIView, PasswordReset, 
+    UserAPIView, ListAgentAPIView, PasswordReset, 
     userRegistration, agentRegistration, VerifyEmail
     )
 
 urlpatterns = [
     path('api/v1/user/registration/', userRegistration.as_view(), name='user-register'),
     path('api/v1/agent/registration/', agentRegistration.as_view(), name='agent-register'),
-    path('api/v1/user/all/', ListUserAPIView.as_view(), name='get-users'),
+    path('api/v1/user/all/', UserAPIView.as_view(), name='get-users'),
     path('api/v1/agent/all/', ListAgentAPIView.as_view(), name='get-agents'),
     path('api/v1/refresh-token/<str:email>', views.refreshToken, name='refresh-token'),
     path('api/v1/login/', views.login_user, name='login'),
