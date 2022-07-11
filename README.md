@@ -10,3 +10,7 @@ A project that connects a user or a prospective house occupant with an house age
 A user can make search through for for available apartments based on location, house fee, apartment choice and get desired results if any is available.
 User can chat with agent or landlord, after picking house of choice, then go for physical inspection, make payment via the app using flutterwave payment gateway.
 Agent is then credited only if user affirms the authencticity of the new apartment.
+
+
+Nb:
+The updated version of the code is on 'den' branch. It hasn't been merged with the main branch
