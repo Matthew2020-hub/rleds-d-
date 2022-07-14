@@ -22,8 +22,6 @@ class Payment(models.Model):
     agent_email = models.CharField(max_length=150, blank=False)
     apartment_id = models.CharField(max_length=500, blank=False)
 
-    def __str__(self):
-        return self.agent_account_number
 
 def generate_short_id(size=9, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'):
     return ''.join(random.choice(chars) for _ in range(size))

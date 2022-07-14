@@ -43,8 +43,6 @@ import os
 import environ
 import django.contrib.auth.password_validation as validators
 from django.core.exceptions import ValidationError
-# from twilio.rest import Client
-# from dev.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
 from random import randint
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -81,12 +79,12 @@ class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
-        user = User.objects.filter(entry="Tenant")
-        get_user_list = CustomUserSerializer(user, many=True)
-        if get_user_list:
-            return Response (get_user_list.data,status=status.HTTP_200_OK)
-        return Response ("No Tenant is registered yet", status=status.HTTP_404_NOT_FOUND)
-
+        if not self.get_queryset():
+            return Response("No registered user in the database", status=status.HTTP_204_NO_CONTENT)
+        return Response (
+            self.serializer_class(self.get_queryset(), many=True).data,
+            status=status.HTTP_200_OK
+            )
 
 class userRegistration(APIView):
     """A user registration class
@@ -102,44 +100,7 @@ class userRegistration(APIView):
         serializer = CustomUserSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        # sending a verification mail to the user
-        email_verification_token = RefreshToken.for_user(user).access_token
-        absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}' 
-        email_body = 'Hi '+ ' ' + user.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
-        data = {
-            'email_body': email_body,'to_email':user.email,
-            'subject': 'Verify your email'
-        }
-        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
-        data = {
-        'Messages': [
-            {
-            "From": {
-                "Email": f"akinolatolulope24@gmail.com",
-                "Name": "freehouse"
-            },
-            "To": [
-                {
-                "Email": f"{user.email}",
-                "Name": f"{user.name}"
-                }
-            ],
-            "Subject": "Email Verification",
-            "TextPart": "Click on the below link to verify your Email!",
-            "HTMLPart":  email_body
-            }
-        ]
-        }
-        # mailjet creates or sends a mail to the user which isn't captured on the frontend
-        result = mailjet.send.create(data=data)
-        # a token is generated for the user
-        user_token = Token.objects.get_or_create(user=user)
-        context = {
-            'token': user_token[0].key,
-            'message': 'Check your email and verify',
-            "data": serializer.data
-    }
-        return Response(context, status=status.HTTP_201_CREATED)
+        return Response({"message": "Check your email for verification"}, status=status.HTTP_201_CREATED)
 
 
 class agentRegistration(APIView):
@@ -157,15 +118,7 @@ class agentRegistration(APIView):
         serializer = AgentSerializer(data=request.data)  
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        user.is_verify =True
-        user.save()
-        agent_token = Token.objects.get_or_create(user=user)
-        context = {
-            'token': agent_token[0].key,
-            'message': 'Check your email and verify',
-            "data": serializer.data
-        }
-        return Response(context, status=status.HTTP_201_CREATED)
+        return Response({"message": "Check your email and verify"}, status=status.HTTP_201_CREATED)
 
 
 
@@ -184,17 +137,17 @@ def refreshToken( request, email):
             (ii) HTTP_500_INTERNAL_SERVER_ERROR if mailjet couldn't send the email    
     """
     
-    get_token = get_object_or_404(User, email=email)
+    user = get_object_or_404(User, email=email)
 
-    if get_token.is_verify is True:
+    if user.is_verify is True:
         return Response("User's Email already verified", status=status.HTTP_208_ALREADY_REPORTED)
 
-    email_verification_token = RefreshToken.for_user(get_token).access_token
+    email_verification_token = RefreshToken.for_user(user).access_token
     current_site = get_current_site(request).domain
     absurl = f'https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}' 
-    email_body = 'Hi '+ ' ' + get_token.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
+    email_body = 'Hi '+ ' ' + user.name+':\n'+ 'Use link below to verify your email' '\n'+ absurl
     data = {
-        'email_body': email_body,'to_email':get_token.email,
+        'email_body': email_body,'to_email':user.email,
         'subject': 'Verify your email'
     }
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
@@ -207,8 +160,8 @@ def refreshToken( request, email):
         },
         "To": [
             {
-            "Email": f"{get_token.email}",
-            "Name": f"{get_token.name}"
+            "Email": f"{user.email}",
+            "Name": f"{user.name}"
             }
         ],
         "Subject": "Email Verification",
@@ -275,27 +228,20 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
-        list_agent = User.objects.filter(entry='Agent')
-        return_agent = AgentSerializer(list_agent, many=True)
-        if return_agent:
-            return Response (
-                return_agent.data,status=status.HTTP_200_OK
-                )
-        return Response ("No available agent in the database", status=status.HTTP_404_NOT_FOUND)
+        if not self.get_queryset():
+            # return no content if there's no registered agent 
+            return Response("No available agent", status=status.HTTP_204_NO_CONTENT)
+        return Response (
+            self.serializer_class(self.get_queryset(), many=True).data,
+            status=status.HTTP_200_OK
+            )
 
 
 
 
 class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.DestroyModelMixin):
-    
-    """An endpoint to GET or delete a user's record"""
-    serializer_class =CustomUserSerializer
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
-    queryset = User.objects.filter(entry='Tenant')
-    lookup_field = 'user_id'
-    def get(self, request, email):
-        """Returns a user object
+    """An endpoint to GET or delete a user's record
+        Returns a user object
         Args:
             Email- returns a user data that was provided during registration using the serializer(CustomUserSerializer)
         Response:
@@ -303,19 +249,19 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
         Raise:
             HTTP_404, returns not found if a user with provided email doesn't exist in the database
         """
-        article = get_object_or_404(User, email=email)
-        serializer = CustomUserSerializer(article)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    serializer_class =CustomUserSerializer
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
+    queryset = User.objects.filter(entry='Tenant')
+    lookup_field = 'user_id'
+    def get(self, request, email):
+        user = get_object_or_404(User, email=email)
+        return Response(
+            self.serializer_class(user).data, 
+            status=status.HTTP_200_OK
+            )
 
     def delete(self, request, email):
-        """Deletes a user object
-        Args:
-            Email- checks the database for the provided email
-        Response:
-            HTTP_200_OK, deletes user's token and user object from the database
-        Raise:
-            HTTP_404, returns not found if a user with provided email doesn't exist in the database
-        """
         user = get_object_or_404(User, email=email)
         token = Token.objects.get(user=user)
         token.delete()
@@ -328,11 +274,8 @@ class GET_AND_DELETE_userAPIView(generics.GenericAPIView, mixins.ListModelMixin,
 
 class GET_AND_DELETE_AGENT(APIView):
     
-    """An endpoint to GET a specific agent object and DELETE agent's data"""
-    authentication_classes = [TokenAuthentication]
-    permisssion_classes = [IsAuthenticated]
-    def get(self, request, email):
-        """Returns an AGENT object
+    """An endpoint to GET a specific agent object and DELETE agent's data
+        Returns an AGENT object
         Args:
             Email- returns an AGENT data that was provided during registration
         Response:
@@ -340,19 +283,15 @@ class GET_AND_DELETE_AGENT(APIView):
         Raise:
             HTTP_404, returns not found if an AGENT with the provided email doesn't exist in the database
         """
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
+    def get(self, request, email):
+  
         get_agent = get_object_or_404(User, email=email)
         serializer = AgentSerializer(get_agent)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, email):
-        """Deletes AGENT's object
-        Args:
-            Email- checks the database for the provided email
-        Response:
-            HTTP_200_OK, deletes agent's token and agent's object from the database
-        Raise:
-            HTTP_404, returns not found if an Agent object with the provided email doesn't exist in the database
-        """
         agent = get_object_or_404(User, email=email)
         token = Token.objects.get(user=agent)
         token.delete()
@@ -448,16 +387,7 @@ class PasswordReset(APIView):
             serializer = CustomPasswordResetSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             password = serializer.validated_data['password']
-            password2 = serializer.validated_data['confirm_password']
-            if password != password2:
-                return Response({'Error': 'Password must match!'}, status=status.HTTP_400_BAD_REQUEST)
             get_user = get_object_or_404(User, email=email)
-            if password.lower() == password or password.upper() == password or password.isalnum()\
-            or not any(i.isdigit() for i in password):
-                raise serializers.ValidationError({
-                    'password':'Your Password Is Weak',
-                    'Hint': 'Min. 8 characters, 1 letter, 1 number and 1 special character'
-                })
             get_user.password = password
             get_user.set_password(password)
             get_user.save()
@@ -479,12 +409,9 @@ def validate_authorization_code(request):
     serializer = GetAcessTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     authorization_code = serializer.validated_data['code']
-    print(authorization_code)
     # google authorization code is encoded which needs to be decoded before access_token 
     # could be generated to retrieve logged-in user's info
     uncoded = unquote(authorization_code)
-    # 
-    print(uncoded)
     if authorization_code  is None:
         return Response({
         "message": "Error occured due to Invalid authorization code"}, 
@@ -498,7 +425,6 @@ def validate_authorization_code(request):
             'grant_type': 'authorization_code'
     }
     response = requests.post(f'{GOOGLE_TOKEN_URL}', data=data)
-    print(response.json())
     if not response.ok:
         return Response({
         'message':'Failed to obtain access token from Google'}, 
@@ -510,7 +436,6 @@ def validate_authorization_code(request):
     'https://www.googleapis.com/oauth2/v3/userinfo',
     params={'access_token': access_token}
     )
-    print(response.json())
     if not response.ok:
         raise ValidationError('Failed to obtain user info from Google.')
     result = response.json()
@@ -547,14 +472,9 @@ def login_user(request):
         # 'message': 'Email is not yet verified, kindly do that!'}, 
         # status= status.HTTP_400_BAD_REQUEST
         # )
-    if user.is_active is True:
-        token, created = Token.objects.get_or_create(user=user)
-        login(request, user)
-        return Response({'Token':token.key}, status= status.HTTP_200_OK)    
-    return Response({
-        "message": "Account not active, kindly register!!"}, 
-        status=status.HTTP_404_NOT_FOUND
-        )
+    token, created = Token.objects.get_or_create(user=user)
+    login(request, user)
+    return Response({'Token':token.key}, status= status.HTTP_200_OK)    
 
 
 

@@ -47,3 +47,14 @@ class ApartmentReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Apartment
         fields = ["reviews"]
+
+
+
+class ReturnApartmentInfoSerializer(serializers.ModelSerializer):
+    reviews = ApartmentReviewSerializer(many=True)
+    class Meta:
+        depth = 1
+        model = Apartment
+        fields = [    "apartment_title", "category", "videofile", "agent",
+            "price", "location", "feautures", "descriptions",
+            "location_info", "image_url","apartment_id", "reviews"]

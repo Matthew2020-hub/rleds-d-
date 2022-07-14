@@ -1,7 +1,7 @@
 
 from .serializers import (
     ApartmentSearchSerializer, ApartmentSerializer, 
-    ApartmentReviewSerializer
+    ApartmentReviewSerializer, ReturnApartmentInfoSerializer
 )
 from .models import Apartment
 from django.shortcuts import get_object_or_404
@@ -25,8 +25,9 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
 
     def post(self, request):
      
-        serializer = ApartmentSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
        
         agent_name = serializer.validated_data['agent']
         # serializer.save()
@@ -35,7 +36,7 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
             verify_user= User.objects.get(name=agent_name)
             if verify_user.entry != "Agent":
                 return Response ("Only an agent can post an apartment", status=status.HTTP_401_UNAUTHORIZED)
-            serializer.save()
+            apartment = Apartment.objects.create(**validated_data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
                
         except User.DoesNotExist: 
@@ -48,14 +49,18 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
 """An endpoint to list all available apartments"""
 
 class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
-    serializer_class = ApartmentSerializer
+    serializer_class = ReturnApartmentInfoSerializer
     queryset = Apartment.objects.all()
     lookup_field = 'apartment_id'
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     def get(self, request):
-        query = Apartment.objects.all()
-        return self.list(query, many=True)
+        if not self.get_queryset():
+            return Response("No apartment is available", status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            self.serializer_class(self.get_queryset(), many=True).data, 
+            status=status.HTTP_200_OK
+            )
 
 
 
@@ -72,9 +77,9 @@ class ApartmentCreateUpdateDestroyAPIView(
     permisssion_classes = [IsAuthenticated]
 
     def get(self, request, apartment_id):
-        article = get_object_or_404(Apartment, apartment_id=apartment_id )
-        serializer = ApartmentSerializer(article)
-        review = ApartmentReviewSerializer(article)
+        apartment = get_object_or_404(Apartment, apartment_id=apartment_id )
+        serializer = ApartmentSerializer(apartment)
+        review = ApartmentReviewSerializer(apartment)
         context = {
             "apartment details": serializer.data,
             "review": review.data
@@ -82,8 +87,8 @@ class ApartmentCreateUpdateDestroyAPIView(
         return Response(context, status=status.HTTP_200_OK)
 
     def put(self, request, apartment_id):
-        query = get_object_or_404(Apartment, apartment_id=apartment_id)   
-        serializer = ApartmentSerializer(query, data=request.data)   
+        apartment = get_object_or_404(Apartment, apartment_id=apartment_id)   
+        serializer = self.serializer_class(apartment, data=request.data)   
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response('Data update was successful', status=status.HTTP_200_OK)
@@ -123,7 +128,6 @@ class ApartmentSearchListAPIView(generics.GenericAPIView, mixins.ListModelMixin)
 def apartment_reviews_create(request, apartment_id):
     serializer = ApartmentReviewSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    
     review = serializer.validated_data['reviews']
     try:
         apartment = Apartment.objects.get(apartment_id=apartment_id)
