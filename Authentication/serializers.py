@@ -5,21 +5,20 @@ from transaction.models import Rooms
 from .validator import password_regex_pattern
 import django.contrib.auth.password_validation as validators
 
-"""A User serializer"""
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
+    
+    """A User serializer"""
     password = serializers.CharField(validators=[password_regex_pattern],
         max_length=100, 
         style={'input_type':'password'}, write_only=True
-        ),
-    password2 = serializers.CharField(
-        max_length=100, 
-        style={'input_type':'password'}, write_only=True
-        ), 
+        )
     class Meta:
         model = User
         fields = [
             'email', 'entry', 'password', 'name', 
-            'country', 'password2', 'phone_number', 'user_id'
+            'country', 'phone_number', 'user_id'
             ]
         extra_kwargs = {
             'password':{ 
@@ -38,12 +37,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             phone_number=self.validated_data['phone_number'],     
         )
         password = self.validated_data['password']
-        password2 = self.validated_data['password2']
-        if password != password2:
-            raise serializers.ValidationError({'password':'Passwords must match.'})
         user.set_password(password)
         user.entry ='Tenant'
-        user.is_active = True
         # Room.objects.get_or_create(user=user)
         return super().save() 
 
@@ -66,9 +61,10 @@ class CustomPasswordResetSerializer(serializers.Serializer):
         )
 
 
-"""Serializer which gets access token from Google
-"""
+
 class GetAcessTokenSerializer(serializers.Serializer):
+    """Serializer which gets access token from Google
+    """
     code = serializers.CharField()
 
 class VerifyOTPSerializer(serializers.Serializer):

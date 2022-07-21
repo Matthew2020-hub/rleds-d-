@@ -147,10 +147,11 @@ def make_payment(request):
             response_data = response.json()
             link=response_data['data']['link']
             return Response(link, status=status.HTTP_200_OK)
-        
-"""An endpoint to verify payment by calling futterwave's verification endpoint"""
+      
 @api_view(['GET']) 
 def verify_transaction(request, transaction_id):
+      
+    """An endpoint to verify payment by calling futterwave's verification endpoint"""
     response = requests.get(
         f'https://api.flutterwave.com/v3/transactions/{transaction_id}/verify',
         headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {FLUTTERWAVE_KEY}'},
@@ -206,11 +207,10 @@ def verify_transaction(request, transaction_id):
         )   
 
 
-
-
-"""An endpoint through which an agent could withdraw from his wallet"""
 @api_view(['POST'])
 def agent_withdrawal(request):
+
+    """An endpoint through which an agent could withdraw from his wallet"""
     serializer = WithdrawalSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         account_no = serializer.validated_data['account_number']
@@ -256,10 +256,11 @@ def agent_withdrawal(request):
 
 
 
-"""An endpoint to get Agent's Wallet balance
-"""
 @api_view(['GET'])
 def dashboard(request):
+        
+    """An endpoint to get Agent's Wallet balance
+    """
     wallet_balance = get_object_or_404(User, email=request.user.email).balance
     context = {
             'wallet': wallet_balance
@@ -267,8 +268,9 @@ def dashboard(request):
     return Response(context, status=status.HTTP_200_OK)
 
 
-"""User Transaction History endpoint connected to socket.io via Room connection"""
 class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):  
+    
+    """User Transaction History endpoint connected to socket.io via Room connection"""
     serializer_class = UserHistorySerializer
     queryset = PaymentHistory.objects.all()
     lookup_field = 'history_id'
@@ -280,22 +282,11 @@ class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):
         user = get_object_or_404(User, user_id=user_id)
         room = get_object_or_404(Rooms, user=user)
         messages =room.messages
-        serializer = UserHistorySerializer(messages, many=True)
-        check = PaymentHistory.objects.filter(sender=room.user.name)
-        messages =room.messages
-        data = []
-        for checkup in check:
-            context = {
-                'Sent to': checkup.recipient,
-                'Agent account Number': checkup.agent_account_number,
-                'Amount': checkup.amount,
-                'Date': checkup.history_time,
-                'Sent By': checkup.sender,
-                'Transaction Status': checkup.transaction_status,
-                'Alert Time': checkup.date_sent
-            }
-            data.append(context) 
-            return Response(data, status=status.HTTP_200_OK)
+        payment_history = PaymentHistory.objects.filter(sender=room.user.name)  
+        return Response(
+            self.serializer_class(payment_history, many=True).data, 
+            status=status.HTTP_200_OK
+            )
 
 
 

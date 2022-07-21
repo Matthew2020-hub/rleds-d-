@@ -17,8 +17,9 @@ from .pagination import CustomPagination
 from Authentication.models import User
 
 
-"""An endpoint to post or create an apartment"""
 class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
+    
+    """An endpoint to post or create an apartment"""
     serializer_class = ApartmentSerializer
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
@@ -46,9 +47,8 @@ class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
 
 
 
-"""An endpoint to list all available apartments"""
-
 class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    """An endpoint to list all available apartments"""
     serializer_class = ReturnApartmentInfoSerializer
     queryset = Apartment.objects.all()
     lookup_field = 'apartment_id'
@@ -63,13 +63,12 @@ class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
             )
 
 
-
-
-"""An endpoint to get, delete and update a particular endpoint"""
 class ApartmentCreateUpdateDestroyAPIView(
     generics.GenericAPIView, mixins.ListModelMixin, mixins.UpdateModelMixin, 
     mixins.DestroyModelMixin
     ):
+    
+    """An endpoint to get, delete and update a particular endpoint"""
     serializer_class = ApartmentSerializer
     queryset = Apartment.objects.all()
     lookup_field = 'apartment_id'
@@ -100,9 +99,10 @@ class ApartmentCreateUpdateDestroyAPIView(
 
 
 
-""" An endpoint to list the apartment search result
-"""
+
 class ApartmentSearchListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    """ An endpoint to list the apartment search result
+    """
     serializer_class = ApartmentSearchSerializer
     lookup_field = 'location'
     pagination_class = CustomPagination
