@@ -1,4 +1,3 @@
-
 """dome URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -27,34 +26,41 @@ from drf_yasg import openapi
 schema_view = get_schema_view(
     openapi.Info(
         title="rename",
-        default_version='v1',
+        default_version="v1",
         description="rename",
         #   terms_of_service="https://www.google.com/policies/terms/",
         #   contact=openapi.Contact(email="contact@snippets.local"),
         #   license=openapi.License(name="BSD License"),
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,))
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('apartment.urls')),
-    path('', include('Authentication.urls')),
-    path('', include('rest_auth.urls')),
-    path('', include('rest_auth.registration.urls')),
-    path('', include('message.urls')),
-    path('api/v1/oauth/', include('rest_framework_social_oauth2.urls')),
-    path('', include('transaction.urls')),
-    path('', include('Profile.urls')), 
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+    path("admin/", admin.site.urls),
+    path("", include("apartment.urls")),
+    path("", include("Authentication.urls")),
+    path("", include("rest_auth.urls")),
+    path("", include("rest_auth.registration.urls")),
+    path("", include("message.urls")),
+    path("api/v1/oauth/", include("rest_framework_social_oauth2.urls")),
+    path("", include("transaction.urls")),
+    path("", include("Profile.urls")),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 urlpatterns += [
-    url(r'^swagger(?P<format>\.json|\.yaml)$',
-        schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    url(r'^api/v1/docs/$', schema_view.with_ui('swagger',
-        cache_timeout=0), name='schema-swagger-ui'),
-    url(r'^redoc/$', schema_view.with_ui('redoc',
-        cache_timeout=0), name='schema-redoc'),
+    url(
+        r"^swagger(?P<format>\.json|\.yaml)$",
+        schema_view.without_ui(cache_timeout=0),
+        name="schema-json",
+    ),
+    url(
+        r"^api/v1/docs/$",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    url(
+        r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
+    ),
 ]

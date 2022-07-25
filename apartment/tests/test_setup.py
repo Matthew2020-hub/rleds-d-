@@ -1,11 +1,11 @@
 from rest_framework.test import APITestCase
 from django.urls import reverse
 
-class TestSetUp(APITestCase):
 
+class TestSetUp(APITestCase):
     def setUp(self):
-        self.post_apartment_url = reverse('apartment-post')
-        self.list_apartment = reverse('apartment-search')
+        self.post_apartment_url = reverse("apartment-post")
+        self.list_apartment = reverse("apartment-search")
         # self.get_apartment_url = reverse('get-apartment')
 
         self.apartment_data = {
@@ -18,7 +18,7 @@ class TestSetUp(APITestCase):
             "features": "3mfmfmvfivnfefnjvfgurnfn",
             "location_info": "3mfmfmvfivnfefnjvfgurnfn",
             "reviews": "3mfmfmvfivnfefnjvfgurnfn",
-            "is_available": True
+            "is_available": True,
         }
         self.apartment_update = {
             "apartment_title": "Korede Enterprise",
@@ -30,10 +30,9 @@ class TestSetUp(APITestCase):
             "features": "3mfmfmvfivnfefnjvfgurnfn",
             "location_info": "3mfmfmvfivnfefnjvfgurnfn",
             "reviews": "3mfmfmvfivnfefnjvfgurnfn",
-            "is_available": True
+            "is_available": True,
         }
-     
-    
+
         return super().setUp()
 
     def tearDown(self):

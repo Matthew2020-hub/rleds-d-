@@ -4,14 +4,17 @@ from rest_framework import serializers
 from datetime import datetime
 
 from message.models import Message
+
+
 def message_serializer(a) -> dict:
-    return{
+    return {
         "room_id": a.room.room_id,
         "author": a.author,
         "message": a.content,
         "timestamp": (a.timestamp).strftime("%a. %I:%M %p"),
-        "short_id": a.short_id
+        "short_id": a.short_id,
     }
+
 
 class ContactUsSerailizer(serializers.Serializer):
     sender = serializers.EmailField()
@@ -19,6 +22,7 @@ class ContactUsSerailizer(serializers.Serializer):
 
     def __str__(self):
         return self.sender
+
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
