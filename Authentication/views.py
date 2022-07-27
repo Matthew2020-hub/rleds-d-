@@ -22,12 +22,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import (
     api_view,
     permission_classes,
-    authentication_classes,
 )
 from django.contrib.auth import logout, login
 from django.utils.translation import gettext_lazy as _
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
 import requests
 import jwt, datetime
 from django.contrib.sites.shortcuts import get_current_site
@@ -63,7 +60,7 @@ class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
     Returns: HTTP_200_OK and a list of available user
 
-    Raises: HTTP_404_NOT_FOUND if there's no registered or active user in the database
+    Raises: HTTP_404_NOT_FOUND if there's no registered or active user
     """
 
     serializer_class = CustomUserSerializer
@@ -90,7 +87,7 @@ class userRegistration(APIView):
 
     Returns: HTTP_201_created, a serializer data and a token
 
-    Raises: HTTP_400_Bad_Request and an error message based on the serializer
+    Raises: HTTP_400_Bad_Request- an error message based on the serializer
 
     """
 
@@ -108,11 +105,11 @@ class userRegistration(APIView):
 
 class agentRegistration(APIView):
     """An agent registration class
-    A token is being created for an agent object after a successful registration
+    A token is being created for an agent after a successful registration
 
-    Returns: HTTP_201_created, a serializer data and a token
+    Returns: HTTP_201_created- a serializer data and a token
 
-    Raises: HTTP_400_Bad_Request and an error message based on the serializer
+    Raises: HTTP_400_Bad_Request- an error message based on the serializer
 
     """
 
@@ -134,14 +131,14 @@ class agentRegistration(APIView):
 def refreshToken(request, email):
 
     """A Refresh Token class for email verifcation
-    A JWT refresh token is created for email verification and could be called if peradventure previous token expired
+    A JWT refresh token is created for email verification
     and the token is sent to user's email using MAILJET
     Args:
-        email- a user email is provided and throws an error if email doesn't exist
+        email- a user email is provided
     Returns: HTTP_201_created, mailjet data
 
-    Raises: (i) HTTP_404_NOT_FOUND if email doesn't exist
-            (ii) HTTP_500_INTERNAL_SERVER_ERROR if mailjet couldn't send the email
+    Raises:(i) HTTP_404_NOT_FOUND if email doesn't exist
+        (ii) HTTP_500_INTERNAL_SERVER_ERROR if mailjet couldn't send the email
     """
 
     user = get_object_or_404(User, email=email)
@@ -198,10 +195,10 @@ class VerifyEmail(APIView):
     Args:
         JWT-refresh-token. Gets the token from the request
     Response:
-        HTTP_200_OK, if the token is genuine and user with the token exist in the database
+        HTTP_200_OK- if the token is genuine and user with the token exists
     Raise:
-        HTTP_404_NOT_FOUND, if there's no user with such token in the database
-        HTT_400_BAD_REQUEST, if Token as expired or Token is invalid
+        HTTP_404_NOT_FOUND- if there's no user with such token
+        HTT_400_BAD_REQUEST- if Token as expired or Token is invalid
     """
 
     permisssion_classes = [AllowAny]
@@ -225,7 +222,7 @@ class VerifyEmail(APIView):
             user.save()
         return Response(
             {
-                "email": "Email verification is successful, kindly return to the login page"
+                "email": "Email verification is successful"
             },
             status=status.HTTP_200_OK,
         )

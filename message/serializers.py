@@ -1,8 +1,4 @@
-import email
-from email import message
 from rest_framework import serializers
-from datetime import datetime
-
 from message.models import Message
 
 

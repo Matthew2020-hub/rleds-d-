@@ -11,10 +11,9 @@ from pathlib import Path
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from django.shortcuts import redirect
 import environ
-from decouple import config
 import os
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 # os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -102,12 +101,12 @@ MIDDLEWARE = [
 
 # CORS configuration
 
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000',
-#     'https://spokane-topaz.vercel.app',
-#     'htpps://spokane-blinds.netlify.app/'
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'https://spokane-topaz.vercel.app',
+    'htpps://spokane-blinds.netlify.app/'
 
-# ]
+]
 
 ROOT_URLCONF = "dev.urls"
 
@@ -280,6 +279,4 @@ TIME_ZONE = "Africa/Lagos"
 USE_TZ = True
 
 
-import dj_database_url
-
-# DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
