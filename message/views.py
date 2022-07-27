@@ -1,7 +1,4 @@
-# Create your views here.
-from ensurepip import version
-from urllib import response
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -18,10 +15,7 @@ from rest_framework.authentication import TokenAuthentication
 from Authentication.models import User
 from drf_yasg.utils import swagger_auto_schema
 from .models import generate_short_id
-
-# import the mailjet wrapper
 from mailjet_rest import Client
-import os
 
 api_key = os.environ.get("MJ_API_KEY")
 api_secret = os.environ.get("MJ_API_SECRET")

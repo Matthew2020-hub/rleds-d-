@@ -1,23 +1,11 @@
-import email
-import os
-from urllib import response
-from django.conf import settings
-from django.shortcuts import get_object_or_404, render
-from locale import currency
-from multiprocessing import AuthenticationError
-import re
-from unicodedata import name
-from django.forms import ValidationError
-from django.shortcuts import render
-import phonenumbers
+from django.shortcuts import get_object_or_404
 from Authentication.models import User
 from apartment.models import Apartment
-from apartment.pagination import CustomPagination
-from .models import Payment, PaymentHistory, Rooms
+from .models import PaymentHistory
 from .serializers import (
     UserHistorySerializer,
     PaymentSerializer,
-    WithdrawalSerializer,
+    WithdrawalSerializer
 )
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -29,10 +17,9 @@ from dev.settings import FLUTTERWAVE_KEY
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from apartment.pagination import CustomPagination
+from rest_framework.permissions import AllowAny
+# from apartment.pagination import CustomPagination
 from drf_yasg.utils import swagger_auto_schema
-
 env = environ.Env()
 environ.Env.read_env("housefree.env")
 
@@ -50,9 +37,9 @@ def make_payment(request):
         # -conditions considered before a payment is allowed
         try:
             verify_location = get_object_or_404(Apartment, location=apartment_id)
-        except Exception as DoesNotExist:
+        except Apartment.DoesNotExist:
             return Response(
-                "Transaction failed due to incorrect house address. Try again",
+                "Transaction failed due to incorrect house address",
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if verify_location.is_available != True:
@@ -64,7 +51,7 @@ def make_payment(request):
         verify_agent = User.objects.filter(entry="Agent")
         try:
             verify_acct = get_object_or_404(verify_agent, email=agent_email)
-        except Exception as DoesNotExist:
+        except User.DoesNotExist:
             return Response(
                 "Agent with this Acoount ID does not exist!",
                 status=status.HTTP_204_NO_CONTENT,
@@ -76,7 +63,8 @@ def make_payment(request):
                 "tx_ref": "" + str(randint(111111, 999999)),
                 "amount": amount,
                 "currency": "NGN",
-                # after payment flutterwave will call this endpoint and append to it transaction id and transaction ref
+                # after payment flutterwave will call this endpoint and 
+                # append to it transaction id and transaction ref
                 "redirect_url": "https://freehouses.herokuapp.com/api/v1/verify_transaction/",
                 "payment_options": "card",
                 "meta": {
@@ -85,10 +73,8 @@ def make_payment(request):
                     "consumer_mac": "92a3-912ba-1192a",
                 },
                 "customer": {
-                    "email": user_email,
-                    "phonenumber": phone,
-                    "name": name,
-                },
+                    "email": user_email, "phonenumber": phone, "name": name
+                    },
                 "customizations": {
                     "title": "Supa houseFree",
                     "description": "a user-agent connct platform",
@@ -105,7 +91,8 @@ def make_payment(request):
 @api_view(["GET"])
 def verify_transaction(request, transaction_id):
 
-    """An endpoint to verify payment by calling futterwave's verification endpoint"""
+    """An payment verifiaction endpoint"""
+
     response = requests.get(
         f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify",
         headers={
@@ -138,7 +125,8 @@ def verify_transaction(request, transaction_id):
                 date_sent = response_data["customer"]["created_at"]
                 sender = response_data["customer"]["name"]
                 transaction_status = "Successful"
-                # During transaction verification, a PaymentHistory object is being created.
+                # During transaction verification, a PaymentHistory object
+                #  is being created.
                 create_history = PaymentHistory.objects.create(
                     sender=sender,
                     agent_account_number=receiver_number,
@@ -168,15 +156,17 @@ def verify_transaction(request, transaction_id):
     verify_apartment.is_available = True
     verify_apartment.save()
     return Response(
-        {"Error": "Payment Failed, Try Again!"},
-        status=status.HTTP_400_BAD_REQUEST,
+        {"Error": "Payment Failed, Try Again!"}, 
+        status=status.HTTP_400_BAD_REQUEST
     )
 
 
 @api_view(["POST"])
 def agent_withdrawal(request):
 
-    """An endpoint through which an agent could withdraw from his wallet"""
+    """An Agent withdrawal endpoint"""\
+    
+
     serializer = WithdrawalSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         account_no = serializer.validated_data["account_number"]
@@ -195,8 +185,8 @@ def agent_withdrawal(request):
             )
         elif account_id is None:
             return Response(
-                {"message": "Incorrect Account ID!"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"message": "Incorrect Account ID!"}, 
+                status=status.HTTP_404_NOT_FOUND
             )
         elif int(amount) > int(account_id.balance):
             raise ValueError("Insufficient fund")
@@ -233,21 +223,18 @@ def dashboard(request):
 
 class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
-    """User Transaction History endpoint connected to socket.io via Room connection"""
+    """User Transaction History endpoint"""
 
     serializer_class = UserHistorySerializer
     queryset = PaymentHistory.objects.all()
     lookup_field = "history_id"
-    pagination_class = CustomPagination
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
 
     @swagger_auto_schema(responses={200: UserHistorySerializer(many=True)})
     def get(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
-        room = get_object_or_404(Rooms, user=user)
-        messages = room.messages
-        payment_history = PaymentHistory.objects.filter(sender=room.user.name)
+        payment_history = PaymentHistory.objects.filter(sender=user)
         return Response(
             self.serializer_class(payment_history, many=True).data,
             status=status.HTTP_200_OK,

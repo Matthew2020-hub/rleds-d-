@@ -8,13 +8,12 @@ from .models import Apartment
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
-from .pagination import CustomPagination
+# from .pagination import CustomPaginatn
 from Authentication.models import User
 
 
@@ -114,7 +113,7 @@ class ApartmentSearchListAPIView(generics.GenericAPIView, mixins.ListModelMixin)
 
     serializer_class = ApartmentSearchSerializer
     lookup_field = "location"
-    pagination_class = CustomPagination
+    # pagination_class = CustomPagination
     queryset = Apartment.objects.all()
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]

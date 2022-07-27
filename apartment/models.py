@@ -1,7 +1,5 @@
 from django.db import models
 import uuid
-from cloudinary.models import CloudinaryField
-
 
 class Apartment(models.Model):
 

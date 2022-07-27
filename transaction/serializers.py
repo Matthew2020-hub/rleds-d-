@@ -1,10 +1,4 @@
-from dataclasses import fields
-from datetime import datetime
-import email
-from email.policy import default
-from django.forms import models
 from .models import Payment, PaymentHistory, Withdrawal
-import uuid
 from rest_framework import serializers
 
 

@@ -1,7 +1,5 @@
 from rest_framework.test import APITestCase
 from django.urls import reverse
-import json
-import pdb
 from Authentication.models import User
 
 

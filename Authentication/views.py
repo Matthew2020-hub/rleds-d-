@@ -232,9 +232,9 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
     """An endpoint that returns a list of all AGENT
 
-    Returns: HTTP_200_OK and a list of available AGENT
+    Returns: HTTP_200_OK- a list of available AGENT
 
-    Raises: HTTP_404_NOT_FOUND if there's no registered or active AGENT in the database
+    Raises: HTTP_404_NOT_FOUND- if there's no registered AGENT
     """
 
     serializer_class = CustomUserSerializer
@@ -246,7 +246,9 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     def get(self, request):
         if not self.get_queryset():
             # return no content if there's no registered agent
-            return Response("No available agent", status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                "No available agent", status=status.HTTP_204_NO_CONTENT
+                )
         return Response(
             self.serializer_class(self.get_queryset(), many=True).data,
             status=status.HTTP_200_OK,
@@ -259,11 +261,11 @@ class GET_AND_DELETE_userAPIView(
     """An endpoint to GET or delete a user's record
     Returns a user object
     Args:
-        Email- returns a user data that was provided during registration using the serializer(CustomUserSerializer)
+        Email- returns a user data that was provided during registration
     Response:
         HTTP_200_OK, a serailizer data if user exists
     Raise:
-        HTTP_404, returns not found if a user with provided email doesn't exist in the database
+        HTTP_404- returns not found if a user with the email doesn't exist
     """
 
     serializer_class = CustomUserSerializer
@@ -274,14 +276,18 @@ class GET_AND_DELETE_userAPIView(
 
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
-        return Response(self.serializer_class(user).data, status=status.HTTP_200_OK)
+        return Response(
+            self.serializer_class(user).data, status=status.HTTP_200_OK
+            )
 
     def delete(self, request, email):
         user = get_object_or_404(User, email=email)
         token = Token.objects.get(user=user)
         token.delete()
         self.destroy(request)
-        return Response("User is successfully deleted", status=status.HTTP_200_OK)
+        return Response(
+            "User is successfully deleted", status=status.HTTP_200_OK
+            )
 
 
 class GET_AND_DELETE_AGENT(APIView):
@@ -311,7 +317,9 @@ class GET_AND_DELETE_AGENT(APIView):
         token = Token.objects.get(user=agent)
         token.delete()
         agent.delete()
-        return Response("Agent deleted successfully", status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            "Agent deleted successfully", status=status.HTTP_204_NO_CONTENT
+            )
 
 
 # OTP is generated for the forget password endpoint
@@ -377,40 +385,58 @@ class GenerateOTP(APIView):
         )
 
 
-"""VERIFY OTP ENDPOINT"""
-
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_otp(request):
+
+    """An endpoint to  verify OTP
+        Password RESET OTP is verified
+        Response:
+            HTTP_200_OK- a success message if OTP is valid
+        Raise:
+            HTTP_406_NOT_ACCEPTABLE- an error message is OTP has expired
+            HTTP_404_NOT_FOUND- error message if OTP supplied is invalid 
+    """
+
     serializer = VerifyOTPSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     otp = serializer.validated_data["otp"]
     try:
         verify_OTP = get_object_or_404(VerifyCode, code=otp)
         five_minutes_ago = timedelta(minutes=5)
-        # 'timezone.utc' is used in datetime.now() while trying to compare 2 different time
+        # 'timezone.utc' is used in datetime.now() 
+        # while trying to compare 2 different time
         current_time = datetime.now(timezone.utc)
         code_time_check = current_time - verify_OTP.add_time
         if code_time_check > five_minutes_ago:
-            # The OTP expires after five minutes of created and then deleted from the database
+            # The OTP expires after five minutes of it creation 
+            # and then deleted later on
             verify_OTP.delete()
             return Response(
                 " The verification code has expired ",
-                status=status.HTTP_403_FORBIDDEN,
+                status=status.HTTP_406_NOT_ACCEPTABLE,
             )
         verify_OTP.delete()
-        return Response("OTP is valid")
+        return Response("OTP is valid", status=status.HTTP_200_OK)
     except VerifyCode.DoesNotExist:
         return Response(
-            "Invalid OTP or OTP has expired", status=status.HTTP_404_NOT_FOUND
+            "OTP is invalid ", status=status.HTTP_404_NOT_FOUND
         )
 
 
-"""A Custom Password reset view"""
-
 
 class PasswordReset(APIView):
+
+    """A Password reset endpoint
+        Args:
+            Email- a path param retrieved from the URL
+        Response:
+            HTTP_200_OK response and a serailizer data if AGENT's data exists
+        Raise:
+            HTTP_404 response if an AGENT with the provided email \
+                doesn't exist in the database
+    """
     permisssion_classes = [AllowAny]
 
     def put(self, request):
@@ -432,12 +458,17 @@ class PasswordReset(APIView):
             return Response("User Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
-""" Login Athorization Endpoint With Google Token and saving user's info in COOKIES
-"""
-
 
 @api_view(["POST"])
 def validate_authorization_code(request):
+    
+    """ Login Athorization Endpoint With Google Token
+        A google authorization key is decoded and user's info is verified
+        Response:
+            HTTP_200_OK response and a token is authorization is successful
+        Raise:
+            HTTP_404_NOT_FOUND response if user with email does not exist
+    """
     serializer = GetAcessTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     authorization_code = serializer.validated_data["code"]
@@ -479,15 +510,15 @@ def validate_authorization_code(request):
         raise AuthenticationError("User with this email doesn't exist, kindly sign up")
 
 
-"""
-N.B: A custom login View where user signs in manually, i.e., without google authentication
- """
-
 
 @swagger_auto_schema(methods=["post"], request_body=LoginSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
+    
+    """
+    N.B: A custom login View where user signs in manually, i.e., without google authentication
+    """
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data["email"]
@@ -510,19 +541,20 @@ def login_user(request):
     return Response({"Token": token.key}, status=status.HTTP_200_OK)
 
 
-"""User logout Endpoint"""
-
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_logout(request):
+
+    """User logout Endpoint"""
+
     try:
         # Token created during login is deleted before user is being logged out
         request.user.auth_token.delete()
         logout(request)
         return Response(
             {"success": _("Successfully logged out.")},
-            status=status.HTTP_200_OK,
+            status=status.HTTP_204_NO_CONTENT,
         )
     except (AttributeError, User.DoesNotExist):
         return Response(
