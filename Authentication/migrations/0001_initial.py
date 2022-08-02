@@ -32,7 +32,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "code",
-                    models.CharField(max_length=8, verbose_name=" Verification Code "),
+                    models.CharField(
+                        max_length=8, verbose_name=" Verification Code "
+                    ),
                 ),
                 (
                     "add_time",
@@ -113,11 +115,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "profile_image",
-                    models.ImageField(blank=True, null=True, upload_to="profile/"),
+                    models.ImageField(
+                        blank=True, null=True, upload_to="profile/"
+                    ),
                 ),
                 (
                     "background_image",
-                    models.ImageField(blank=True, null=True, upload_to="profile/"),
+                    models.ImageField(
+                        blank=True, null=True, upload_to="profile/"
+                    ),
                 ),
                 (
                     "agent_location",

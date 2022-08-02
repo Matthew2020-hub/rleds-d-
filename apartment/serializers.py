@@ -1,16 +1,8 @@
-from dataclasses import fields
-from pyexpat import model
-from unicodedata import category
 from rest_framework import serializers
 from .models import Apartment
 
-# , Media
-from django.db.models.base import ModelState
-from django.db import models
-
 
 class ApartmentSerializer(serializers.ModelSerializer):
-    # image_url = MediaSerializer(many=True)
     class Meta:
         model = Apartment
         fields = [

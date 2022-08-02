@@ -24,7 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY='django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x'
+# SECRET_KEY = os.environ.get("SECRET_KEY")
 # os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -101,12 +102,12 @@ MIDDLEWARE = [
 
 # CORS configuration
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'https://spokane-topaz.vercel.app',
-    'htpps://spokane-blinds.netlify.app/'
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+#     'https://spokane-topaz.vercel.app',
+#     'htpps://spokane-blinds.netlify.app/'
 
-]
+# ]
 
 ROOT_URLCONF = "dev.urls"
 
@@ -261,14 +262,6 @@ SWAGGER_SETTINGS = {
 EMAIL_BACKEND = "django_mailjet.backends.MailjetBackend"
 MAILJET_API_KEY = os.environ.get("MJ_API_KEY")
 MAILJET_API_SECRET = os.environ.get("MJ_API_SECRET")
-
-# CELERY STUFF
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
-CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "Africa/Nigeria"
 SITE_ID = 1
 DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER")
 SERVER_EMAIL = "in-v3.mailjet.com"
@@ -284,3 +277,27 @@ USE_TZ = True
 
 
 DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+
+# redis caching configuration
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+
+
+
+# # CELERY STUFF
+# CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+# # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+# CELERY_ACCEPT_CONTENT = ["application/json"]
+# CELERY_TASK_SERIALIZER = "json"
+# CELERY_RESULT_SERIALIZER = "json"
+# CELERY_TIMEZONE = "Africa/Nigeria"

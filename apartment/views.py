@@ -15,9 +15,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 # from .pagination import CustomPaginatn
 from Authentication.models import User
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 
-
-class ApartmentCreateAPIView(generics.GenericAPIView, mixins.CreateModelMixin):
+class ApartmentCreateAPIView(
+    generics.GenericAPIView, mixins.CreateModelMixin
+    ):
 
     """An endpoint to post or create an apartment"""
 
@@ -60,6 +64,8 @@ class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 
+    @method_decorator(vary_on_headers)
+    @method_decorator(cache_page(60*60))
     def get(self, request):
         if not self.get_queryset():
             return Response(

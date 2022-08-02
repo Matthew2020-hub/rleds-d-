@@ -11,7 +11,9 @@ class TestViews(TestSetUp):
         self.assertEqual(res.status_code, 400)
 
     def test_user_can_register(self):
-        res = self.client.post(self.register_url, self.user_data, format="json")
+        res = self.client.post(
+            self.register_url, self.user_data, format="json"
+        )
         # pdb.set_trace()
         self.assertEqual(res.status_code, 201)
 
@@ -80,7 +82,9 @@ class TestViews(TestSetUp):
             self.forgetPassword_data,
         )
         self.assertEqual(password_reset.status_code, 200)
-        self.assertNotEqual(password_reset.data, "password reset is successful")
+        self.assertNotEqual(
+            password_reset.data, "password reset is successful"
+        )
 
     def test_get_and_delete_user_endpoint(self):
         self.getAndDeleteUser_url = "/api/v1/user/get/"
@@ -89,7 +93,9 @@ class TestViews(TestSetUp):
         response.is_verify = True
         response.is_active = True
         response.save()
-        get_user = self.client.get((self.getAndDeleteUser_url + str(response.user_id)))
+        get_user = self.client.get(
+            (self.getAndDeleteUser_url + str(response.user_id))
+        )
         delete_user = self.client.delete(
             (self.getAndDeleteUser_url + str(response.user_id))
         )
@@ -104,7 +110,9 @@ class TestViews(TestSetUp):
         response.is_verify = True
         response.is_active = True
         response.save()
-        get_user = self.client.get((self.getAndDeleteAgent_url + str(response.user_id)))
+        get_user = self.client.get(
+            (self.getAndDeleteAgent_url + str(response.user_id))
+        )
         delete_user = self.client.delete(
             (self.getAndDeleteAgent_url + str(response.user_id))
         )

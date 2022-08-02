@@ -245,23 +245,10 @@ class ListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = UserHistorySerializer
     queryset = PaymentHistory.objects.all()
     lookup_field = "history_id"
-    pagination_class = CustomPagination
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
 
     @swagger_auto_schema(responses={200: UserHistorySerializer(many=True)})
     def get(self, request):
-        history = PaymentHistory.objects.all()
-        data = []
-        for checkup in history:
-            context = {
-                "Sent to": checkup.recipient,
-                "Agent account Number": checkup.agent_account_number,
-                "Amount": checkup.amount,
-                "Date": checkup.history_time,
-                "Sent By": checkup.sender,
-                "Transaction Status": checkup.transaction_status,
-                "Alert Time": checkup.date_sent,
-            }
-            data.append(context)
+        data = self.serializer_class(self.get_queryset(), many=True).data
         return Response(data, status=status.HTTP_200_OK)

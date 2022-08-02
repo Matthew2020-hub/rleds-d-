@@ -151,6 +151,7 @@ def refreshToken(request, email):
 
     email_verification_token = RefreshToken.for_user(user).access_token
     current_site = get_current_site(request).domain
+    print(current_site)
     absurl = f"https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}"
     email_body = (
         "Hi " + " " + user.name + ":\n" + "Use link below to verify your email"
@@ -221,9 +222,7 @@ class VerifyEmail(APIView):
             user.is_verify = True
             user.save()
         return Response(
-            {
-                "email": "Email verification is successful"
-            },
+            {"email": "Email verification is successful"},
             status=status.HTTP_200_OK,
         )
 
@@ -248,7 +247,7 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
             # return no content if there's no registered agent
             return Response(
                 "No available agent", status=status.HTTP_204_NO_CONTENT
-                )
+            )
         return Response(
             self.serializer_class(self.get_queryset(), many=True).data,
             status=status.HTTP_200_OK,
@@ -278,7 +277,7 @@ class GET_AND_DELETE_userAPIView(
         user = get_object_or_404(User, email=email)
         return Response(
             self.serializer_class(user).data, status=status.HTTP_200_OK
-            )
+        )
 
     def delete(self, request, email):
         user = get_object_or_404(User, email=email)
@@ -287,7 +286,7 @@ class GET_AND_DELETE_userAPIView(
         self.destroy(request)
         return Response(
             "User is successfully deleted", status=status.HTTP_200_OK
-            )
+        )
 
 
 class GET_AND_DELETE_AGENT(APIView):
@@ -319,7 +318,7 @@ class GET_AND_DELETE_AGENT(APIView):
         agent.delete()
         return Response(
             "Agent deleted successfully", status=status.HTTP_204_NO_CONTENT
-            )
+        )
 
 
 # OTP is generated for the forget password endpoint
@@ -356,7 +355,7 @@ class GenerateOTP(APIView):
         data = {
             "email_body": email_body,
             "to_email": check_user.email,
-            "subject": "Verify your email",
+            "subject": "Reset Password Link",
         }
         data = {
             "Messages": [
@@ -385,18 +384,17 @@ class GenerateOTP(APIView):
         )
 
 
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_otp(request):
 
     """An endpoint to  verify OTP
-        Password RESET OTP is verified
-        Response:
-            HTTP_200_OK- a success message if OTP is valid
-        Raise:
-            HTTP_406_NOT_ACCEPTABLE- an error message is OTP has expired
-            HTTP_404_NOT_FOUND- error message if OTP supplied is invalid 
+    Password RESET OTP is verified
+    Response:
+        HTTP_200_OK- a success message if OTP is valid
+    Raise:
+        HTTP_406_NOT_ACCEPTABLE- an error message is OTP has expired
+        HTTP_404_NOT_FOUND- error message if OTP supplied is invalid
     """
 
     serializer = VerifyOTPSerializer(data=request.data)
@@ -405,12 +403,12 @@ def verify_otp(request):
     try:
         verify_OTP = get_object_or_404(VerifyCode, code=otp)
         five_minutes_ago = timedelta(minutes=5)
-        # 'timezone.utc' is used in datetime.now() 
+        # 'timezone.utc' is used in datetime.now()
         # while trying to compare 2 different time
         current_time = datetime.now(timezone.utc)
         code_time_check = current_time - verify_OTP.add_time
         if code_time_check > five_minutes_ago:
-            # The OTP expires after five minutes of it creation 
+            # The OTP expires after five minutes of it creation
             # and then deleted later on
             verify_OTP.delete()
             return Response(
@@ -420,10 +418,7 @@ def verify_otp(request):
         verify_OTP.delete()
         return Response("OTP is valid", status=status.HTTP_200_OK)
     except VerifyCode.DoesNotExist:
-        return Response(
-            "OTP is invalid ", status=status.HTTP_404_NOT_FOUND
-        )
-
+        return Response("OTP is invalid ", status=status.HTTP_404_NOT_FOUND)
 
 
 class PasswordReset(APIView):
@@ -437,6 +432,7 @@ class PasswordReset(APIView):
             HTTP_404 response if an AGENT with the provided email \
                 doesn't exist in the database
     """
+
     permisssion_classes = [AllowAny]
 
     def put(self, request):
@@ -458,16 +454,15 @@ class PasswordReset(APIView):
             return Response("User Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
-
 @api_view(["POST"])
 def validate_authorization_code(request):
-    
-    """ Login Athorization Endpoint With Google Token
-        A google authorization key is decoded and user's info is verified
-        Response:
-            HTTP_200_OK response and a token is authorization is successful
-        Raise:
-            HTTP_404_NOT_FOUND response if user with email does not exist
+
+    """Login Athorization Endpoint With Google Token
+    A google authorization key is decoded and user's info is verified
+    Response:
+        HTTP_200_OK response and a token is authorization is successful
+    Raise:
+        HTTP_404_NOT_FOUND response if user with email does not exist
     """
     serializer = GetAcessTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -507,15 +502,16 @@ def validate_authorization_code(request):
         token, created = Token.objects.get_or_create(user=user_login)
         return Response({"Token": token.key}, status=status.HTTP_200_OK)
     except User.DoesNotExist:
-        raise AuthenticationError("User with this email doesn't exist, kindly sign up")
-
+        raise AuthenticationError(
+            "User with this email doesn't exist, kindly sign up"
+        )
 
 
 @swagger_auto_schema(methods=["post"], request_body=LoginSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
-    
+
     """
     N.B: A custom login View where user signs in manually, i.e., without google authentication
     """
@@ -539,7 +535,6 @@ def login_user(request):
     token, created = Token.objects.get_or_create(user=user)
     login(request, user)
     return Response({"Token": token.key}, status=status.HTTP_200_OK)
-
 
 
 @api_view(["GET"])

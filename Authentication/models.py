@@ -55,8 +55,12 @@ class User(AbstractUser):
     name = models.CharField(
         max_length=20, blank=True, null=True, verbose_name="Full Name"
     )
-    profile_image = models.ImageField(upload_to="profile/", blank=True, null=True)
-    background_image = models.ImageField(upload_to="profile/", blank=True, null=True)
+    profile_image = models.ImageField(
+        upload_to="profile/", blank=True, null=True
+    )
+    background_image = models.ImageField(
+        upload_to="profile/", blank=True, null=True
+    )
     agent_location = models.CharField(max_length=150, null=True, blank=True)
     balance = models.FloatField(
         default=0,
@@ -92,7 +96,9 @@ class User(AbstractUser):
 # which would be used for OTP verification
 class VerifyCode(models.Model):
     code = models.CharField(max_length=8, verbose_name=" Verification Code ")
-    add_time = models.DateTimeField(verbose_name=" Generation time ", auto_now_add=True)
+    add_time = models.DateTimeField(
+        verbose_name=" Generation time ", auto_now_add=True
+    )
 
     class Meta:
         ordering = ["-add_time"]
