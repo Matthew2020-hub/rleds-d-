@@ -27,9 +27,7 @@ environ.Env.read_env("housefree.env")
 class MakePayment(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-            request_body=PaymentSerializer
-            )
+    @swagger_auto_schema(request_body=PaymentSerializer)
     def post(request):
         serializer = PaymentSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -171,9 +169,7 @@ class AgentWithdrawal(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        request_body=WithdrawalSerializer
-        )
+    @swagger_auto_schema(request_body=WithdrawalSerializer)
     def post(request):
 
         """An Agent withdrawal endpoint"""
@@ -242,9 +238,7 @@ class UserTransactionHistory(APIView):
     """
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        request_body=PaymentHistorySerializer
-        )
+    @swagger_auto_schema(request_body=PaymentHistorySerializer)
     def get(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
         payment_history = PaymentHistory.objects.filter(sender=user)
@@ -258,9 +252,7 @@ class AllTransactionHistory(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        request_body=PaymentHistorySerializer, 
-        )      
+    @swagger_auto_schema(request_body=PaymentHistorySerializer)      
     def get(self, request):
         
         queryset = PaymentHistory.objects.all()

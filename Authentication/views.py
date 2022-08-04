@@ -15,7 +15,7 @@ from .models import User, VerifyCode
 # from message.models import Room
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status, mixins, generics
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -68,9 +68,7 @@ class UserList(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        request_body=CustomUserSerializer
-        )
+    @swagger_auto_schema(request_body=CustomUserSerializer)
     def get(self, request):
         queryset = User.objects.filter(entry="Tenant")
         if queryset:
@@ -94,9 +92,7 @@ class userRegistration(APIView):
     """
 
     permission_classes = [AllowAny]
-    @swagger_auto_schema(
-        request_body=CustomUserSerializer
-        )
+    @swagger_auto_schema(request_body=CustomUserSerializer)
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -119,9 +115,7 @@ class agentRegistration(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
-    @swagger_auto_schema( 
-        request_body=AgentSerializer
-        )
+    @swagger_auto_schema(request_body=AgentSerializer)
     def post(self, request):
         serializer = AgentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -148,7 +142,6 @@ def refreshToken(request, email):
     """
 
     user = get_object_or_404(User, email=email)
-
     if user.is_verify is True:
         return Response(
             "User's Email already verified",
@@ -240,9 +233,7 @@ class ListAgent(APIView):
     """
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        request_body=CustomUserSerializer
-        )
+    @swagger_auto_schema(request_body=CustomUserSerializer)
     def get(self, request):
         queryset = User.objects.filter(entry="Agent")
         if not queryset:
@@ -268,9 +259,7 @@ class GET_AND_DELETE_User(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        request_body=CustomUserSerializer
-        )
+    @swagger_auto_schema(request_body=CustomUserSerializer)
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         return Response(
@@ -333,9 +322,7 @@ class GenerateOTP(APIView):
     
     permission_classes = [AllowAny]  # Allow everyone to register
     serializer_class = GenrateOTPSerializer
-    @swagger_auto_schema(
-        request_body=GenrateOTPSerializer
-        )
+    @swagger_auto_schema(request_body=GenrateOTPSerializer)
     def post(self, request):
         code = randint(000000, 999999)
         serializer = self.serializer_class(data=request.data)
@@ -441,26 +428,21 @@ class PasswordReset(APIView):
     """
 
     permisssion_classes = [AllowAny]
-    @swagger_auto_schema(
-        request_body=CustomPasswordResetSerializer
-        )
+    @swagger_auto_schema(request_body=CustomPasswordResetSerializer)
     def put(self, request):
         email = request.GET.get("email")
-        try:
-            get_object_or_404(User, email=email)
-            serializer = CustomPasswordResetSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            password = serializer.validated_data["password"]
-            get_user = get_object_or_404(User, email=email)
-            get_user.password = password
-            get_user.set_password(password)
-            get_user.save()
-            return Response(
-                "Password change is successful, return to login page",
-                status=status.HTTP_200_OK,
+        get_object_or_404(User, email=email)
+        serializer = CustomPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        password = serializer.validated_data["password"]
+        get_user = get_object_or_404(User, email=email)
+        get_user.password = password
+        get_user.set_password(password)
+        get_user.save()
+        return Response(
+            "Password change is successful, return to login page",
+            status=status.HTTP_200_OK,
             )
-        except User.DoesNotExist:
-            return Response("User Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
 
