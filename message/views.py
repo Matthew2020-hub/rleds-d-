@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .serializers import ContactUsSerailizer, MessageSerializer
+from .serializers import ContactUsSerializer, MessageSerializer
 from rest_framework.views import APIView
 import os
 from .models import Message, Room
@@ -80,7 +80,7 @@ class GetUserMessages(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(responses={200: MessageSerializer(many=True)})
+    @swagger_auto_schema(request_body=MessageSerializer)
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         room = get_object_or_404(Room, user=user)
@@ -92,11 +92,10 @@ class GetUserMessages(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-
-@swagger_auto_schema(responses={200: ContactUsSerailizer(many=True)})
+@swagger_auto_schema(methods=["post"], request_body=ContactUsSerializer)
 @api_view(["POST"])
 def contact_us(request):
-    serializer = ContactUsSerailizer(data=request.data)
+    serializer = ContactUsSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     sender = serializer.validated_data["sender"]
     message = serializer.validated_data["message"]

@@ -28,7 +28,7 @@ class ApartmentCreateAPIView(
     serializer_class = ApartmentSerializer
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
-    @swagger_auto_schema(responses={200: ApartmentSerializer(many=True)})
+    @swagger_auto_schema(request_body=ApartmentSerializer)
 
     def post(self, request):
 
@@ -67,7 +67,7 @@ class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
     @method_decorator(vary_on_headers)
     @method_decorator(cache_page(60*60))
-    @swagger_auto_schema(responses={200: ReturnApartmentInfoSerializer(many=True)})
+    @swagger_auto_schema(request_body=ReturnApartmentInfoSerializer)
 
     def get(self, request):
         if not self.get_queryset():
@@ -104,8 +104,7 @@ class ApartmentCreateUpdateDestroyAPIView(
     lookup_field = "apartment_id"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(responses={200: ApartmentSerializer(many=True)})
-
+    @swagger_auto_schema(request_body=ApartmentSerializer)
 
     def get(self, request, apartment_id):
         apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
@@ -152,7 +151,7 @@ class ApartmentSearchListAPIView(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(responses={200: ApartmentSearchSerializer(many=True)})
+    @swagger_auto_schema(request_body=ApartmentSearchSerializer)
 
     def post(self, request):
         serializer = ApartmentSearchSerializer(data=request.data)
@@ -178,20 +177,13 @@ class ApartmentSearchListAPIView(APIView):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@swagger_auto_schema(responses={200: ApartmentReviewSerializer(many=True)})
+@swagger_auto_schema(methods=["post"], request_body=ApartmentReviewSerializer)
 
 def apartment_reviews_create(request, apartment_id):
     serializer = ApartmentReviewSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     review = serializer.validated_data["reviews"]
-    try:
-        apartment = Apartment.objects.get(apartment_id=apartment_id)
-        if apartment:
-            apartment.reviews = review
-            apartment.save()
-            return Response("review submitted", status=status.HTTP_200_OK)
-    except Apartment.DoesNotExist:
-        return Response(
-            "Apartment with ID does not exist",
-            status=status.HTTP_404_NOT_FOUND,
-        )
+    apartment = get_object_or_404(Apartment,apartment_id=apartment_id)
+    apartment.reviews = review
+    apartment.save()
+    return Response("review submitted", status=status.HTTP_200_OK)

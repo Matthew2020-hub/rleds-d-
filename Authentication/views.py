@@ -1,4 +1,5 @@
 from multiprocessing import AuthenticationError
+import re
 from django.forms import ValidationError
 from .serializers import (
     LoginSerializer,
@@ -95,7 +96,6 @@ class userRegistration(APIView):
 
     permission_classes = [AllowAny]
     @swagger_auto_schema(
-        method=["post"], 
         request_body=CustomUserSerializer, 
         responses=200
         )
@@ -122,8 +122,7 @@ class agentRegistration(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
-    @swagger_auto_schema(
-        methods=["post"], 
+    @swagger_auto_schema( 
         request_body=AgentSerializer, 
         responses=201
         )
@@ -287,7 +286,6 @@ class GET_AND_DELETE_userAPIView(
     queryset = User.objects.filter(entry="Tenant")
     lookup_field = "user_id"
     @swagger_auto_schema(
-        methods=["post"], 
         request_body=CustomUserSerializer, 
         responses=200
         )
@@ -322,10 +320,9 @@ class GET_AND_DELETE_AGENT(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(methods=["post"], request_body=AgentSerializer)
+    @swagger_auto_schema(request_body=AgentSerializer)
 
     def get(self, request, email):
-
         get_agent = get_object_or_404(User, email=email)
         serializer = AgentSerializer(get_agent)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -355,7 +352,6 @@ class GenerateOTP(APIView):
     permission_classes = [AllowAny]  # Allow everyone to register
     serializer_class = GenrateOTPSerializer
     @swagger_auto_schema(
-        methods=["post"], 
         request_body=GenrateOTPSerializer, 
         responses=200
         )
@@ -472,7 +468,6 @@ class PasswordReset(APIView):
 
     permisssion_classes = [AllowAny]
     @swagger_auto_schema(
-        methods=["post"], 
         request_body=CustomPasswordResetSerializer, 
         responses=200
         )
@@ -500,7 +495,6 @@ class PasswordReset(APIView):
 
 @api_view(["POST"])
 @swagger_auto_schema(
-    methods=["post"], 
     request_body=GetAcessTokenSerializer, 
     responses=200
     )
@@ -558,7 +552,11 @@ def validate_authorization_code(request):
 
 
 
-@swagger_auto_schema(methods=["post"], request_body=LoginSerializer)
+@swagger_auto_schema(
+    methods=["post"], 
+    request_body=LoginSerializer, 
+    responses=200
+    )
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):

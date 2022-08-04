@@ -12,7 +12,7 @@ def message_serializer(a) -> dict:
     }
 
 
-class ContactUsSerailizer(serializers.Serializer):
+class ContactUsSerializer(serializers.Serializer):
     sender = serializers.EmailField()
     message = serializers.CharField()
 

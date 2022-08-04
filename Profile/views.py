@@ -20,7 +20,7 @@ from rest_framework.decorators import (
 @permission_classes([AllowAny])
 @authentication_classes([TokenAuthentication])
 @swagger_auto_schema(
-    methods=["post", "get"], 
+    methods=["put", "get"], 
     request_body=EditProfileSerializer, 
     responses=200
     )

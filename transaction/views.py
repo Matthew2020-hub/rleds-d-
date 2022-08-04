@@ -18,7 +18,7 @@ from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.exceptions import APIException
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 # from apartment.pagination import CustomPagination
 from drf_yasg.utils import swagger_auto_schema
 env = environ.Env()
@@ -27,13 +27,10 @@ environ.Env.read_env("housefree.env")
 
 
 
-
-
-
-
 class MakePayment(APIView):
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-            method=["post"], 
             request_body=PaymentSerializer, 
             responses=200
             )
@@ -109,6 +106,7 @@ class MakePayment(APIView):
 
 
 class VerifyTransaction(APIView):
+    permisssion_classes = [AllowAny]
     def get(request, transaction_id):
 
         """An payment verifiaction endpoint"""
@@ -175,8 +173,10 @@ class VerifyTransaction(APIView):
 
 
 class AgentWithdrawal(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        method=["post"], 
         request_body=WithdrawalSerializer, 
         responses=200
         )
@@ -228,7 +228,8 @@ class AgentWithdrawal(APIView):
 
 class AgentBalanceView(APIView):
 
-    
+    authentication_classes = [TokenAuthentication]
+    permisssion_classes = [IsAuthenticated]
     def get(request):
 
         """An endpoint to get Agent's Wallet balance"""
@@ -250,9 +251,8 @@ class UserTransactionHistoryAPIView(
         User Transaction History endpoint
     """
     authentication_classes = [TokenAuthentication]
-    permisssion_classes = [AllowAny]
+    permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        methods=["get"], 
         request_body=PaymentHistorySerializer, 
         responses=status.HTTP_200_OK
         )
@@ -273,8 +273,11 @@ class AllTransactionHistoryAPIView(
     queryset = PaymentHistory.objects.all()
     lookup_field = "history_id"
     authentication_classes = [TokenAuthentication]
-    permisssion_classes = [AllowAny]
-    
+    permisssion_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        request_body=PaymentHistorySerializer, 
+        responses=status.HTTP_200_OK
+        )
     def get(self, request):
         payment_data = self.serializer_class(
             self.get_queryset(), many=True
