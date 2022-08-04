@@ -14,9 +14,6 @@ import environ
 from rest_framework.views import APIView
 import requests
 from dev.settings import FLUTTERWAVE_KEY
-from rest_framework import generics
-from rest_framework import mixins
-from rest_framework.exceptions import APIException
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated
 # from apartment.pagination import CustomPagination
@@ -49,19 +46,19 @@ class MakePayment(APIView):
                     location=apartment_id
                     )
             except Apartment.DoesNotExist:
-                raise APIException(
+                return Response(
                    detail= "Transaction failed due to incorrect house address",
                     code=status.HTTP_400_BAD_REQUEST,
                 )
             if verify_location.is_available != True:
-                raise APIException(
+                return Response(
                     detail="This Particular house is no more available",
                     code=status.HTTP_204_NO_CONTENT,
                 )
             try:
                 confirm_user_is_agent = User.objects.get(email=agent_email)
             except User.DoesNotExist:
-                raise APIException(
+                return Response(
                     detail="Agent with this Acoount ID does not exist!",
                     code=status.HTTP_204_NO_CONTENT,
                 )
@@ -129,7 +126,7 @@ class VerifyTransaction(APIView):
             )
             recipient = get_agent.name
             if get_agent.is_admin is False:
-                raise APIException(
+                return Response(
                     detail="Only an agent can lease out an apartment",
                     code=status.HTTP_401_UNAUTHORIZED
                 )
@@ -164,7 +161,7 @@ class VerifyTransaction(APIView):
                 {"Error": "Payment Failed, Try Again!"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-        raise APIException(
+        return Response(
             detail="Transaction ID is invalid",
             code=status.HTTP_400_BAD_REQUEST
         )
@@ -188,12 +185,12 @@ class AgentWithdrawal(APIView):
             acct_id = serializer.validated_data["account_id"]
             account_id = User.objects.get(user_id=acct_id)
             if account_id.email != email:
-                raise APIException(
+                return Response(
                     detail="Invalid Email input, enter the correct email!",
                     code=status.HTTP_404_NOT_FOUND,
                 )
             elif account_id is None:
-                raise APIException(
+                return Response(
                     detail="Incorrect Account ID!", 
                     code=status.HTTP_404_NOT_FOUND
                 )
