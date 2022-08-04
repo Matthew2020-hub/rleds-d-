@@ -19,7 +19,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 
-class ApartmentCreateAPIView(APIView):
+class ApartmentCreate(APIView):
 
     """An endpoint to post or create an apartment"""
     authentication_classes = [TokenAuthentication]
@@ -50,7 +50,7 @@ class ApartmentCreateAPIView(APIView):
             )
 
 
-class ApartmentListAPIView(APIView):
+class ApartmentList(APIView):
     """An endpoint to list all available apartments"""
 
     authentication_classes = [TokenAuthentication]
@@ -70,7 +70,7 @@ class ApartmentListAPIView(APIView):
         )
 
 
-class ApartmentCreateUpdateDestroyAPIView(APIView):
+class ApartmentCreateUpdateDelete(APIView):
 
     """
     An endpoint to get, delete and update a particular endpoint
@@ -117,7 +117,7 @@ class ApartmentCreateUpdateDestroyAPIView(APIView):
         )
 
 
-class ApartmentSearchListAPIView(APIView):
+class ApartmentSearch(APIView):
 
     """
     An endpoint to list the apartment search result

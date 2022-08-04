@@ -21,12 +21,12 @@ urlpatterns = [
         ),
     path(
         "api/v1/agent/balance/", 
-        views.AgentBalanceView, 
+        views.AgentBalance, 
         name="balance"
         ),
-    path('api/v1/history/', views.AllTransactionHistoryAPIView.as_view()),
+    path('api/v1/history/', views.AllTransactionHistory.as_view()),
     path(
         'api/v1/user/<str:user_id>/payment-history', 
-        views.UserTransactionHistoryAPIView.as_view()
+        views.UserTransactionHistory.as_view()
         )
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

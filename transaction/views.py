@@ -222,7 +222,7 @@ class AgentWithdrawal(APIView):
 
 
 
-class AgentBalanceView(APIView):
+class AgentBalance(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
@@ -238,7 +238,7 @@ class AgentBalanceView(APIView):
 
 
 
-class UserTransactionHistoryAPIView(APIView):
+class UserTransactionHistory(APIView):
 
     """
         User Transaction History endpoint
@@ -257,7 +257,7 @@ class UserTransactionHistoryAPIView(APIView):
         )
 
 
-class AllTransactionHistoryAPIView(APIView):
+class AllTransactionHistory(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]

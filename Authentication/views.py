@@ -57,7 +57,7 @@ project_id = os.environ.get("project_id")
 
 
 
-class UserAPIView(APIView):
+class UserList(APIView):
 
     """An endpoint that returns a list of all users
 
@@ -230,7 +230,7 @@ class VerifyEmail(APIView):
         )
 
 
-class ListAgentAPIView(APIView):
+class ListAgent(APIView):
 
     """An endpoint that returns a list of all AGENT
 
@@ -255,7 +255,7 @@ class ListAgentAPIView(APIView):
 
 
 
-class GET_AND_DELETE_userAPIView(APIView):
+class GET_AND_DELETE_User(APIView):
     """An endpoint to GET or delete a user's record
     Returns a user object
     Args:

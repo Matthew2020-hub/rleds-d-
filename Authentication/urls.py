@@ -7,11 +7,11 @@ from django.conf.urls.static import static
 # from allauth.account.views import confirm_email
 from .views import (
     GET_AND_DELETE_AGENT,
-    GET_AND_DELETE_userAPIView,
+    GET_AND_DELETE_User,
     GenerateOTP,
-    UserAPIView,
-    ListAgentAPIView,
+    ListAgent,
     PasswordReset,
+    UserList,
     userRegistration,
     agentRegistration,
     VerifyEmail,
@@ -28,8 +28,8 @@ urlpatterns = [
         agentRegistration.as_view(),
         name="agent-register",
     ),
-    path("api/v1/user/all/", UserAPIView.as_view(), name="get-users"),
-    path("api/v1/agent/all/", ListAgentAPIView.as_view(), name="get-agents"),
+    path("api/v1/user/all/", UserList.as_view(), name="get-users"),
+    path("api/v1/agent/all/", ListAgent.as_view(), name="get-agents"),
     path(
         "api/v1/refresh-token/<str:email>",
         views.refreshToken,
@@ -45,7 +45,7 @@ urlpatterns = [
     path("api/v1/verify-OTP", views.verify_otp, name="login"),
     path("api/v1/forget_password/", PasswordReset.as_view()),
     path("api/v1/get-OTP/", GenerateOTP.as_view(), name="get-OTP"),
-    path("api/v1/user/get/<str:email>", GET_AND_DELETE_userAPIView.as_view()),
+    path("api/v1/user/get/<str:email>", GET_AND_DELETE_User.as_view()),
     path("api/v1/agent/get/<str:email>", GET_AND_DELETE_AGENT.as_view()),
     path("api/v1/email-verify", VerifyEmail.as_view(), name="verify-email"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
