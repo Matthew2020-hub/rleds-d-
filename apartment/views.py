@@ -177,7 +177,7 @@ class ApartmentSearchListAPIView(APIView):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@swagger_auto_schema(methods=["post"], request_body=ApartmentReviewSerializer)
+@swagger_auto_schema(request_body=ApartmentReviewSerializer)
 
 def apartment_reviews_create(request, apartment_id):
     serializer = ApartmentReviewSerializer(data=request.data)

@@ -71,7 +71,7 @@ class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = "email"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-
+    
     def get(self, request):
         if not self.get_queryset():
             return Response(
@@ -415,8 +415,7 @@ class GenerateOTP(APIView):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
-@swagger_auto_schema(
-    methods=["post"], 
+@swagger_auto_schema( 
     request_body=VerifyOTPSerializer, 
     responses=200
     )
@@ -553,7 +552,6 @@ def validate_authorization_code(request):
 
 
 @swagger_auto_schema(
-    methods=["post"], 
     request_body=LoginSerializer, 
     responses=200
     )

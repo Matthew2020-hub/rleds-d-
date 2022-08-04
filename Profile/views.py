@@ -19,8 +19,7 @@ from rest_framework.decorators import (
 @api_view(["GET", "PUT"])
 @permission_classes([AllowAny])
 @authentication_classes([TokenAuthentication])
-@swagger_auto_schema(
-    methods=["put", "get"], 
+@swagger_auto_schema( 
     request_body=EditProfileSerializer, 
     responses=200
     )
