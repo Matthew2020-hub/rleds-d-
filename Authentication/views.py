@@ -551,12 +551,12 @@ def validate_authorization_code(request):
 
 
 
+@api_view(["POST"])
+@permission_classes([AllowAny])
 @swagger_auto_schema(
     request_body=LoginSerializer, 
     responses=200
-    )
-@api_view(["POST"])
-@permission_classes([AllowAny])
+)
 def login_user(request):
 
     """
