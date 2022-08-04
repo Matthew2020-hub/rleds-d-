@@ -10,7 +10,7 @@ from .serializers import message_serializer
 from asgiref.sync import sync_to_async
 import socketio
 import environ
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from Authentication.models import User
 from drf_yasg.utils import swagger_auto_schema
@@ -92,7 +92,7 @@ class GetUserMessages(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-        
+
 
 @api_view(["POST"])
 @swagger_auto_schema(request_body=ContactUsSerializer)
