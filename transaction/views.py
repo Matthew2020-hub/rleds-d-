@@ -242,10 +242,7 @@ class AgentBalanceView(APIView):
 
 
 
-class UserTransactionHistoryAPIView(
-    generics.GenericAPIView, 
-    mixins.ListModelMixin
-    ):
+class UserTransactionHistoryAPIView(APIView):
 
     """
         User Transaction History endpoint
@@ -266,9 +263,7 @@ class UserTransactionHistoryAPIView(
         )
 
 
-class AllTransactionHistoryAPIView(
-    generics.GenericAPIView, mixins.ListModelMixin
-    ):
+class AllTransactionHistoryAPIView(APIView):
     serializer_class = PaymentHistorySerializer
     queryset = PaymentHistory.objects.all()
     lookup_field = "history_id"

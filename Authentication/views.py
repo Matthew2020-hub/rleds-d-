@@ -57,7 +57,7 @@ project_id = os.environ.get("project_id")
 
 
 
-class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+class UserAPIView(APIView):
 
     """An endpoint that returns a list of all users
 
@@ -265,11 +265,7 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
 
 
-class GET_AND_DELETE_userAPIView(
-    generics.GenericAPIView, 
-    mixins.ListModelMixin, 
-    mixins.DestroyModelMixin
-):
+class GET_AND_DELETE_userAPIView(APIView):
     """An endpoint to GET or delete a user's record
     Returns a user object
     Args:
@@ -293,16 +289,18 @@ class GET_AND_DELETE_userAPIView(
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         return Response(
-            self.serializer_class(user).data, status=status.HTTP_200_OK
+            self.serializer_class(user).data, 
+            status=status.HTTP_200_OK
         )
 
     def delete(self, request, email):
         user = get_object_or_404(User, email=email)
         token = Token.objects.get(user=user)
         token.delete()
-        self.destroy(request)
+        user.delete()
         return Response(
-            "User is successfully deleted", status=status.HTTP_200_OK
+            "User is successfully deleted", 
+            status=status.HTTP_204_NO_CONTENT
         )
 
 

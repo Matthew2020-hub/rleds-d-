@@ -19,23 +19,18 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 
-class ApartmentCreateAPIView(
-    generics.GenericAPIView, mixins.CreateModelMixin
-    ):
+class ApartmentCreateAPIView(APIView):
 
     """An endpoint to post or create an apartment"""
-
-    serializer_class = ApartmentSerializer
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
     @swagger_auto_schema(request_body=ApartmentSerializer)
 
     def post(self, request):
-
-        serializer = self.serializer_class(data=request.data)
+        
+        serializer = ApartmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
-
         agent_name = serializer.validated_data["agent"]
         # serializer.save()
         try:
@@ -56,36 +51,27 @@ class ApartmentCreateAPIView(
             )
 
 
-class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+class ApartmentListAPIView(APIView):
     """An endpoint to list all available apartments"""
 
-    serializer_class = ReturnApartmentInfoSerializer
-    queryset = Apartment.objects.all()
-    lookup_field = "apartment_id"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-
     @method_decorator(vary_on_headers)
     @method_decorator(cache_page(60*60))
     @swagger_auto_schema(request_body=ReturnApartmentInfoSerializer)
-
     def get(self, request):
-        if not self.get_queryset():
+        queryset = Apartment.objects.all()
+        if not queryset():
             return Response(
                 "No apartment is available", status=status.HTTP_204_NO_CONTENT
             )
         return Response(
-            self.serializer_class(self.get_queryset(), many=True).data,
+            ReturnApartmentInfoSerializer(queryset, many=True).data,
             status=status.HTTP_200_OK,
         )
 
 
-class ApartmentCreateUpdateDestroyAPIView(
-    generics.GenericAPIView,
-    mixins.ListModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-):
+class ApartmentCreateUpdateDestroyAPIView(APIView):
 
     """
     An endpoint to get, delete and update a particular endpoint
@@ -98,14 +84,9 @@ class ApartmentCreateUpdateDestroyAPIView(
         HTTP_404_NOT_FOUND- if apartment with ID does not exist
     """
 
-
-    serializer_class = ApartmentSerializer
-    queryset = Apartment.objects.all()
-    lookup_field = "apartment_id"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(request_body=ApartmentSerializer)
-
     def get(self, request, apartment_id):
         apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
         serializer = ApartmentSerializer(apartment)
@@ -130,7 +111,7 @@ class ApartmentCreateUpdateDestroyAPIView(
         get_apartment = get_object_or_404(
             Apartment, apartment_id=apartment_id
             )
-        self.destroy(get_apartment)
+        get_apartment.delete()
         return Response(
             "Apartment deleted successfully", 
             status=status.HTTP_204_NO_CONTENT
