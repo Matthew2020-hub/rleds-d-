@@ -17,7 +17,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserHistorySerializer(serializers.Serializer):
+class PaymentHistorySerializer(serializers.Serializer):
     class Meta:
         model = PaymentHistory
         depth = 1

@@ -54,6 +54,8 @@ redirect_uri = os.environ.get("redirect_uri")
 project_id = os.environ.get("project_id")
 
 
+
+
 class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
     """An endpoint that returns a list of all users
@@ -68,7 +70,6 @@ class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = "email"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
 
     def get(self, request):
         if not self.get_queryset():
@@ -93,7 +94,11 @@ class userRegistration(APIView):
     """
 
     permission_classes = [AllowAny]
-    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
+    @swagger_auto_schema(
+        method=["post"], 
+        request_body=CustomUserSerializer, 
+        responses=200
+        )
 
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -117,7 +122,11 @@ class agentRegistration(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
-    @swagger_auto_schema(responses={200: AgentSerializer(many=True)})
+    @swagger_auto_schema(
+        methods=["post"], 
+        request_body=AgentSerializer, 
+        responses=201
+        )
 
     def post(self, request):
         serializer = AgentSerializer(data=request.data)
@@ -256,8 +265,11 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
         )
 
 
+
 class GET_AND_DELETE_userAPIView(
-    generics.GenericAPIView, mixins.ListModelMixin, mixins.DestroyModelMixin
+    generics.GenericAPIView, 
+    mixins.ListModelMixin, 
+    mixins.DestroyModelMixin
 ):
     """An endpoint to GET or delete a user's record
     Returns a user object
@@ -274,7 +286,11 @@ class GET_AND_DELETE_userAPIView(
     permisssion_classes = [IsAuthenticated]
     queryset = User.objects.filter(entry="Tenant")
     lookup_field = "user_id"
-    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
+    @swagger_auto_schema(
+        methods=["post"], 
+        request_body=CustomUserSerializer, 
+        responses=200
+        )
 
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
@@ -306,7 +322,7 @@ class GET_AND_DELETE_AGENT(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(responses={200: AgentSerializer(many=True)})
+    @swagger_auto_schema(methods=["post"], request_body=AgentSerializer)
 
     def get(self, request, email):
 
@@ -338,7 +354,11 @@ class GenerateOTP(APIView):
     
     permission_classes = [AllowAny]  # Allow everyone to register
     serializer_class = GenrateOTPSerializer
-    @swagger_auto_schema(responses={200: GenrateOTPSerializer(many=True)})
+    @swagger_auto_schema(
+        methods=["post"], 
+        request_body=GenrateOTPSerializer, 
+        responses=200
+        )
 
     def post(self, request):
         code = randint(000000, 999999)
@@ -396,9 +416,14 @@ class GenerateOTP(APIView):
         )
 
 
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
-@swagger_auto_schema(responses={200: VerifyOTPSerializer(many=True)})
+@swagger_auto_schema(
+    methods=["post"], 
+    request_body=VerifyOTPSerializer, 
+    responses=200
+    )
 
 def verify_otp(request):
 
@@ -432,6 +457,7 @@ def verify_otp(request):
     return Response("OTP is valid", status=status.HTTP_200_OK)
    
 
+
 class PasswordReset(APIView):
 
     """A Password reset endpoint
@@ -445,7 +471,11 @@ class PasswordReset(APIView):
     """
 
     permisssion_classes = [AllowAny]
-    @swagger_auto_schema(responses={200: CustomPasswordResetSerializer(many=True)})
+    @swagger_auto_schema(
+        methods=["post"], 
+        request_body=CustomPasswordResetSerializer, 
+        responses=200
+        )
 
     def put(self, request):
         email = request.GET.get("email")
@@ -466,8 +496,14 @@ class PasswordReset(APIView):
             return Response("User Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
+
+
 @api_view(["POST"])
-@swagger_auto_schema(responses={200: GetAcessTokenSerializer(many=True)})
+@swagger_auto_schema(
+    methods=["post"], 
+    request_body=GetAcessTokenSerializer, 
+    responses=200
+    )
 def validate_authorization_code(request):
 
     """Login Athorization Endpoint With Google Token
@@ -518,6 +554,8 @@ def validate_authorization_code(request):
         raise AuthenticationError(
             "User with this email doesn't exist, kindly sign up"
         )
+
+
 
 
 @swagger_auto_schema(methods=["post"], request_body=LoginSerializer)

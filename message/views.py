@@ -75,21 +75,8 @@ async def print_message(sid, data):
     await sio.emit("new_message", message, room=message["room_id"])
 
 
+
 class GetUserMessages(APIView):
-    permission_classes = [AllowAny]
-    @swagger_auto_schema(responses={200: MessageSerializer(many=True)})
-    def get(self, request, email):
-        user = get_object_or_404(User, email=email)
-        room = get_object_or_404(Room, user=user)
-        messages = room.messages
-        serializer = MessageSerializer(messages, many=True)
-        response = {}
-        response["room_id"] = room.room_id
-        response["messages"] = serializer.data
-        return Response(response, status=status.HTTP_200_OK)
-
-
-class GetMessages(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -106,9 +93,7 @@ class GetMessages(APIView):
 
 
 
-
-
-
+@swagger_auto_schema(responses={200: ContactUsSerailizer(many=True)})
 @api_view(["POST"])
 def contact_us(request):
     serializer = ContactUsSerailizer(data=request.data)

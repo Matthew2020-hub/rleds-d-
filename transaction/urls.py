@@ -5,14 +5,29 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("api/v1/make-payment/", views.make_payment, name="make_payment"),
+    path(
+        "api/v1/make-payment/", 
+        views.MakePayment.as_view(), 
+        name="make_payment"
+        ),
     path(
         "api/v1/verify_transaction/<int:transaction_id>",
-        views.verify_transaction,
+        views.VerifyTransaction.as_view(),
         name="verify_payment",
     ),
-    path("api/v1/agent/withdraw/", views.agent_withdrawal, name="verify_payment"),
-    path("api/v1/agent/balance/", views.dashboard, name="balance"),
-    # path('api/v1/history/', views.ListAPIView.as_view()),
-    # path('api/v1/user/<str:user_id>/payment-history', views.GetUserHistoryAPIView.as_view())
+    path(
+        "api/v1/agent/withdraw/", 
+        views.AgentWithdrawal.as_view(), 
+        name="verify_payment"
+        ),
+    path(
+        "api/v1/agent/balance/", 
+        views.AgentBalanceView, 
+        name="balance"
+        ),
+    path('api/v1/history/', views.AllTransactionHistoryAPIView.as_view()),
+    path(
+        'api/v1/user/<str:user_id>/payment-history', 
+        views.UserTransactionHistoryAPIView.as_view()
+        )
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
