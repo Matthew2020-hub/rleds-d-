@@ -264,9 +264,6 @@ class UserTransactionHistoryAPIView(APIView):
 
 
 class AllTransactionHistoryAPIView(APIView):
-    serializer_class = PaymentHistorySerializer
-    queryset = PaymentHistory.objects.all()
-    lookup_field = "history_id"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
@@ -274,7 +271,9 @@ class AllTransactionHistoryAPIView(APIView):
         responses=status.HTTP_200_OK
         )
     def get(self, request):
-        payment_data = self.serializer_class(
-            self.get_queryset(), many=True
+        
+        queryset = PaymentHistory.objects.all()
+        payment_data =  PaymentHistorySerializer(
+            queryset, many=True
             ).data
         return Response(payment_data, status=status.HTTP_200_OK)
