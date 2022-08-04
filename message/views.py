@@ -92,8 +92,10 @@ class GetUserMessages(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(request_body=ContactUsSerializer)
+        
+
 @api_view(["POST"])
+@swagger_auto_schema(request_body=ContactUsSerializer)
 def contact_us(request):
     serializer = ContactUsSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
