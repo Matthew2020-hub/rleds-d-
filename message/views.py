@@ -77,7 +77,7 @@ async def print_message(sid, data):
 
 class GetUserMessages(APIView):
     permission_classes = [AllowAny]
-
+    @swagger_auto_schema(responses={200: MessageSerializer(many=True)})
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         room = get_object_or_404(Room, user=user)

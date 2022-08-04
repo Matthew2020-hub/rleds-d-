@@ -7,13 +7,13 @@ from .serializers import (
 from .models import Apartment
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import generics
+from rest_framework import status, generics
 from rest_framework import mixins
+from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
-# from .pagination import CustomPaginatn
+from drf_yasg.utils import swagger_auto_schema
 from Authentication.models import User
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -28,6 +28,7 @@ class ApartmentCreateAPIView(
     serializer_class = ApartmentSerializer
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
+    @swagger_auto_schema(responses={200: ApartmentSerializer(many=True)})
 
     def post(self, request):
 
@@ -66,6 +67,8 @@ class ApartmentListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
     @method_decorator(vary_on_headers)
     @method_decorator(cache_page(60*60))
+    @swagger_auto_schema(responses={200: ReturnApartmentInfoSerializer(many=True)})
+
     def get(self, request):
         if not self.get_queryset():
             return Response(
@@ -84,19 +87,34 @@ class ApartmentCreateUpdateDestroyAPIView(
     mixins.DestroyModelMixin,
 ):
 
-    """An endpoint to get, delete and update a particular endpoint"""
+    """
+    An endpoint to get, delete and update a particular endpoint
+    Args:
+        Apartment ID- a unique ID to fetch apartment data
+    Response:
+        HTTP_200-OK- a success response and apartment data
+        HTTP_204_NO_CONTENT- if apartment has been deleted
+    Raise:
+        HTTP_404_NOT_FOUND- if apartment with ID does not exist
+    """
+
 
     serializer_class = ApartmentSerializer
     queryset = Apartment.objects.all()
     lookup_field = "apartment_id"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+    @swagger_auto_schema(responses={200: ApartmentSerializer(many=True)})
+
 
     def get(self, request, apartment_id):
         apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
         serializer = ApartmentSerializer(apartment)
         review = ApartmentReviewSerializer(apartment)
-        context = {"apartment details": serializer.data, "review": review.data}
+        context = {
+            "apartment details": serializer.data, 
+            "review": review.data
+            }
         return Response(context, status=status.HTTP_200_OK)
 
     def put(self, request, apartment_id):
@@ -104,25 +122,37 @@ class ApartmentCreateUpdateDestroyAPIView(
         serializer = self.serializer_class(apartment, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response("Data update was successful", status=status.HTTP_200_OK)
+        return Response(
+            "Data update was successful", 
+            status=status.HTTP_200_OK
+            )
 
     def delete(self, request, apartment_id):
-        get_apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
+        get_apartment = get_object_or_404(
+            Apartment, apartment_id=apartment_id
+            )
         self.destroy(get_apartment)
         return Response(
-            "Apartment deleted successfully", status=status.HTTP_204_NO_CONTENT
+            "Apartment deleted successfully", 
+            status=status.HTTP_204_NO_CONTENT
         )
 
 
-class ApartmentSearchListAPIView(generics.GenericAPIView, mixins.ListModelMixin):
-    """An endpoint to list the apartment search result"""
+class ApartmentSearchListAPIView(APIView):
 
-    serializer_class = ApartmentSearchSerializer
-    lookup_field = "location"
-    # pagination_class = CustomPagination
-    queryset = Apartment.objects.all()
+    """
+    An endpoint to list the apartment search result
+    Args:
+        data- serializer search data(location, price, category)
+    Response:
+        HTTP_200_OK- if apartment(s) matching search query exists
+    Raise:
+        HTTP_404_NOT_FOUND- if search query does not exist
+    """
+
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+    @swagger_auto_schema(responses={200: ApartmentSearchSerializer(many=True)})
 
     def post(self, request):
         serializer = ApartmentSearchSerializer(data=request.data)
@@ -133,11 +163,23 @@ class ApartmentSearchListAPIView(generics.GenericAPIView, mixins.ListModelMixin)
         apartments = Apartment.objects.filter(
             location=location, price=price, category=category
         )
-        return self.list(apartments, many=True)
+        if apartments is None:
+            return Response(
+                "Search result not found", 
+                status=status.HTTP_404_NOT_FOUND
+                )
+        apartment_details = ReturnApartmentInfoSerializer(
+            apartments, 
+            many=True
+            )
+        return Response(apartment_details, status=status.HTTP_200_OK)
+
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@swagger_auto_schema(responses={200: ApartmentReviewSerializer(many=True)})
+
 def apartment_reviews_create(request, apartment_id):
     serializer = ApartmentReviewSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

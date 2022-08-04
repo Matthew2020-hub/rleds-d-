@@ -68,6 +68,7 @@ class UserAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = "email"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
 
     def get(self, request):
         if not self.get_queryset():
@@ -92,6 +93,7 @@ class userRegistration(APIView):
     """
 
     permission_classes = [AllowAny]
+    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
 
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -115,6 +117,7 @@ class agentRegistration(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
+    @swagger_auto_schema(responses={200: AgentSerializer(many=True)})
 
     def post(self, request):
         serializer = AgentSerializer(data=request.data)
@@ -187,8 +190,6 @@ def refreshToken(request, email):
     )
 
 
-"""Verify user email endpoint"""
-
 
 class VerifyEmail(APIView):
     """Verify Email class
@@ -241,6 +242,7 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = "email"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
 
     def get(self, request):
         if not self.get_queryset():
@@ -272,6 +274,7 @@ class GET_AND_DELETE_userAPIView(
     permisssion_classes = [IsAuthenticated]
     queryset = User.objects.filter(entry="Tenant")
     lookup_field = "user_id"
+    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
 
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
@@ -294,16 +297,16 @@ class GET_AND_DELETE_AGENT(APIView):
     """An endpoint to GET a specific agent object and DELETE agent's data
         Returns an AGENT object
         Args:
-            Email- returns an AGENT data that was provided during registration
+            Email- supplied as a path paramter argument for user verification
         Response:
             HTTP_200_OK, a serailizer data if AGENT's data exists
         Raise:
-            HTTP_404, returns not found if an AGENT with the provided email \
-                doesn't exist in the database
+            HTTP_404- an erorr response if agent with email doesn't exist
         """
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+    @swagger_auto_schema(responses={200: AgentSerializer(many=True)})
 
     def get(self, request, email):
 
@@ -321,14 +324,25 @@ class GET_AND_DELETE_AGENT(APIView):
         )
 
 
-# OTP is generated for the forget password endpoint
+
 class GenerateOTP(APIView):
+    """An OTP generating endpoint
+        Args:
+            Email- a serializer data (email)
+        Response:
+            HTTP_200_OK- a success response if email is sent successfully
+        Raise:
+            HTTP_404- an error response if user with email doe snot exist
+
+    """
+    
     permission_classes = [AllowAny]  # Allow everyone to register
     serializer_class = GenrateOTPSerializer
+    @swagger_auto_schema(responses={200: GenrateOTPSerializer(many=True)})
 
     def post(self, request):
         code = randint(000000, 999999)
-        serializer = GenrateOTPSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
         check_user = get_object_or_404(User, email=email)
@@ -344,8 +358,6 @@ class GenerateOTP(APIView):
         mailjet = Client(auth=(api_key, api_secret), version="v3.1")
         # OTP generated is sent to the User's email and clicking the email
         # will grant the user an access to change-password endpoint
-        # There's no special reason for using the generated OTP against
-        # the conventional token for the reset-password endpoint
         absurl = f"https://spokane-topaz.vercel.app/otp?email={email}"
         email_body = (
             "Hi " + " " + check_user.name + " " + f"this your OTP: {code}"
@@ -386,6 +398,8 @@ class GenerateOTP(APIView):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@swagger_auto_schema(responses={200: VerifyOTPSerializer(many=True)})
+
 def verify_otp(request):
 
     """An endpoint to  verify OTP
@@ -400,26 +414,23 @@ def verify_otp(request):
     serializer = VerifyOTPSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     otp = serializer.validated_data["otp"]
-    try:
-        verify_OTP = get_object_or_404(VerifyCode, code=otp)
-        five_minutes_ago = timedelta(minutes=5)
-        # 'timezone.utc' is used in datetime.now()
-        # while trying to compare 2 different time
-        current_time = datetime.now(timezone.utc)
-        code_time_check = current_time - verify_OTP.add_time
-        if code_time_check > five_minutes_ago:
-            # The OTP expires after five minutes of it creation
-            # and then deleted later on
-            verify_OTP.delete()
-            return Response(
-                " The verification code has expired ",
-                status=status.HTTP_406_NOT_ACCEPTABLE,
-            )
+    verify_OTP = get_object_or_404(VerifyCode, code=otp)
+    five_minutes_ago = timedelta(minutes=5)
+    # 'timezone.utc' is used in datetime.now()
+    # while trying to compare 2 different time
+    current_time = datetime.now(timezone.utc)
+    code_time_check = current_time - verify_OTP.add_time
+    if code_time_check > five_minutes_ago:
+        # The OTP expires after five minutes of it creation
+        # OTP is deleted after expiration to keep DB clean
         verify_OTP.delete()
-        return Response("OTP is valid", status=status.HTTP_200_OK)
-    except VerifyCode.DoesNotExist:
-        return Response("OTP is invalid ", status=status.HTTP_404_NOT_FOUND)
-
+        return Response(
+            " The verification code has expired ",
+            status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+    verify_OTP.delete()
+    return Response("OTP is valid", status=status.HTTP_200_OK)
+   
 
 class PasswordReset(APIView):
 
@@ -434,6 +445,7 @@ class PasswordReset(APIView):
     """
 
     permisssion_classes = [AllowAny]
+    @swagger_auto_schema(responses={200: CustomPasswordResetSerializer(many=True)})
 
     def put(self, request):
         email = request.GET.get("email")
@@ -455,6 +467,7 @@ class PasswordReset(APIView):
 
 
 @api_view(["POST"])
+@swagger_auto_schema(responses={200: GetAcessTokenSerializer(many=True)})
 def validate_authorization_code(request):
 
     """Login Athorization Endpoint With Google Token
@@ -513,7 +526,15 @@ def validate_authorization_code(request):
 def login_user(request):
 
     """
-    N.B: A custom login View where user signs in manually, i.e., without google authentication
+    N.B: A custom user login endpoint
+    Args:
+        data: a serailizer data which contain user login credentials
+    Response:
+        HTTP_200_OK- a success response and user token
+    Raise:
+        HTTP_404_NOT_FOUND- if user with supplied email does not exist
+        HTTP_401_UNAUTHORIZED- if login credentials are incorrect
+
     """
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -540,11 +561,11 @@ def login_user(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_logout(request):
-
-    """User logout Endpoint"""
+    """
+        User logout Endpoint
+    """
 
     try:
-        # Token created during login is deleted before user is being logged out
         request.user.auth_token.delete()
         logout(request)
         return Response(

@@ -6,16 +6,21 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import (
     api_view,
     permission_classes,
     authentication_classes,
 )
 
+
+
 # User profile's endpoint
 @api_view(["GET", "PUT"])
 @permission_classes([AllowAny])
 @authentication_classes([TokenAuthentication])
+@swagger_auto_schema(responses={200: EditProfileSerializer(many=True)})
+
 def profile(request, email):
     if request.method == "GET":
         try:
@@ -39,7 +44,10 @@ def profile(request, email):
             }
             return Response(context, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response("User does not exist!", status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                "User does not exist!", 
+                status=status.HTTP_204_NO_CONTENT
+                )
 
     elif request.method == "PUT":
         serializer = EditProfileSerializer(data=request.data, partial=True)

@@ -24,7 +24,15 @@ env = environ.Env()
 environ.Env.read_env("housefree.env")
 
 
+
+
+
+
+
+
 @api_view(["POST"])
+@swagger_auto_schema(responses={200: PaymentSerializer(many=True)})
+
 def make_payment(request):
     serializer = PaymentSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
@@ -36,7 +44,10 @@ def make_payment(request):
         # A try and except is used so to get the specific error as there are many
         # -conditions considered before a payment is allowed
         try:
-            verify_location = get_object_or_404(Apartment, location=apartment_id)
+            verify_location = get_object_or_404(
+                Apartment, 
+                location=apartment_id
+                )
         except Apartment.DoesNotExist:
             return Response(
                 "Transaction failed due to incorrect house address",
@@ -88,6 +99,8 @@ def make_payment(request):
             return Response(link, status=status.HTTP_200_OK)
 
 
+
+
 @api_view(["GET"])
 def verify_transaction(request, transaction_id):
 
@@ -137,6 +150,7 @@ def verify_transaction(request, transaction_id):
                 )
                 create_history.save()
                 return Response(response_data, status=status.HTTP_200_OK)
+
     # A payment history object with a transaction status is  Failed is created
     recipient = get_agent_name.name
     receiver_number = response_data["meta"]["consumer_id"]
@@ -162,11 +176,12 @@ def verify_transaction(request, transaction_id):
 
 
 @api_view(["POST"])
+@swagger_auto_schema(responses={200: WithdrawalSerializer(many=True)})
+
 def agent_withdrawal(request):
 
-    """An Agent withdrawal endpoint"""\
+    """An Agent withdrawal endpoint"""
     
-
     serializer = WithdrawalSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         account_no = serializer.validated_data["account_number"]
@@ -221,10 +236,13 @@ def dashboard(request):
     return Response(context, status=status.HTTP_200_OK)
 
 
+
+
 class GetUserHistoryAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
-    """User Transaction History endpoint"""
-
+    """
+        User Transaction History endpoint
+    """
     serializer_class = UserHistorySerializer
     queryset = PaymentHistory.objects.all()
     lookup_field = "history_id"
