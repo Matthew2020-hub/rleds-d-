@@ -66,22 +66,22 @@ class UserAPIView(APIView):
     Raises: HTTP_404_NOT_FOUND if there's no registered or active user
     """
 
-    serializer_class = CustomUserSerializer
-    queryset = User.objects.filter(entry="Tenant")
-    lookup_field = "email"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    
+    @swagger_auto_schema(
+        request_body=CustomUserSerializer, 
+        responses=200
+        )
     def get(self, request):
-        if not self.get_queryset():
+        queryset = User.objects.filter(entry="Tenant")
+        if queryset:
             return Response(
                 "No registered user in the database",
                 status=status.HTTP_204_NO_CONTENT,
             )
-        return Response(
-            self.serializer_class(self.get_queryset(), many=True).data,
-            status=status.HTTP_200_OK,
-        )
+        get_all_users = CustomUserSerializer(queryset, many=True).data
+        return Response(get_all_users, status=status.HTTP_200_OK)
+
 
 
 class userRegistration(APIView):
@@ -99,7 +99,6 @@ class userRegistration(APIView):
         request_body=CustomUserSerializer, 
         responses=200
         )
-
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -126,7 +125,6 @@ class agentRegistration(APIView):
         request_body=AgentSerializer, 
         responses=201
         )
-
     def post(self, request):
         serializer = AgentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -210,7 +208,6 @@ class VerifyEmail(APIView):
         HTTP_404_NOT_FOUND- if there's no user with such token
         HTT_400_BAD_REQUEST- if Token as expired or Token is invalid
     """
-
     permisssion_classes = [AllowAny]
 
     def get(self, request):
@@ -236,7 +233,7 @@ class VerifyEmail(APIView):
         )
 
 
-class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+class ListAgentAPIView(APIView):
 
     """An endpoint that returns a list of all AGENT
 
@@ -244,24 +241,21 @@ class ListAgentAPIView(generics.GenericAPIView, mixins.ListModelMixin):
 
     Raises: HTTP_404_NOT_FOUND- if there's no registered AGENT
     """
-
-    serializer_class = CustomUserSerializer
-    queryset = User.objects.filter(entry="Agent")
-    lookup_field = "email"
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(responses={200: CustomUserSerializer(many=True)})
-
+    @swagger_auto_schema(
+        request_body=CustomUserSerializer, 
+        responses=200
+        )
     def get(self, request):
-        if not self.get_queryset():
+        queryset = User.objects.filter(entry="Agent")
+        if not queryset:
             # return no content if there's no registered agent
             return Response(
                 "No available agent", status=status.HTTP_204_NO_CONTENT
             )
-        return Response(
-            self.serializer_class(self.get_queryset(), many=True).data,
-            status=status.HTTP_200_OK,
-        )
+        get_all_agents = CustomUserSerializer(queryset, many=True).data
+        return Response(get_all_agents,status=status.HTTP_200_OK)
 
 
 
@@ -285,7 +279,6 @@ class GET_AND_DELETE_userAPIView(APIView):
         request_body=CustomUserSerializer, 
         responses=200
         )
-
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         return Response(
@@ -319,7 +312,6 @@ class GET_AND_DELETE_AGENT(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(request_body=AgentSerializer)
-
     def get(self, request, email):
         get_agent = get_object_or_404(User, email=email)
         serializer = AgentSerializer(get_agent)
@@ -353,7 +345,6 @@ class GenerateOTP(APIView):
         request_body=GenrateOTPSerializer, 
         responses=200
         )
-
     def post(self, request):
         code = randint(000000, 999999)
         serializer = self.serializer_class(data=request.data)
@@ -417,7 +408,6 @@ class GenerateOTP(APIView):
     request_body=VerifyOTPSerializer, 
     responses=200
     )
-
 def verify_otp(request):
 
     """An endpoint to  verify OTP
@@ -468,7 +458,6 @@ class PasswordReset(APIView):
         request_body=CustomPasswordResetSerializer, 
         responses=200
         )
-
     def put(self, request):
         email = request.GET.get("email")
         try:

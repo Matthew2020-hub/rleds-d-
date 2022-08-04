@@ -25,7 +25,6 @@ class ApartmentCreateAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
     @swagger_auto_schema(request_body=ApartmentSerializer)
-
     def post(self, request):
         
         serializer = ApartmentSerializer(data=request.data)
@@ -133,7 +132,6 @@ class ApartmentSearchListAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(request_body=ApartmentSearchSerializer)
-
     def post(self, request):
         serializer = ApartmentSearchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -159,7 +157,6 @@ class ApartmentSearchListAPIView(APIView):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @swagger_auto_schema(request_body=ApartmentReviewSerializer)
-
 def apartment_reviews_create(request, apartment_id):
     serializer = ApartmentReviewSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

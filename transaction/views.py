@@ -34,7 +34,6 @@ class MakePayment(APIView):
             request_body=PaymentSerializer, 
             responses=200
             )
-
     def post(request):
         serializer = PaymentSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -180,7 +179,6 @@ class AgentWithdrawal(APIView):
         request_body=WithdrawalSerializer, 
         responses=200
         )
-
     def post(request):
 
         """An Agent withdrawal endpoint"""
@@ -253,7 +251,6 @@ class UserTransactionHistoryAPIView(APIView):
         request_body=PaymentHistorySerializer, 
         responses=status.HTTP_200_OK
         )
-
     def get(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
         payment_history = PaymentHistory.objects.filter(sender=user)
@@ -264,12 +261,13 @@ class UserTransactionHistoryAPIView(APIView):
 
 
 class AllTransactionHistoryAPIView(APIView):
+
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
         request_body=PaymentHistorySerializer, 
         responses=status.HTTP_200_OK
-        )
+        )      
     def get(self, request):
         
         queryset = PaymentHistory.objects.all()

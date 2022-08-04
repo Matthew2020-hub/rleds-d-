@@ -23,7 +23,6 @@ from rest_framework.decorators import (
     request_body=EditProfileSerializer, 
     responses=200
     )
-
 def profile(request, email):
     if request.method == "GET":
         try:
