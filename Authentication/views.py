@@ -266,18 +266,15 @@ class GET_AND_DELETE_User(APIView):
         HTTP_404- returns not found if a user with the email doesn't exist
     """
 
-    serializer_class = CustomUserSerializer
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    queryset = User.objects.filter(entry="Tenant")
-    lookup_field = "user_id"
     @swagger_auto_schema(
         request_body=CustomUserSerializer
         )
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         return Response(
-            self.serializer_class(user).data, 
+            CustomUserSerializer(user).data, 
             status=status.HTTP_200_OK
         )
 
