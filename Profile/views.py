@@ -20,8 +20,7 @@ from rest_framework.decorators import (
 @permission_classes([AllowAny])
 @authentication_classes([TokenAuthentication])
 @swagger_auto_schema( 
-    request_body=EditProfileSerializer, 
-    responses=200
+    request_body=EditProfileSerializer
     )
 def profile(request, email):
     if request.method == "GET":

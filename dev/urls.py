@@ -25,9 +25,9 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="rename",
+        title="freehouse",
         default_version="v1",
-        description="rename",
+        description="freehouse docs",
         #   terms_of_service="https://www.google.com/policies/terms/",
         #   contact=openapi.Contact(email="contact@snippets.local"),
         #   license=openapi.License(name="BSD License"),

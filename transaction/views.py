@@ -31,8 +31,7 @@ class MakePayment(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-            request_body=PaymentSerializer, 
-            responses=200
+            request_body=PaymentSerializer
             )
     def post(request):
         serializer = PaymentSerializer(data=request.data)
@@ -176,8 +175,7 @@ class AgentWithdrawal(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        request_body=WithdrawalSerializer, 
-        responses=200
+        request_body=WithdrawalSerializer
         )
     def post(request):
 
@@ -248,8 +246,7 @@ class UserTransactionHistoryAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        request_body=PaymentHistorySerializer, 
-        responses=status.HTTP_200_OK
+        request_body=PaymentHistorySerializer
         )
     def get(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
@@ -266,7 +263,6 @@ class AllTransactionHistoryAPIView(APIView):
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
         request_body=PaymentHistorySerializer, 
-        responses=status.HTTP_200_OK
         )      
     def get(self, request):
         

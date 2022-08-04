@@ -69,8 +69,7 @@ class UserAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        request_body=CustomUserSerializer, 
-        responses=200
+        request_body=CustomUserSerializer
         )
     def get(self, request):
         queryset = User.objects.filter(entry="Tenant")
@@ -96,8 +95,7 @@ class userRegistration(APIView):
 
     permission_classes = [AllowAny]
     @swagger_auto_schema(
-        request_body=CustomUserSerializer, 
-        responses=200
+        request_body=CustomUserSerializer
         )
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -122,8 +120,7 @@ class agentRegistration(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
     @swagger_auto_schema( 
-        request_body=AgentSerializer, 
-        responses=201
+        request_body=AgentSerializer
         )
     def post(self, request):
         serializer = AgentSerializer(data=request.data)
@@ -244,8 +241,7 @@ class ListAgentAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        request_body=CustomUserSerializer, 
-        responses=200
+        request_body=CustomUserSerializer
         )
     def get(self, request):
         queryset = User.objects.filter(entry="Agent")
@@ -276,8 +272,7 @@ class GET_AND_DELETE_userAPIView(APIView):
     queryset = User.objects.filter(entry="Tenant")
     lookup_field = "user_id"
     @swagger_auto_schema(
-        request_body=CustomUserSerializer, 
-        responses=200
+        request_body=CustomUserSerializer
         )
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
@@ -342,8 +337,7 @@ class GenerateOTP(APIView):
     permission_classes = [AllowAny]  # Allow everyone to register
     serializer_class = GenrateOTPSerializer
     @swagger_auto_schema(
-        request_body=GenrateOTPSerializer, 
-        responses=200
+        request_body=GenrateOTPSerializer
         )
     def post(self, request):
         code = randint(000000, 999999)
@@ -404,10 +398,7 @@ class GenerateOTP(APIView):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
-@swagger_auto_schema( 
-    request_body=VerifyOTPSerializer, 
-    responses=200
-    )
+@swagger_auto_schema(request_body=VerifyOTPSerializer)
 def verify_otp(request):
 
     """An endpoint to  verify OTP
@@ -418,7 +409,6 @@ def verify_otp(request):
         HTTP_406_NOT_ACCEPTABLE- an error message is OTP has expired
         HTTP_404_NOT_FOUND- error message if OTP supplied is invalid
     """
-
     serializer = VerifyOTPSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     otp = serializer.validated_data["otp"]
@@ -455,8 +445,7 @@ class PasswordReset(APIView):
 
     permisssion_classes = [AllowAny]
     @swagger_auto_schema(
-        request_body=CustomPasswordResetSerializer, 
-        responses=200
+        request_body=CustomPasswordResetSerializer
         )
     def put(self, request):
         email = request.GET.get("email")
@@ -480,10 +469,7 @@ class PasswordReset(APIView):
 
 
 @api_view(["POST"])
-@swagger_auto_schema(
-    request_body=GetAcessTokenSerializer, 
-    responses=200
-    )
+@swagger_auto_schema(request_body=GetAcessTokenSerializer)
 def validate_authorization_code(request):
 
     """Login Athorization Endpoint With Google Token
@@ -540,10 +526,7 @@ def validate_authorization_code(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
-@swagger_auto_schema(
-    request_body=LoginSerializer, 
-    responses=200
-)
+@swagger_auto_schema(request_body=LoginSerializer)
 def login_user(request):
 
     """
