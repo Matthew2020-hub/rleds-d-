@@ -124,7 +124,6 @@ class ApartmentSearch(APIView):
     Raise:
         HTTP_404_NOT_FOUND- if search query does not exist
     """
-
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 

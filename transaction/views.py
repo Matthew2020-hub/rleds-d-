@@ -16,8 +16,6 @@ import requests
 from dev.settings import FLUTTERWAVE_KEY
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated
-
-# from apartment.pagination import CustomPagination
 from drf_yasg.utils import swagger_auto_schema
 
 env = environ.Env()
@@ -25,11 +23,25 @@ environ.Env.read_env("housefree.env")
 
 
 class MakePayment(APIView):
+    
+    """ 
+        An endpoint where user(s) make payment for a designated apartment
+        Args:
+            Data- a serializer data
+        Response:
+            HTTP_200_OK- a success response and a flutterave's payment link
+        Raise:
+            (i) HTTP_404_NOT_FOUND- if apartment with supplied location or
+                if user with recipient's email does not exist
+            (ii) HTTP_204_NO_CONTENT-if desired apartment is no more available
+            (iii) HTTP_401_UNAUTHORIZED- if user with recipient's email 
+                is not an admin
+    """
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 
     @swagger_auto_schema(request_body=PaymentSerializer)
-    def post(request):
+    def post(self, request):
         serializer = PaymentSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user_email = serializer.validated_data["email"]
@@ -38,14 +50,14 @@ class MakePayment(APIView):
             name = serializer.validated_data["name"]
             apartment_id = serializer.validated_data["apartment_id"]
             agent_email = serializer.validated_data["agent_email"]
-            # A try and except is used so to get the specific error as there are many
-            # -conditions considered before a payment is allowed
+            # A try and except is used so to catch the specific error as 
+            # there are many conditions considered before a payment is allowed
             try:
                 verify_location = Apartment.objects.get(location=apartment_id)
             except Apartment.DoesNotExist:
                 return Response(
                     detail="Transaction failed due to incorrect house address",
-                    code=status.HTTP_400_BAD_REQUEST,
+                    code=status.HTTP_404_NOT_FOUND,
                 )
             if verify_location.is_available != True:
                 return Response(
@@ -57,7 +69,7 @@ class MakePayment(APIView):
             except User.DoesNotExist:
                 return Response(
                     detail="Agent with this Acoount ID does not exist!",
-                    code=status.HTTP_204_NO_CONTENT,
+                    code=status.HTTP_404_NOT_FOUND,
                 )
             if confirm_user_is_agent.is_admin is False:
                 return Response(
@@ -99,10 +111,24 @@ class MakePayment(APIView):
 
 class VerifyTransaction(APIView):
     permisssion_classes = [AllowAny]
+    authentication_classes = [TokenAuthentication]
 
-    def get(request, transaction_id):
+    def get(self, request, transaction_id):
 
-        """An payment verifiaction endpoint"""
+        """ An payment verifiaction endpoint
+            User's payment transaction is being verified is successful or not
+            Args:
+                Transaction-ID- user's transaction is being verified 
+                with the supplied transaction ID
+            Response:
+                HTTP_200_OK- a success response and user's transaction  
+                history data
+            Raise:
+                (i) HTTP_404_NOT_FOUND- if user with supplied account-ID 
+                    doesn't exist
+                (ii) HTTP_422_UNPROCESSABLE_ENTITY- if trnsaction verification fails
+        
+        """
 
         response = requests.get(
             f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify",
@@ -121,11 +147,6 @@ class VerifyTransaction(APIView):
             house_detail = response_data["meta"]["house_location"]
             get_agent = get_object_or_404(User, user_id=agent_id)
             recipient = get_agent.name
-            if get_agent.is_admin is False:
-                return Response(
-                    detail="Only an agent can lease out an apartment",
-                    code=status.HTTP_401_UNAUTHORIZED,
-                )
             if response_data["status"] == "successful":
                 verify_apartment = get_object_or_404(
                     Apartment, location=house_detail
@@ -153,43 +174,44 @@ class VerifyTransaction(APIView):
                 recipient=recipient,
                 transaction_status="Failed",
             )
-            return Response(
-                {"Error": "Payment Failed, Try Again!"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         return Response(
-            detail="Transaction ID is invalid",
-            code=status.HTTP_400_BAD_REQUEST,
-        )
+                {"Error": "Payment Failed, Try Again!"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
 
 
 class AgentWithdrawal(APIView):
-
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 
     @swagger_auto_schema(request_body=WithdrawalSerializer)
-    def post(request):
+    def post(self, request):
 
-        """An Agent withdrawal endpoint"""
+        """
+        An Agent withdrawal endpoint
+        Agent withdraws from his virtual wallet 
+
+        Args:
+            Data- a serializer data is provided
+        Response:
+            HTTP_200_OK- a success reponse and available balance
+        Raise:
+            (i) ValueError- if amount to be withdrawn is 
+                    greater than available balance 
+            (ii) HTTP_404_NOT_FOUND- if user with provided 
+                    email and ID does not exist
+            (iii) HTTP_422_UNPROCESSABLE_ENTITY- If transaction failed
+        """
 
         serializer = WithdrawalSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             email = serializer.validated_data["email"]
             amount = serializer.validated_data["amount"]
             acct_id = serializer.validated_data["account_id"]
-            account_id = User.objects.get(user_id=acct_id)
-            if account_id.email != email:
-                return Response(
-                    detail="Invalid Email input, enter the correct email!",
-                    code=status.HTTP_404_NOT_FOUND,
-                )
-            elif account_id is None:
-                return Response(
-                    detail="Incorrect Account ID!",
-                    code=status.HTTP_404_NOT_FOUND,
-                )
-            elif int(amount) > int(account_id.balance):
+            account_id = get_object_or_404(User, user_id=acct_id, email=email)
+        
+            if int(amount) > int(account_id.balance):
                 raise ValueError("Insufficient fund")
             auth_token = FLUTTERWAVE_KEY
             header = {
@@ -210,36 +232,66 @@ class AgentWithdrawal(APIView):
             url = " https://api.flutterwave.com/v3/transfers"
             response = requests.post(url, headers=header, params=data)
             response_data = response.json()
-            return Response(response_data["status"])
+            if response_data['stattus'] != 'success':
+                return Response(
+                    "Transaction Failed",
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY
+                )      
+            # agent withdrawn amount is deducted from agent's balance
+            account_id.balance -= amount
+            return Response(account_id, status=status.HTTP_200_OK)
+
 
 
 class AgentBalance(APIView):
 
+    """An endpoint to get Agent's Wallet balance
+    Args:
+        Email- email argument passed as a path parameter
+    Response:
+        HTTP_200_OK- a success response and agent's balance
+    Raise:
+        HTTP_204_NO_CONTENT-error response if user is not an admin
+    """
+
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-
-    def get(request):
-
-        """An endpoint to get Agent's Wallet balance"""
+    def get(self, request, email):
         wallet_balance = get_object_or_404(
-            User, email=request.user.email
-        ).balance
-        context = {"wallet": wallet_balance}
+            User, email=email
+        )
+        if wallet_balance.is_admin is False:
+            return Response(
+                "User has no account balance",
+                status=status.HTTP_204_NO_CONTENT
+            )
+        context = {"wallet": wallet_balance.balance}
         return Response(context, status=status.HTTP_200_OK)
+
 
 
 class UserTransactionHistory(APIView):
 
     """
     User Transaction History endpoint
-    """
+    Args:
+        User-ID- filters the DB and return user's transaction history
+    Response:
+        HTTP_200_OK- a success response when if user has transaction history
+    Raise:
+        HTTP_404_NOT_FOUND- error response if user with ID does not exist
 
+    """
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-
     def get(self, request, user_id):
         user = get_object_or_404(User, user_id=user_id)
         payment_history = PaymentHistory.objects.filter(sender=user)
+        if not payment_history:
+            return Response(
+                "User has no transaction history",
+                status=status.HTTP_204_NO_CONTENT
+            )
         return Response(
             PaymentHistorySerializer(payment_history, many=True).data,
             status=status.HTTP_200_OK,
@@ -247,6 +299,10 @@ class UserTransactionHistory(APIView):
 
 
 class AllTransactionHistory(APIView):
+    """
+    Returns all users transactions history 
+    and if not any, it returns an empty list
+    """
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]

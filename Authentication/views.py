@@ -135,8 +135,9 @@ def refreshToken(request, email):
         email- a user email is provided
     Returns: HTTP_201_created, mailjet data
 
-    Raises:(i) HTTP_404_NOT_FOUND if email doesn't exist
-        (ii) HTTP_500_INTERNAL_SERVER_ERROR if mailjet couldn't send the email
+    Raises: (i) HTTP_404_NOT_FOUND if email doesn't exist
+            (ii) HTTP_500_INTERNAL_SERVER_ERROR if mailjet 
+            couldn't send the email
     """
 
     user = get_object_or_404(User, email=email)
@@ -380,7 +381,7 @@ class VerifyOTP(APIView):
 
     permission_classes = [AllowAny]
     @swagger_auto_schema(request_body=VerifyOTPSerializer)
-    def post(request):
+    def post(self, request):
 
         """An endpoint to  verify OTP
         Password RESET OTP is verified
@@ -445,7 +446,7 @@ class Validate_Authorization_Code(APIView):
 
     permission_classes = [IsAuthenticated]
     @swagger_auto_schema(request_body=GetAcessTokenSerializer)
-    def post(request):
+    def post(self, request):
 
         """Login Athorization Endpoint With Google Token
         A google authorization key is decoded and user's info is verified
@@ -501,7 +502,7 @@ class Login(APIView):
 
     permission_classes = [AllowAny]
     @swagger_auto_schema(request_body=LoginSerializer)
-    def post(request):
+    def post(self, request):
 
         """
         N.B: A custom user login endpoint
@@ -543,7 +544,7 @@ def user_logout(request):
     User logout Endpoint
     Logs out a user by deleteing the user token
     Response:
-        HTTP_204_NO_CONTENT- a response after user logout is successful
+        HTTP_200_OK- a response after user logout is successful
     Raise:
         HTTP_404_NOT_FOUND- an error response if token provided is invalid
 
@@ -554,7 +555,7 @@ def user_logout(request):
         logout(request)
         return Response(
             {"success": _("Successfully logged out.")},
-            status=status.HTTP_204_NO_CONTENT,
+            status=status.HTTP_200_OK,
         )
     except (AttributeError, User.DoesNotExist):
         return Response(

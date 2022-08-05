@@ -80,7 +80,7 @@ class GetUserMessages(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(request, email):
+    def get(self, request, email):
         user = get_object_or_404(User, email=email)
         room = get_object_or_404(Room, user=user)
         messages = room.messages
@@ -93,9 +93,14 @@ class GetUserMessages(APIView):
 
 class Contact_Us(APIView):
 
+    """
+    A contact us form which uses mailjet as a mail library
+    Args:
+        data- a request data which contains a sender and the message body
+    """
     permission_classes = [AllowAny]
     @swagger_auto_schema(request_body=ContactUsSerializer)
-    def post(request):
+    def post(self, request):
         serializer = ContactUsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         sender = serializer.validated_data["sender"]

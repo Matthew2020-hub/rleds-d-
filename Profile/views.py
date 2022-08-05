@@ -5,16 +5,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 
 
 # User profile's endpoint
 class User_Profile(APIView):
-    permission_classes = [IsAuthenticated]
+
     authentication_classes= [TokenAuthentication]
-    
-    def get(request, email):
+    def get(self, request, email):
 
         user = get_object_or_404(User, email=email)
         email = user.email
@@ -37,10 +35,11 @@ class User_Profile(APIView):
         return Response(context, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=EditProfileSerializer)
-    def put(request, email): 
+    def put(self, request): 
 
         serializer = EditProfileSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
         get_user = get_object_or_404(User,email=email)
         get_user.update(**request.data)
         context = {

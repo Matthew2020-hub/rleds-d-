@@ -101,12 +101,12 @@ MIDDLEWARE = [
 
 # CORS configuration
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'https://spokane-topaz.vercel.app',
-    'htpps://spokane-blinds.netlify.app/'
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+#     'https://spokane-topaz.vercel.app',
+#     'htpps://spokane-blinds.netlify.app/'
 
-]
+# ]
 
 ROOT_URLCONF = "dev.urls"
 
@@ -183,19 +183,13 @@ REST_FRAMEWORK = {
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
+ALLOWED_HOSTS = []
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
@@ -275,9 +269,9 @@ TIME_ZONE = "Africa/Lagos"
 USE_TZ = True
 
 
-DATABASES['default'] = dj_database_url.config(
-    conn_max_age=600, ssl_require=True
-    )
+# DATABASES['default'] = dj_database_url.config(
+#     conn_max_age=600, ssl_require=True
+#     )
 
 # redis caching configuration
 CACHES = {
