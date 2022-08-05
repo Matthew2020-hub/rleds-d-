@@ -13,8 +13,12 @@ def generate_short_id(size=9, chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"):
 
 
 class Room(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    room_id = models.CharField(max_length=255, default=generate_short_id(), unique=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
+    room_id = models.CharField(
+        max_length=255, default=generate_short_id(), unique=True
+    )
 
 
 class Message(models.Model):
@@ -42,7 +46,9 @@ class MessageManager(models.Manager):
 
 
 class PrivateRoom(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     messages = models.ForeignKey(Message, on_delete=models.CASCADE)
     send_file = models.FileField()
 

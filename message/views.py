@@ -68,19 +68,19 @@ def store_and_return_message(data):
 async def print_message(sid, data):
     print("Socket ID", sid)
     print(data)
-    message = await sync_to_async(store_and_return_message, thread_sensitive=True)(
+    message = await sync_to_async(
+        store_and_return_message, thread_sensitive=True
+    )(
         data
     )  # communicating with orm
     print(message)
     await sio.emit("new_message", message, room=message["room_id"])
 
 
-
 class GetUserMessages(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(request_body=MessageSerializer)
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         room = get_object_or_404(Room, user=user)
@@ -90,8 +90,6 @@ class GetUserMessages(APIView):
         response["room_id"] = room.room_id
         response["messages"] = serializer.data
         return Response(response, status=status.HTTP_200_OK)
-
-
 
 
 @api_view(["POST"])

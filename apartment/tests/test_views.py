@@ -24,7 +24,9 @@ class TestViews(TestSetUp):
 
     def test_get_apartmentByID(self):
         self.getApartment_url = "/api/v1/apartment/"
-        response = self.client.post(self.post_apartment_url, self.apartment_data)
+        response = self.client.post(
+            self.post_apartment_url, self.apartment_data
+        )
         get_apartments = Apartment.objects.get(
             apartment_id=response.data["apartment_id"]
         )
@@ -49,7 +51,9 @@ class TestViews(TestSetUp):
             response.data["apartment_id"], get_apartment.data["apartment_id"]
         )
         # confirms that the update endpoint is working by verifying thst the post info is not equals to the updated one
-        self.assertNotEqual(get_apartments.descriptions, apartment_updated.descriptions)
+        self.assertNotEqual(
+            get_apartments.descriptions, apartment_updated.descriptions
+        )
         self.assertEqual(update_apartment.data, "Data update was successful")
         delete_apartment = self.client.delete(
             (self.getApartment_url + str(response.data["apartment_id"]))

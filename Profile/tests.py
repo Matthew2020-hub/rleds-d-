@@ -28,7 +28,9 @@ class TestSetUp(APITestCase):
         response.is_verify = True
         response.is_active = True
         response.save()
-        user_login = self.client.post(self.login_url, self.user_data, format="json")
+        user_login = self.client.post(
+            self.login_url, self.user_data, format="json"
+        )
         get_profile = self.client.get(self.profile_url)
         self.assertEqual(get_profile.status_code, 200)
         self.assertEqual(

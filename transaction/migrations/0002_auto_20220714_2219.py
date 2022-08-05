@@ -13,11 +13,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="paymenthistory",
             name="short_id",
-            field=models.CharField(default="RBUIWK36U", max_length=255, unique=True),
+            field=models.CharField(
+                default="RBUIWK36U", max_length=255, unique=True
+            ),
         ),
         migrations.AlterField(
             model_name="rooms",
             name="room_id",
-            field=models.CharField(default="XABIC8DRO", max_length=255, unique=True),
+            field=models.CharField(
+                default="XABIC8DRO", max_length=255, unique=True
+            ),
         ),
     ]

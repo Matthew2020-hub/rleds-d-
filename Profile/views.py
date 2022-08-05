@@ -14,12 +14,11 @@ from rest_framework.decorators import (
 )
 
 
-
 # User profile's endpoint
 @api_view(["GET", "PUT"])
 @permission_classes([AllowAny])
 @authentication_classes([TokenAuthentication])
-@swagger_auto_schema(request_body=EditProfileSerializer)
+# @swagger_auto_schema(request_body=EditProfileSerializer)
 def profile(request, email):
     if request.method == "GET":
         try:
@@ -44,9 +43,8 @@ def profile(request, email):
             return Response(context, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response(
-                "User does not exist!", 
-                status=status.HTTP_204_NO_CONTENT
-                )
+                "User does not exist!", status=status.HTTP_204_NO_CONTENT
+            )
 
     elif request.method == "PUT":
         serializer = EditProfileSerializer(data=request.data, partial=True)

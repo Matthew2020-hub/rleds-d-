@@ -32,7 +32,9 @@ class Migration(migrations.Migration):
                 ("timestamp", models.DateTimeField(auto_now_add=True)),
                 (
                     "short_id",
-                    models.CharField(default="ASPKRHN84", max_length=255, unique=True),
+                    models.CharField(
+                        default="ASPKRHN84", max_length=255, unique=True
+                    ),
                 ),
             ],
         ),
@@ -50,7 +52,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "room_id",
-                    models.CharField(default="T5FNDR7LF", max_length=255, unique=True),
+                    models.CharField(
+                        default="T5FNDR7LF", max_length=255, unique=True
+                    ),
                 ),
                 (
                     "user",

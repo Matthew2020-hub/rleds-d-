@@ -13,11 +13,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="message",
             name="short_id",
-            field=models.CharField(default="R7ABX0DXI", max_length=255, unique=True),
+            field=models.CharField(
+                default="R7ABX0DXI", max_length=255, unique=True
+            ),
         ),
         migrations.AlterField(
             model_name="room",
             name="room_id",
-            field=models.CharField(default="ZL5SO0QFG", max_length=255, unique=True),
+            field=models.CharField(
+                default="ZL5SO0QFG", max_length=255, unique=True
+            ),
         ),
     ]

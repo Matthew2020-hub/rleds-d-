@@ -9,7 +9,9 @@ class AccountAdapter(DefaultAccountAdapter):
         threshold = 90  # seconds
 
         assert request.user.is_authenticated()
-        if (request.user.last_login - request.user.date_joined).seconds < threshold:
+        if (
+            request.user.last_login - request.user.date_joined
+        ).seconds < threshold:
             url = "/registration/success"
         else:
             url = settings.LOGIN_REDIRECT_URL

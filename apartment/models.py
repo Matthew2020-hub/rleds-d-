@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 
+
 class Apartment(models.Model):
 
     CATEGORY_TYPE = [

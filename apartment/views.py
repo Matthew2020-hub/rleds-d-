@@ -18,14 +18,17 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 
+
 class ApartmentCreate(APIView):
 
     """An endpoint to post or create an apartment"""
+
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
+
     @swagger_auto_schema(request_body=ApartmentSerializer)
     def post(self, request):
-        
+
         serializer = ApartmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
@@ -54,9 +57,9 @@ class ApartmentList(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+
     @method_decorator(vary_on_headers)
-    @method_decorator(cache_page(60*60))
-    @swagger_auto_schema(request_body=ReturnApartmentInfoSerializer)
+    @method_decorator(cache_page(60 * 60))
     def get(self, request):
         queryset = Apartment.objects.all()
         if not queryset():
@@ -84,35 +87,29 @@ class ApartmentCreateUpdateDelete(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(request_body=ApartmentSerializer)
+
     def get(self, request, apartment_id):
         apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
         serializer = ApartmentSerializer(apartment)
         review = ApartmentReviewSerializer(apartment)
-        context = {
-            "apartment details": serializer.data, 
-            "review": review.data
-            }
+        context = {"apartment details": serializer.data, "review": review.data}
         return Response(context, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=ApartmentSerializer)
     def put(self, request, apartment_id):
         apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
-        serializer = self.serializer_class(apartment, data=request.data)
+        serializer = ApartmentSerializer(apartment, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            "Data update was successful", 
-            status=status.HTTP_200_OK
-            )
+            "Data update was successful", status=status.HTTP_200_OK
+        )
 
     def delete(self, request, apartment_id):
-        get_apartment = get_object_or_404(
-            Apartment, apartment_id=apartment_id
-            )
+        get_apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
         get_apartment.delete()
         return Response(
-            "Apartment deleted successfully", 
-            status=status.HTTP_204_NO_CONTENT
+            "Apartment deleted successfully", status=status.HTTP_204_NO_CONTENT
         )
 
 
@@ -130,6 +127,7 @@ class ApartmentSearch(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
+
     @swagger_auto_schema(request_body=ApartmentSearchSerializer)
     def post(self, request):
         serializer = ApartmentSearchSerializer(data=request.data)
@@ -142,15 +140,12 @@ class ApartmentSearch(APIView):
         )
         if apartments is None:
             return Response(
-                "Search result not found", 
-                status=status.HTTP_404_NOT_FOUND
-                )
-        apartment_details = ReturnApartmentInfoSerializer(
-            apartments, 
-            many=True
+                "Search result not found", status=status.HTTP_404_NOT_FOUND
             )
+        apartment_details = ReturnApartmentInfoSerializer(
+            apartments, many=True
+        )
         return Response(apartment_details, status=status.HTTP_200_OK)
-
 
 
 @api_view(["POST"])
@@ -160,7 +155,7 @@ def apartment_reviews_create(request, apartment_id):
     serializer = ApartmentReviewSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     review = serializer.validated_data["reviews"]
-    apartment = get_object_or_404(Apartment,apartment_id=apartment_id)
+    apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
     apartment.reviews = review
     apartment.save()
     return Response("review submitted", status=status.HTTP_200_OK)

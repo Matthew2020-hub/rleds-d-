@@ -26,7 +26,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "apartment_title",
-                    models.CharField(max_length=40, verbose_name="Apartment Title"),
+                    models.CharField(
+                        max_length=40, verbose_name="Apartment Title"
+                    ),
                 ),
                 (
                     "category",

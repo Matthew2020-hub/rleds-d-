@@ -62,7 +62,9 @@ class Migration(migrations.Migration):
                 ("user", models.CharField(max_length=255, null=True)),
                 (
                     "room_id",
-                    models.CharField(default="DUQMYM1GT", max_length=255, unique=True),
+                    models.CharField(
+                        default="DUQMYM1GT", max_length=255, unique=True
+                    ),
                 ),
             ],
         ),
@@ -148,7 +150,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "short_id",
-                    models.CharField(default="5PUXJWZYO", max_length=255, unique=True),
+                    models.CharField(
+                        default="5PUXJWZYO", max_length=255, unique=True
+                    ),
                 ),
                 (
                     "room",

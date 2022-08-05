@@ -1,5 +1,4 @@
 from multiprocessing import AuthenticationError
-import re
 from django.forms import ValidationError
 from .serializers import (
     LoginSerializer,
@@ -55,8 +54,6 @@ redirect_uri = os.environ.get("redirect_uri")
 project_id = os.environ.get("project_id")
 
 
-
-
 class UserList(APIView):
 
     """An endpoint that returns a list of all users
@@ -68,7 +65,7 @@ class UserList(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(request_body=CustomUserSerializer)
+
     def get(self, request):
         queryset = User.objects.filter(entry="Tenant")
         if queryset:
@@ -78,7 +75,6 @@ class UserList(APIView):
             )
         get_all_users = CustomUserSerializer(queryset, many=True).data
         return Response(get_all_users, status=status.HTTP_200_OK)
-
 
 
 class userRegistration(APIView):
@@ -92,6 +88,7 @@ class userRegistration(APIView):
     """
 
     permission_classes = [AllowAny]
+
     @swagger_auto_schema(request_body=CustomUserSerializer)
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -115,6 +112,7 @@ class agentRegistration(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [AllowAny]
+
     @swagger_auto_schema(request_body=AgentSerializer)
     def post(self, request):
         serializer = AgentSerializer(data=request.data)
@@ -186,7 +184,6 @@ def refreshToken(request, email):
     )
 
 
-
 class VerifyEmail(APIView):
     """Verify Email class
     verifies user email by verifying the JWT token
@@ -198,6 +195,7 @@ class VerifyEmail(APIView):
         HTTP_404_NOT_FOUND- if there's no user with such token
         HTT_400_BAD_REQUEST- if Token as expired or Token is invalid
     """
+
     permisssion_classes = [AllowAny]
 
     def get(self, request):
@@ -231,9 +229,10 @@ class ListAgent(APIView):
 
     Raises: HTTP_404_NOT_FOUND- if there's no registered AGENT
     """
+
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(request_body=CustomUserSerializer)
+
     def get(self, request):
         queryset = User.objects.filter(entry="Agent")
         if not queryset:
@@ -242,8 +241,7 @@ class ListAgent(APIView):
                 "No available agent", status=status.HTTP_204_NO_CONTENT
             )
         get_all_agents = CustomUserSerializer(queryset, many=True).data
-        return Response(get_all_agents,status=status.HTTP_200_OK)
-
+        return Response(get_all_agents, status=status.HTTP_200_OK)
 
 
 class GET_AND_DELETE_User(APIView):
@@ -259,12 +257,11 @@ class GET_AND_DELETE_User(APIView):
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(request_body=CustomUserSerializer)
+
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         return Response(
-            CustomUserSerializer(user).data, 
-            status=status.HTTP_200_OK
+            CustomUserSerializer(user).data, status=status.HTTP_200_OK
         )
 
     def delete(self, request, email):
@@ -273,26 +270,25 @@ class GET_AND_DELETE_User(APIView):
         token.delete()
         user.delete()
         return Response(
-            "User is successfully deleted", 
-            status=status.HTTP_204_NO_CONTENT
+            "User is successfully deleted", status=status.HTTP_204_NO_CONTENT
         )
 
 
 class GET_AND_DELETE_AGENT(APIView):
 
     """An endpoint to GET a specific agent object and DELETE agent's data
-        Returns an AGENT object
-        Args:
-            Email- supplied as a path paramter argument for user verification
-        Response:
-            HTTP_200_OK, a serailizer data if AGENT's data exists
-        Raise:
-            HTTP_404- an erorr response if agent with email doesn't exist
-        """
+    Returns an AGENT object
+    Args:
+        Email- supplied as a path paramter argument for user verification
+    Response:
+        HTTP_200_OK, a serailizer data if AGENT's data exists
+    Raise:
+        HTTP_404- an erorr response if agent with email doesn't exist
+    """
 
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
-    @swagger_auto_schema(request_body=AgentSerializer)
+
     def get(self, request, email):
         get_agent = get_object_or_404(User, email=email)
         serializer = AgentSerializer(get_agent)
@@ -308,20 +304,20 @@ class GET_AND_DELETE_AGENT(APIView):
         )
 
 
-
 class GenerateOTP(APIView):
     """An OTP generating endpoint
-        Args:
-            Email- a serializer data (email)
-        Response:
-            HTTP_200_OK- a success response if email is sent successfully
-        Raise:
-            HTTP_404- an error response if user with email doe snot exist
+    Args:
+        Email- a serializer data (email)
+    Response:
+        HTTP_200_OK- a success response if email is sent successfully
+    Raise:
+        HTTP_404- an error response if user with email doe snot exist
 
     """
-    
+
     permission_classes = [AllowAny]  # Allow everyone to register
     serializer_class = GenrateOTPSerializer
+
     @swagger_auto_schema(request_body=GenrateOTPSerializer)
     def post(self, request):
         code = randint(000000, 999999)
@@ -379,7 +375,6 @@ class GenerateOTP(APIView):
         )
 
 
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 @swagger_auto_schema(request_body=VerifyOTPSerializer)
@@ -409,10 +404,9 @@ def verify_otp(request):
         return Response(
             " The verification code has expired ",
             status=status.HTTP_406_NOT_ACCEPTABLE,
-            )
+        )
     verify_OTP.delete()
     return Response("OTP is valid", status=status.HTTP_200_OK)
-   
 
 
 class PasswordReset(APIView):
@@ -428,6 +422,7 @@ class PasswordReset(APIView):
     """
 
     permisssion_classes = [AllowAny]
+
     @swagger_auto_schema(request_body=CustomPasswordResetSerializer)
     def put(self, request):
         email = request.GET.get("email")
@@ -442,9 +437,7 @@ class PasswordReset(APIView):
         return Response(
             "Password change is successful, return to login page",
             status=status.HTTP_200_OK,
-            )
-
-
+        )
 
 
 @api_view(["POST"])
@@ -501,8 +494,6 @@ def validate_authorization_code(request):
         )
 
 
-
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 @swagger_auto_schema(request_body=LoginSerializer)
@@ -545,7 +536,7 @@ def login_user(request):
 @permission_classes([IsAuthenticated])
 def user_logout(request):
     """
-        User logout Endpoint
+    User logout Endpoint
     """
 
     try:
