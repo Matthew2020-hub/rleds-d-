@@ -375,38 +375,40 @@ class GenerateOTP(APIView):
         )
 
 
-@api_view(["POST"])
-@permission_classes([AllowAny])
-@swagger_auto_schema(request_body=VerifyOTPSerializer)
-def verify_otp(request):
 
-    """An endpoint to  verify OTP
-    Password RESET OTP is verified
-    Response:
-        HTTP_200_OK- a success message if OTP is valid
-    Raise:
-        HTTP_406_NOT_ACCEPTABLE- an error message is OTP has expired
-        HTTP_404_NOT_FOUND- error message if OTP supplied is invalid
-    """
-    serializer = VerifyOTPSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    otp = serializer.validated_data["otp"]
-    verify_OTP = get_object_or_404(VerifyCode, code=otp)
-    five_minutes_ago = timedelta(minutes=5)
-    # 'timezone.utc' is used in datetime.now()
-    # while trying to compare 2 different time
-    current_time = datetime.now(timezone.utc)
-    code_time_check = current_time - verify_OTP.add_time
-    if code_time_check > five_minutes_ago:
-        # The OTP expires after five minutes of it creation
-        # OTP is deleted after expiration to keep DB clean
+class VerifyOTP(APIView):
+
+    permission_classes = [AllowAny]
+    @swagger_auto_schema(request_body=VerifyOTPSerializer)
+    def post(request):
+
+        """An endpoint to  verify OTP
+        Password RESET OTP is verified
+        Response:
+            HTTP_200_OK- a success message if OTP is valid
+        Raise:
+            HTTP_406_NOT_ACCEPTABLE- an error message is OTP has expired
+            HTTP_404_NOT_FOUND- error message if OTP supplied is invalid
+        """
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        otp = serializer.validated_data["otp"]
+        verify_OTP = get_object_or_404(VerifyCode, code=otp)
+        five_minutes_ago = timedelta(minutes=5)
+        # 'timezone.utc' is used in datetime.now()
+        # while trying to compare 2 different time
+        current_time = datetime.now(timezone.utc)
+        code_time_check = current_time - verify_OTP.add_time
+        if code_time_check > five_minutes_ago:
+            # The OTP expires after five minutes of it creation
+            # OTP is deleted after expiration to keep DB clean
+            verify_OTP.delete()
+            return Response(
+                " The verification code has expired ",
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
         verify_OTP.delete()
-        return Response(
-            " The verification code has expired ",
-            status=status.HTTP_406_NOT_ACCEPTABLE,
-        )
-    verify_OTP.delete()
-    return Response("OTP is valid", status=status.HTTP_200_OK)
+        return Response("OTP is valid", status=status.HTTP_200_OK)
 
 
 class PasswordReset(APIView):
@@ -422,7 +424,6 @@ class PasswordReset(APIView):
     """
 
     permisssion_classes = [AllowAny]
-
     @swagger_auto_schema(request_body=CustomPasswordResetSerializer)
     def put(self, request):
         email = request.GET.get("email")
@@ -440,96 +441,99 @@ class PasswordReset(APIView):
         )
 
 
-@api_view(["POST"])
-@swagger_auto_schema(request_body=GetAcessTokenSerializer)
-def validate_authorization_code(request):
+class Validate_Authorization_Code(APIView):
 
-    """Login Athorization Endpoint With Google Token
-    A google authorization key is decoded and user's info is verified
-    Response:
-        HTTP_200_OK response and a token is authorization is successful
-    Raise:
-        HTTP_404_NOT_FOUND response if user with email does not exist
-    """
-    serializer = GetAcessTokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    authorization_code = serializer.validated_data["code"]
-    # google authorization code is encoded which needs to be decoded before access_token
-    # could be generated to retrieve logged-in user's info
-    uncoded = unquote(authorization_code)
-    if authorization_code is None:
-        return Response(
-            {"message": "Error occured due to Invalid authorization code"},
-            status=status.HTTP_204_NO_CONTENT,
+    permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(request_body=GetAcessTokenSerializer)
+    def post(request):
+
+        """Login Athorization Endpoint With Google Token
+        A google authorization key is decoded and user's info is verified
+        Response:
+            HTTP_200_OK response and a token is authorization is successful
+        Raise:
+            HTTP_404_NOT_FOUND response if user with email does not exist
+        """
+        serializer = GetAcessTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        authorization_code = serializer.validated_data["code"]
+        # google authorization code is encoded which needs to be decoded before access_token
+        # could be generated to retrieve logged-in user's info
+        uncoded = unquote(authorization_code)
+        if authorization_code is None:
+            return Response(
+                {"message": "Error occured due to Invalid authorization code"},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        data = {
+            "code": uncoded,
+            "client_id": SOCIAL_AUTH_GOOGLE_KEY,
+            "client_secret": SOCIAL_AUTH_GOOGLE_SECRET,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        }
+        response = requests.post(f"{GOOGLE_TOKEN_URL}", data=data)
+        if not response.ok:
+            return Response(
+                {"message": "Failed to obtain access token from Google"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        access_token = response.json()["access_token"]
+        # retrieve user's info from google
+        response = requests.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            params={"access_token": access_token},
         )
-    data = {
-        "code": uncoded,
-        "client_id": SOCIAL_AUTH_GOOGLE_KEY,
-        "client_secret": SOCIAL_AUTH_GOOGLE_SECRET,
-        "redirect_uri": redirect_uri,
-        "grant_type": "authorization_code",
-    }
-    response = requests.post(f"{GOOGLE_TOKEN_URL}", data=data)
-    if not response.ok:
-        return Response(
-            {"message": "Failed to obtain access token from Google"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-    access_token = response.json()["access_token"]
-    # retrieve user's info from google
-    response = requests.get(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        params={"access_token": access_token},
-    )
-    if not response.ok:
-        raise ValidationError("Failed to obtain user info from Google.")
-    result = response.json()
-    try:
-        user_login = get_object_or_404(User, email=result["email"])
-        token, created = Token.objects.get_or_create(user=user_login)
+        if not response.ok:
+            raise ValidationError("Failed to obtain user info from Google.")
+        result = response.json()
+        try:
+            user_login = get_object_or_404(User, email=result["email"])
+            token, created = Token.objects.get_or_create(user=user_login)
+            return Response({"Token": token.key}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            raise AuthenticationError(
+                "User with this email doesn't exist, kindly sign up"
+            )
+
+
+class Login(APIView):
+
+    permission_classes = [AllowAny]
+    @swagger_auto_schema(request_body=LoginSerializer)
+    def post(request):
+
+        """
+        N.B: A custom user login endpoint
+        Args:
+            data: a serailizer data which contain user login credentials
+        Response:
+            HTTP_200_OK- a success response and user token
+        Raise:
+            HTTP_404_NOT_FOUND- if user with supplied email does not exist
+            HTTP_401_UNAUTHORIZED- if login credentials are incorrect
+
+        """
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
+        user = get_object_or_404(User, email=email)
+        user.backend = "django.contrib.auth.backends.ModelBackend"
+        if not user.check_password(password):
+            return Response(
+                {"message": "Incorrect Login credentials"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        if not user.is_verify is True:
+            user.is_verify is True
+            # return Response({
+            # 'message': 'Email is not yet verified, kindly do that!'},
+            # status= status.HTTP_400_BAD_REQUEST
+            # )
+        token, created = Token.objects.get_or_create(user=user)
+        login(request, user)
         return Response({"Token": token.key}, status=status.HTTP_200_OK)
-    except User.DoesNotExist:
-        raise AuthenticationError(
-            "User with this email doesn't exist, kindly sign up"
-        )
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny])
-@swagger_auto_schema(request_body=LoginSerializer)
-def login_user(request):
-
-    """
-    N.B: A custom user login endpoint
-    Args:
-        data: a serailizer data which contain user login credentials
-    Response:
-        HTTP_200_OK- a success response and user token
-    Raise:
-        HTTP_404_NOT_FOUND- if user with supplied email does not exist
-        HTTP_401_UNAUTHORIZED- if login credentials are incorrect
-
-    """
-    serializer = LoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    email = serializer.validated_data["email"]
-    password = serializer.validated_data["password"]
-    user = get_object_or_404(User, email=email)
-    user.backend = "django.contrib.auth.backends.ModelBackend"
-    if not user.check_password(password):
-        return Response(
-            {"message": "Incorrect Login credentials"},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-    if not user.is_verify is True:
-        user.is_verify is True
-        # return Response({
-        # 'message': 'Email is not yet verified, kindly do that!'},
-        # status= status.HTTP_400_BAD_REQUEST
-        # )
-    token, created = Token.objects.get_or_create(user=user)
-    login(request, user)
-    return Response({"Token": token.key}, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -537,6 +541,12 @@ def login_user(request):
 def user_logout(request):
     """
     User logout Endpoint
+    Logs out a user by deleteing the user token
+    Response:
+        HTTP_204_NO_CONTENT- a response after user logout is successful
+    Raise:
+        HTTP_404_NOT_FOUND- an error response if token provided is invalid
+
     """
 
     try:

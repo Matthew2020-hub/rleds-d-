@@ -20,7 +20,7 @@ urlpatterns = [
         name="verify_payment",
     ),
     path("api/v1/agent/balance/", views.AgentBalance, name="balance"),
-    path("api/v1/history/", views.AllTransactionHistory.as_view()),
+    path("api/v1/transaction/history/all/", views.AllTransactionHistory.as_view()),
     path(
         "api/v1/user/<str:user_id>/payment-history",
         views.UserTransactionHistory.as_view(),

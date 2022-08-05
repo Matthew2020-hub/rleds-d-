@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from .serializers import ContactUsSerializer, MessageSerializer
 from rest_framework.views import APIView
 import os
@@ -10,7 +9,7 @@ from .serializers import message_serializer
 from asgiref.sync import sync_to_async
 import socketio
 import environ
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
 from Authentication.models import User
 from drf_yasg.utils import swagger_auto_schema
@@ -92,24 +91,26 @@ class GetUserMessages(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-@api_view(["POST"])
-@swagger_auto_schema(request_body=ContactUsSerializer)
-def contact_us(request):
-    serializer = ContactUsSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    sender = serializer.validated_data["sender"]
-    message = serializer.validated_data["message"]
-    mailjet = Client(auth=(api_key, api_secret), version="v3.1")
-    data = {
-        "Messages": [
-            {
-                "From": {"Email": f"{sender}", "Name": "Me"},
-                "To": [{"Email": "free_house@yahoo.com", "Name": "You"}],
-                "Subject": "Contact Form Mail",
-                "TextPart": "Greetings from Mailjet!",
-                "HTMLPart": f"<h3>{message}</h3>",
-            }
-        ]
-    }
-    result = mailjet.send.create(data=data)
-    return Response(result.json(), status=status.HTTP_201_CREATED)
+class Contact_Us(APIView):
+
+    permission_classes = [AllowAny]
+    @swagger_auto_schema(request_body=ContactUsSerializer)
+    def post(request):
+        serializer = ContactUsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        sender = serializer.validated_data["sender"]
+        message = serializer.validated_data["message"]
+        mailjet = Client(auth=(api_key, api_secret), version="v3.1")
+        data = {
+            "Messages": [
+                {
+                    "From": {"Email": f"{sender}", "Name": "Me"},
+                    "To": [{"Email": "free_house@yahoo.com", "Name": "You"}],
+                    "Subject": "Contact Form Mail",
+                    "TextPart": "Greetings from Mailjet!",
+                    "HTMLPart": f"<h3>{message}</h3>",
+                }
+            ]
+        }
+        result = mailjet.send.create(data=data)
+        return Response(result.json(), status=status.HTTP_201_CREATED)
