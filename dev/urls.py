@@ -41,9 +41,9 @@ urlpatterns = [
     path("", include("apartment.urls")),
     path("", include("Authentication.urls")),
     path("", include("rest_auth.urls")),
-    path("", include("rest_auth.registration.urls")),
+    # path("", include("rest_auth.registration.urls")),
     path("", include("message.urls")),
-    path("api/v1/oauth/", include("rest_framework_social_oauth2.urls")),
+    # path("api/v1/oauth/", include("rest_framework_social_oauth2.urls")),
     path("", include("transaction.urls")),
     path("", include("Profile.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

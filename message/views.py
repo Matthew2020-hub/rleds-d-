@@ -80,7 +80,7 @@ class GetUserMessages(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, email):
+    def get(request, email):
         user = get_object_or_404(User, email=email)
         room = get_object_or_404(Room, user=user)
         messages = room.messages
