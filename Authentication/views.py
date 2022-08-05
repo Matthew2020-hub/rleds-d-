@@ -543,11 +543,9 @@ def user_logout(request):
     """
     User logout Endpoint
     Logs out a user by deleteing the user token
-    Response:
-        HTTP_200_OK- a response after user logout is successful
-    Raise:
-        HTTP_404_NOT_FOUND- an error response if token provided is invalid
-
+    Response: HTTP_200_OK- a response after user logout is successful
+    
+    Raise: HTTP_404_NOT_FOUND- an error response if token provided is invalid
     """
 
     try:
