@@ -11,4 +11,4 @@ Agent is then credited only if user affirms the authencticity of the new apartme
 
 
 ==API DOUCMENTATION==
-https://documenter.getpostman.com/view/15595247/VUjLLSRW#intro
+https://documenter.getpostman.com/view/15595247/VUjMq6Wo
