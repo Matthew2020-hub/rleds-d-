@@ -8,29 +8,56 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Apartment',
+            name="Apartment",
             fields=[
-                ('apartment_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True)),
-                ('apartment_title', models.CharField(max_length=40, verbose_name='Apartment Title')),
-                ('category', models.CharField(choices=[('Bungalow', 'Bungalow'), ('Duplex', 'Duplex'), ('Flats', 'Flats'), ('Self Contain', 'Self Contain')], max_length=20)),
-                ('videofile', models.CharField(blank=True, max_length=500, null=True)),
-                ('image_url', models.JSONField()),
-                ('price', models.CharField(max_length=50)),
-                ('location', models.CharField(max_length=30)),
-                ('agent', models.CharField(max_length=30, null=True)),
-                ('descriptions', models.CharField(max_length=250, null=True)),
-                ('feautures', models.CharField(max_length=250, null=True)),
-                ('location_info', models.CharField(max_length=250, null=True)),
-                ('is_available', models.BooleanField(default=True)),
-                ('reviews', models.JSONField(null=True)),
+                (
+                    "apartment_id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "apartment_title",
+                    models.CharField(
+                        max_length=40, verbose_name="Apartment Title"
+                    ),
+                ),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("Bungalow", "Bungalow"),
+                            ("Duplex", "Duplex"),
+                            ("Flats", "Flats"),
+                            ("Self Contain", "Self Contain"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "videofile",
+                    models.CharField(blank=True, max_length=500, null=True),
+                ),
+                ("image_url", models.JSONField()),
+                ("price", models.CharField(max_length=50)),
+                ("location", models.CharField(max_length=30)),
+                ("agent", models.CharField(max_length=30, null=True)),
+                ("descriptions", models.CharField(max_length=250, null=True)),
+                ("feautures", models.CharField(max_length=250, null=True)),
+                ("location_info", models.CharField(max_length=250, null=True)),
+                ("is_available", models.BooleanField(default=True)),
+                ("reviews", models.JSONField(null=True)),
             ],
             options={
-                'ordering': ['category'],
+                "ordering": ["category"],
             },
         ),
     ]

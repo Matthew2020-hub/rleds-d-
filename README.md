@@ -10,3 +10,5 @@ User can chat with agent or landlord, after picking house of choice, then go for
 Agent is then credited only if user affirms the authencticity of the new apartment.
 
 
+==API DOUCMENTATION==
+https://documenter.getpostman.com/view/15595247/VUjMq6Wo
