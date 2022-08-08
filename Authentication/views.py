@@ -56,11 +56,12 @@ project_id = os.environ.get("project_id")
 
 class UserList(APIView):
 
-    """An endpoint that returns a list of all users
+    """
+    An endpoint that returns a list of all users
 
     Returns: HTTP_200_OK and a list of available user
 
-    Raises: HTTP_404_NOT_FOUND if there's no registered or active user
+    Raises: HTTP_204_NO_CONTENT- if there's no registered or active user
     """
 
     authentication_classes = [TokenAuthentication]
@@ -68,7 +69,7 @@ class UserList(APIView):
 
     def get(self, request):
         queryset = User.objects.filter(entry="Tenant")
-        if queryset:
+        if not queryset:
             return Response(
                 "No registered user in the database",
                 status=status.HTTP_204_NO_CONTENT,
@@ -78,12 +79,11 @@ class UserList(APIView):
 
 
 class userRegistration(APIView):
-    """A user registration class
+    """
+    A user registration class
     A token is being created for a user after a successful registration
 
-    Returns: HTTP_201_created, a serializer data and a token
-
-    Raises: HTTP_400_Bad_Request- an error message based on the serializer
+    Returns: HTTP_201_CREATED, a serializer data and a token
 
     """
 
@@ -101,12 +101,11 @@ class userRegistration(APIView):
 
 
 class agentRegistration(APIView):
-    """An agent registration class
+    """
+    An agent registration class
     A token is being created for an agent after a successful registration
 
-    Returns: HTTP_201_created- a serializer data and a token
-
-    Raises: HTTP_400_Bad_Request- an error message based on the serializer
+    Returns: HTTP_201_CREATED- a serializer data and a token
 
     """
 
@@ -128,7 +127,8 @@ class agentRegistration(APIView):
 @permission_classes([AllowAny])
 def refreshToken(request, email):
 
-    """A Refresh Token class for email verifcation
+    """
+    A Refresh Token class for email verifcation
     A JWT refresh token is created for email verification
     and the token is sent to user's email using MAILJET
     Args:
@@ -136,7 +136,7 @@ def refreshToken(request, email):
     Returns: HTTP_201_created, mailjet data
 
     Raises: (i) HTTP_404_NOT_FOUND if email doesn't exist
-            (ii) HTTP_500_INTERNAL_SERVER_ERROR if mailjet 
+            (ii) HTTP_422_UNPROCESSABLE_ENTITY- if mailjet 
             couldn't send the email
     """
 
@@ -181,7 +181,7 @@ def refreshToken(request, email):
         return Response(mailjet_result.json(), status=status.HTTP_201_CREATED)
     return Response(
         "Email couldn't be sent, try again",
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
     )
 
 
@@ -306,7 +306,8 @@ class GET_AND_DELETE_AGENT(APIView):
 
 
 class GenerateOTP(APIView):
-    """An OTP generating endpoint
+    """
+    An OTP generating endpoint
     Args:
         Email- a serializer data (email)
     Response:
@@ -368,8 +369,13 @@ class GenerateOTP(APIView):
                 }
             ]
         }
-        result = mailjet.send.create(data=data)
-        responses = result.json()
+        mail_jet_result = mailjet.send.create(data=data)
+        if not mail_jet_result:
+            return Response(
+                "Sending email failed",
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+        responses = mail_jet_result.json()
         return Response(
             {"message": "OTP sent, check your email"},
             status=status.HTTP_200_OK,
