@@ -50,6 +50,7 @@ class MakePayment(APIView):
             name = serializer.validated_data["name"]
             apartment_id = serializer.validated_data["apartment_id"]
             agent_email = serializer.validated_data["agent_email"]
+            
             # A try and except is used so to catch the specific error as 
             # there are many conditions considered before a payment is allowed
             try:
