@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from message.models import Message
+from .models import Message
 
 
 def message_serializer(a) -> dict:
