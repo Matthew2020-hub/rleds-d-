@@ -10,5 +10,8 @@ User can chat with agent or landlord, after picking house of choice, then go for
 Agent is then credited only if user affirms the authencticity of the new apartment.
 
 
-==LIVE-LINK==
+## LIVE-LINK
 https://freehouses.herokuapp.com/api/v1/docs/
+
+## API-DOCUMENTATION-LINK
+https://documenter.getpostman.com/view/15595247/VUjLLSec
