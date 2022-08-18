@@ -1,7 +1,5 @@
 from django.urls import reverse
-import json
 from .test_setup import TestSetUp
-import pdb
 from ..models import User
 
 

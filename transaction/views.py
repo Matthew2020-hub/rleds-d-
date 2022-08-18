@@ -20,7 +20,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 env = environ.Env()
 environ.Env.read_env("housefree.env")
-
+# 
 
 class MakePayment(APIView):
     
@@ -115,7 +115,7 @@ class VerifyTransaction(APIView):
 
     def get(self, request, transaction_id):
 
-        """ An payment verifiaction endpoint
+        """ An payment verification endpoint
             User's payment transaction is being verified is successful or not
             Args:
                 Transaction-ID- user's transaction is being verified 
@@ -126,7 +126,7 @@ class VerifyTransaction(APIView):
             Raise:
                 (i) HTTP_404_NOT_FOUND- if user with supplied account-ID 
                     doesn't exist
-                (ii) HTTP_422_UNPROCESSABLE_ENTITY- if trnsaction verification fails
+                (ii) HTTP_422_UNPROCESSABLE_ENTITY- if transaction verification fails
         
         """
 
@@ -280,6 +280,7 @@ class UserTransactionHistory(APIView):
         HTTP_200_OK- a success response when if user has transaction history
     Raise:
         HTTP_404_NOT_FOUND- error response if user with ID does not exist
+        HTTP_204_NO_CONTENT- if user has no transaction history
 
     """
     authentication_classes = [TokenAuthentication]

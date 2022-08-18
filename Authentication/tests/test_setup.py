@@ -10,8 +10,7 @@ class TestSetUp(APITestCase):
         self.user_data = {
             "email": "wreco@gmail.com",
             "entry": "Tenant",
-            "password": "respect1242",
-            "password2": "respect1242",
+            "password": "Password@01",
             "name": "string",
             "country": "AF",
             "phone_number": "+234-08102331242",
@@ -19,20 +18,19 @@ class TestSetUp(APITestCase):
         self.agent_data = {
             "email": "wrecode@gmail.com",
             "entry": "Agent",
-            "password": "respect1242",
-            "password2": "respect1242",
+            "password": "Password@01",
             "name": "string",
             "country": "NG",
             "phone_number": "+234-08102331242",
         }
         self.login_data = {
             "email": "wreco@gmail.com",
-            "password": "respect1242",
+            "password": "Password@01",
         }
         self.forgetPassword_data = {
             "email": "wreco@gmail.com",
             "phone_number": "+234-08102331242",
-            "password": "respect1241",
+            "password": "Password@01",
         }
         return super().setUp()
 

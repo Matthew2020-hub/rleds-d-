@@ -194,7 +194,7 @@ class VerifyEmail(APIView):
         HTTP_200_OK- if the token is genuine and user with the token exists
     Raise:
         HTTP_404_NOT_FOUND- if there's no user with such token
-        HTT_400_BAD_REQUEST- if Token as expired or Token is invalid
+        HTTP_400_BAD_REQUEST- if Token as expired or Token is invalid
     """
 
     permisssion_classes = [AllowAny]
@@ -246,7 +246,8 @@ class ListAgent(APIView):
 
 
 class GET_AND_DELETE_User(APIView):
-    """An endpoint to GET or delete a user's record
+    """
+    An endpoint to GET or delete a user's record
     Returns a user object
     Args:
         Email- returns a user data that was provided during registration
@@ -255,14 +256,14 @@ class GET_AND_DELETE_User(APIView):
     Raise:
         HTTP_404- returns not found if a user with the email doesn't exist
     """
-
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 
     def get(self, request, email):
         user = get_object_or_404(User, email=email)
         return Response(
-            CustomUserSerializer(user).data, status=status.HTTP_200_OK
+            CustomUserSerializer(user).data, 
+            status=status.HTTP_200_OK
         )
 
     def delete(self, request, email):
@@ -271,7 +272,8 @@ class GET_AND_DELETE_User(APIView):
         token.delete()
         user.delete()
         return Response(
-            "User is successfully deleted", status=status.HTTP_204_NO_CONTENT
+            "User is successfully deleted", 
+            status=status.HTTP_204_NO_CONTENT
         )
 
 
@@ -424,12 +426,11 @@ class PasswordReset(APIView):
         Args:
             Email- a path param retrieved from the URL
         Response:
-            HTTP_200_OK response and a serailizer data if AGENT's data exists
+            HTTP_200_OK response and a serailizer data
         Raise:
-            HTTP_404 response if an AGENT with the provided email \
-                doesn't exist in the database
+            HTTP_404 response if an user with the provided email \
+                doesn't exist.
     """
-
     permisssion_classes = [AllowAny]
     @swagger_auto_schema(request_body=CustomPasswordResetSerializer)
     def put(self, request):

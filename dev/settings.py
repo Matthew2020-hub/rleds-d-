@@ -20,6 +20,8 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+env = environ.Env()
+environ.Env.read_env("housefree.env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -28,9 +30,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-env = environ.Env()
-environ.Env.read_env("housefree.env")
+DEBUG = False
 CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL")
 
 ACCOUNT_ADAPTER = "Profile.adapter.AccountAdapter"
@@ -70,14 +70,14 @@ INSTALLED_APPS = [
     "corsheaders",
     "apartment",
     "django.contrib.sites",
-    "allauth",
-    "social_django",
-    "oauth2_provider",
+    # "allauth",
+    # "oauth2_provider",
     "django_countries",
-    "allauth.account",
-    "rest_auth.registration",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
+    'phonenumber_field',
+    # "allauth.account",
+    # "rest_auth.registration",
+    # "allauth.socialaccount",
+    # "allauth.socialaccount.providers.google",
     "Authentication",
     "message",
     "transaction",
@@ -101,12 +101,12 @@ MIDDLEWARE = [
 
 # CORS configuration
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'https://spokane-topaz.vercel.app',
-    'htpps://spokane-blinds.netlify.app/'
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+#     'https://spokane-topaz.vercel.app',
+#     'htpps://spokane-blinds.netlify.app/'
 
-]
+# ]
 
 ROOT_URLCONF = "dev.urls"
 
@@ -127,7 +127,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "dev.wsgi.application"
-# ASGI_APPLICATION = 'dev.asgi.application'
+ASGI_APPLICATION = 'dev.asgi.application'
 
 AUTH_USER_MODEL = "Authentication.User"
 
@@ -186,12 +186,8 @@ REST_FRAMEWORK = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
