@@ -45,6 +45,7 @@ django-phonenumbers==1.0.1
 django-redis==5.2.0
 django-rest-auth==0.9.5
 django-rest-framework-social-oauth2==1.1.0
+django-redis==5.2.0
 djangorestframework==3.13.1
 djangorestframework-simplejwt==5.0.0
 drf-yasg==1.20.0

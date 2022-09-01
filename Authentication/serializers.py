@@ -32,18 +32,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "password2": {"write_only": True},
         }
 
-    def save(self):
-        user = User(
-            email=self.validated_data["email"],
-            name=self.validated_data["name"],
-            country=self.validated_data["country"],
-            phone_number=self.validated_data["phone_number"],
-        )
-        password = self.validated_data["password"]
-        user.set_password(password)
-        user.entry = "Tenant"
-        # Room.objects.get_or_create(user=user)
-        return super().save()
 
 
 class LoginSerializer(serializers.Serializer):
@@ -52,14 +40,15 @@ class LoginSerializer(serializers.Serializer):
         style={"input_type": "password"}, trim_whitespace=False
     )
 
-    class Meta:
-        ref_name = "my_login"
+    # class Meta:
+    #     ref_name = "my_login"
 
-    def __str__(self):
-        return self.email
+    # def __str__(self):
+    #     return self.email
 
 
 class CustomPasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
     password = serializers.CharField(
         validators=[password_regex_pattern],
         max_length=100,
@@ -110,18 +99,7 @@ class AgentSerializer(serializers.ModelSerializer):
             "user_id",
         ]
 
-    def save(self):
-        user = User(
-            email=self.validated_data["email"],
-            name=self.validated_data["name"],
-            country=self.validated_data["country"],
-            phone_number=self.validated_data["phone_number"],
-            agent_location=self.validated_data["agent_location"],
-        )
-        password = self.validated_data["password"]
-        user.set_password(password)
-        user.entry = "Agent"
-        return super().save()
+ 
 
 
 class GenrateOTPSerializer(serializers.Serializer):
