@@ -26,7 +26,7 @@ environ.Env.read_env("housefree.env")
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&zd5--sitz)((c2&br%jjhd0w!2fpnr&!tytc2j1#^a^6r9a0x"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KET")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
