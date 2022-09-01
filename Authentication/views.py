@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import (
     api_view,
-    permission_classes,
+    permission_classes, authentication_classes
 )
 from django.contrib.auth import logout, login
 from django.utils.translation import gettext_lazy as _
@@ -74,8 +74,8 @@ class UserList(APIView):
                 "No registered user in the database",
                 status=status.HTTP_204_NO_CONTENT,
             )
-        get_all_users = CustomUserSerializer(queryset, many=True).data
-        return Response(get_all_users, status=status.HTTP_200_OK)
+        get_all_users = CustomUserSerializer(queryset, many=True)
+        return Response(get_all_users.data, status=status.HTTP_200_OK)
 
 
 class userRegistration(APIView):
@@ -93,7 +93,14 @@ class userRegistration(APIView):
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        user_create = User.objects.create_user(
+            **serializer.validated_data
+        )
+        if not user_create:
+            return Response(
+                "User creation is unsuccessful",
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
         return Response(
             {"message": "Check your email for verification"},
             status=status.HTTP_201_CREATED,
@@ -116,7 +123,11 @@ class agentRegistration(APIView):
     def post(self, request):
         serializer = AgentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        agent_create = User.objects.create_user(**serializer.validated_data)
+        if not agent_create:
+            return Response('Agent creation is unsuccessful', 
+            status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
         return Response(
             {"message": "Check your email and verify"},
             status=status.HTTP_201_CREATED,
@@ -267,14 +278,23 @@ class GET_AND_DELETE_User(APIView):
         )
 
     def delete(self, request, email):
-        user = get_object_or_404(User, email=email)
-        token = Token.objects.get(user=user)
-        token.delete()
-        user.delete()
-        return Response(
-            "User is successfully deleted", 
-            status=status.HTTP_204_NO_CONTENT
-        )
+       
+        try:
+            user = get_object_or_404(User, email=email)
+            if user.is_admin is True:
+                return Response(
+                    "user is Admin cannot be deleted",
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            token = Token.objects.get(user=user)
+            token.delete()
+            user.delete()
+            return Response(
+                "User is successfully deleted", 
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Token.DoesNotExist:
+            return Response("Invalid Token", status=status.HTTP_404_NOT_FOUND)
 
 
 class GET_AND_DELETE_AGENT(APIView):
@@ -298,13 +318,22 @@ class GET_AND_DELETE_AGENT(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, email):
-        agent = get_object_or_404(User, email=email)
-        token = Token.objects.get(user=agent)
-        token.delete()
-        agent.delete()
-        return Response(
-            "Agent deleted successfully", status=status.HTTP_204_NO_CONTENT
-        )
+        try:
+            agent = get_object_or_404(User, email=email)
+            if agent.is_admin is False:
+                return Response(
+                    "User is not an admin", 
+                    status=status.HTTP_400_BAD_REQUEST
+                    )
+            token = Token.objects.get(user=agent)
+            token.delete()
+            agent.delete()
+            return Response(
+                "User is successfully deleted", 
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Token.DoesNotExist:
+            return Response("Invalid Token", status=status.HTTP_404_NOT_FOUND)
 
 
 class GenerateOTP(APIView):
@@ -434,11 +463,10 @@ class PasswordReset(APIView):
     permisssion_classes = [AllowAny]
     @swagger_auto_schema(request_body=CustomPasswordResetSerializer)
     def put(self, request):
-        email = request.GET.get("email")
-        get_object_or_404(User, email=email)
         serializer = CustomPasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         password = serializer.validated_data["password"]
+        email = serializer.validated_data["email"]
         get_user = get_object_or_404(User, email=email)
         get_user.password = password
         get_user.set_password(password)
@@ -527,6 +555,7 @@ class Login(APIView):
         email = serializer.validated_data["email"]
         password = serializer.validated_data["password"]
         user = get_object_or_404(User, email=email)
+        print(user.password)
         user.backend = "django.contrib.auth.backends.ModelBackend"
         if not user.check_password(password):
             return Response(
@@ -545,6 +574,7 @@ class Login(APIView):
 
 
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def user_logout(request):
     """
@@ -558,13 +588,12 @@ def user_logout(request):
 
     try:
         request.user.auth_token.delete()
-        logout(request)
         return Response(
             {"success": _("Successfully logged out.")},
             status=status.HTTP_200_OK,
         )
-    except (AttributeError, User.DoesNotExist):
+    except (Token.DoesNotExist):
         return Response(
-            {"Error": _("User not found, enter a valid token.")},
+            {"Error": _("Invalid Token, enter a valid token.")},
             status=status.HTTP_404_NOT_FOUND,
         )

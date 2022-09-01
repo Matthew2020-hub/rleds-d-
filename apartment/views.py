@@ -62,9 +62,10 @@ class ApartmentList(APIView):
     @method_decorator(cache_page(60 * 60))
     def get(self, request):
         queryset = Apartment.objects.all()
-        if not queryset():
+        if not queryset:
             return Response(
-                "No apartment is available", status=status.HTTP_204_NO_CONTENT
+                "No apartment is available", 
+                status=status.HTTP_204_NO_CONTENT
             )
         return Response(
             ReturnApartmentInfoSerializer(queryset, many=True).data,

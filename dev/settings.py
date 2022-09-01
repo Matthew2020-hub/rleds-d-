@@ -26,11 +26,11 @@ environ.Env.read_env("housefree.env")
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KET")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL")
 
 ACCOUNT_ADAPTER = "Profile.adapter.AccountAdapter"
@@ -70,14 +70,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "apartment",
     "django.contrib.sites",
-    # "allauth",
-    # "oauth2_provider",
     "django_countries",
     'phonenumber_field',
-    # "allauth.account",
-    # "rest_auth.registration",
-    # "allauth.socialaccount",
-    # "allauth.socialaccount.providers.google",
+    "rest_auth.registration",
     "Authentication",
     "message",
     "transaction",
@@ -132,34 +127,8 @@ ASGI_APPLICATION = 'dev.asgi.application'
 AUTH_USER_MODEL = "Authentication.User"
 
 
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = "/?verification=1"
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/?verification=1"
-
 SIMPLE_JWT = {"USER_ID_FIELD": "user_id"}
 
-FACEBOOK_EXTENDED_PERMISSIONS = ["email"]
-SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ["username", "first_name", "email"]
-SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
-SOCIAL_AUTH_PIPELINE = (
-    "social_core.pipeline.social_auth.social_details",
-    "social_core.pipeline.social_auth.social_uid",
-    "social_core.pipeline.social_auth.auth_allowed",
-    "social_core.pipeline.social_auth.social_user",
-    "social_core.pipeline.user.get_username",
-    "social_core.pipeline.social_auth.associate_by_email",
-    "social_core.pipeline.user.create_user",
-    "social_core.pipeline.social_auth.associate_user",
-    "social_core.pipeline.social_auth.load_extra_data",
-    "social_core.pipeline.user.user_details",
-)
 
 
 AUTHENTICATION_BACKENDS = (
@@ -191,7 +160,7 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','freehouses.herokuapp.com']
+ALLOWED_HOSTS = []
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
@@ -271,9 +240,9 @@ TIME_ZONE = "Africa/Lagos"
 USE_TZ = True
 
 
-DATABASES['default'] = dj_database_url.config(
-    conn_max_age=600, ssl_require=True
-    )
+# DATABASES['default'] = dj_database_url.config(
+#     conn_max_age=600, ssl_require=True
+#     )
 
 # redis caching configuration
 CACHES = {

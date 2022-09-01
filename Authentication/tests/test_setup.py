@@ -4,7 +4,7 @@ from django.urls import reverse
 
 class TestSetUp(APITestCase):
     def setUp(self):
-        self.register_url = reverse("register")
+        self.register_url = reverse("user-register")
         self.login_url = reverse("login")
 
         self.user_data = {
@@ -13,7 +13,7 @@ class TestSetUp(APITestCase):
             "password": "Password@01",
             "name": "string",
             "country": "AF",
-            "phone_number": "+234-08102331242",
+            "phone_number": "+2348102901245"
         }
         self.agent_data = {
             "email": "wrecode@gmail.com",
@@ -21,15 +21,14 @@ class TestSetUp(APITestCase):
             "password": "Password@01",
             "name": "string",
             "country": "NG",
-            "phone_number": "+234-08102331242",
+            "phone_number": "+2348102901248",
         }
         self.login_data = {
             "email": "wreco@gmail.com",
-            "password": "Password@01",
+            "password": "Password@01"
         }
         self.forgetPassword_data = {
             "email": "wreco@gmail.com",
-            "phone_number": "+234-08102331242",
             "password": "Password@01",
         }
         return super().setUp()

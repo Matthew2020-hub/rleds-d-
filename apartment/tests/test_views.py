@@ -46,11 +46,10 @@ class TestViews(TestSetUp):
         self.assertEqual(get_apartment.status_code, 200)
         self.assertEqual(Apartment.objects.count(), 1)
         self.assertNotEqual(get_apartment.data["agent"], "wreco")
-        # pdb.set_trace()
+        pdb.set_trace()
         self.assertEqual(
             response.data["apartment_id"], get_apartment.data["apartment_id"]
         )
-        # confirms that the update endpoint is working by verifying thst the post info is not equals to the updated one
         self.assertNotEqual(
             get_apartments.descriptions, apartment_updated.descriptions
         )
