@@ -18,7 +18,7 @@ class Apartment(models.Model):
     )
     category = models.CharField(choices=CATEGORY_TYPE, max_length=20)
     videofile = models.CharField(max_length=500, blank=True, null=True)
-    image_url = models.JSONField()
+    image_url = models.JSONField(null=True)
     price = models.CharField(max_length=50, null=False)
     location = models.CharField(max_length=30, null=False)
     agent = models.CharField(max_length=30, null=True)
