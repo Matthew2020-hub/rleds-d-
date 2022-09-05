@@ -1,3 +1,4 @@
+from uritemplate import partial
 from .serializers import (
     ApartmentSearchSerializer,
     ApartmentSerializer,
@@ -67,8 +68,9 @@ class ApartmentList(APIView):
                 "No apartment is available", 
                 status=status.HTTP_204_NO_CONTENT
             )
+        apartment_list = ReturnApartmentInfoSerializer(queryset, many=True)
         return Response(
-            ReturnApartmentInfoSerializer(queryset, many=True).data,
+            apartment_list.data,
             status=status.HTTP_200_OK,
         )
 
@@ -93,24 +95,41 @@ class ApartmentCreateUpdateDelete(APIView):
         apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
         serializer = ApartmentSerializer(apartment)
         review = ApartmentReviewSerializer(apartment)
-        context = {"apartment details": serializer.data, "review": review.data}
+        context = {
+            "apartment details": serializer.data, 
+            "review": review.data
+            }
         return Response(context, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=ApartmentSerializer)
     def put(self, request, apartment_id):
-        apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
-        serializer = ApartmentSerializer(apartment, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(
-            "Data update was successful", status=status.HTTP_200_OK
-        )
+        try:
+            apartment = Apartment.objects.filter(apartment_id=apartment_id)
+            serializer = ApartmentSerializer(
+                apartment, 
+                data=request.data, 
+                partial=True
+                )
+            serializer.is_valid(raise_exception=True)
+            apartment.update(**serializer.validated_data)
+            return Response(
+                "Data update was successful", status=status.HTTP_200_OK
+            )
+        except Apartment.DoesNotExist:
+            return Response(
+                "Apartment with ID does not exist!", 
+                status=status.HTTP_404_NOT_FOUND
+                )
+
 
     def delete(self, request, apartment_id):
-        get_apartment = get_object_or_404(Apartment, apartment_id=apartment_id)
+        get_apartment = get_object_or_404(
+            Apartment, apartment_id=apartment_id
+            )
         get_apartment.delete()
         return Response(
-            "Apartment deleted successfully", status=status.HTTP_204_NO_CONTENT
+            "Apartment deleted successfully", 
+            status=status.HTTP_204_NO_CONTENT
         )
 
 
