@@ -60,7 +60,7 @@ class ApartmentList(APIView):
     permisssion_classes = [IsAuthenticated]
 
     @method_decorator(vary_on_headers)
-    @method_decorator(cache_page(60 * 60))
+    @cache_page(60 * 60)
     def get(self, request):
         queryset = Apartment.objects.all()
         if not queryset:
