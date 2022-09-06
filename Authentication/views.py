@@ -23,7 +23,8 @@ from rest_framework.decorators import (
     api_view,
     permission_classes, authentication_classes
 )
-from django.contrib.auth import logout, login
+from django.contrib.auth import login
+from django.db import IntegrityError
 from django.utils.translation import gettext_lazy as _
 import requests
 import jwt, datetime
@@ -34,6 +35,7 @@ from drf_yasg.utils import swagger_auto_schema
 import os
 import environ
 from django.core.exceptions import ValidationError
+from rest_framework.exceptions import APIException
 from random import randint
 from datetime import datetime, timedelta
 from mailjet_rest import Client
@@ -84,6 +86,9 @@ class userRegistration(APIView):
     A token is being created for a user after a successful registration
 
     Returns: HTTP_201_CREATED, a serializer data and a token
+    Raises:
+        HTTP_500_INTERNAL_SERVER_ERROR if user's data couldn't be processed
+        HTTP_400_BAD_REQUEST if there's an invalid data or a unique constraint
 
     """
 
@@ -91,20 +96,23 @@ class userRegistration(APIView):
 
     @swagger_auto_schema(request_body=CustomUserSerializer)
     def post(self, request):
-        serializer = CustomUserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user_create = User.objects.create_user(
-            **serializer.validated_data
-        )
-        if not user_create:
-            return Response(
-                "User creation is unsuccessful",
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+        try:
+            serializer = CustomUserSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user_create = User.objects.create_user(
+                **serializer.validated_data
             )
-        return Response(
-            {"message": "Check your email for verification"},
-            status=status.HTTP_201_CREATED,
-        )
+            if not user_create:
+                return Response(
+                    "User creation is unsuccessful",
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            return Response(
+                {"message": "Check your email for verification"},
+                status=status.HTTP_201_CREATED,
+            )
+        except IntegrityError as error:
+            raise APIException(detail=error)
 
 
 class agentRegistration(APIView):
@@ -113,6 +121,9 @@ class agentRegistration(APIView):
     A token is being created for an agent after a successful registration
 
     Returns: HTTP_201_CREATED- a serializer data and a token
+    Raise:
+        HTTP_500_INTERNAL_SERVER_ERROR if agent's data couldn't be processed
+        HTTP_400_BAD_REQUEST if there is an invalid data or unique constraint
 
     """
 
@@ -121,17 +132,22 @@ class agentRegistration(APIView):
 
     @swagger_auto_schema(request_body=AgentSerializer)
     def post(self, request):
-        serializer = AgentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        agent_create = User.objects.create_user(**serializer.validated_data)
-        if not agent_create:
-            return Response('Agent creation is unsuccessful', 
-            status=status.HTTP_422_UNPROCESSABLE_ENTITY
+        try:
+            serializer = AgentSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            agent_create = User.objects.create_user(**serializer.validated_data)
+            if not agent_create:
+                return Response('Agent creation is unsuccessful', 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            return Response(
+                {"message": "Check your email and verify"},
+                status=status.HTTP_201_CREATED,
             )
-        return Response(
-            {"message": "Check your email and verify"},
-            status=status.HTTP_201_CREATED,
-        )
+        except IntegrityError as error:
+            raise APIException(detail=error)
+
+
 
 
 @api_view(["GET"])
@@ -187,7 +203,6 @@ def refreshToken(request, email):
         ]
     }
     mailjet_result = mailjet.send.create(data=data)
-    print(mailjet.status_code)
     if mailjet_result:
         return Response(mailjet_result.json(), status=status.HTTP_201_CREATED)
     return Response(

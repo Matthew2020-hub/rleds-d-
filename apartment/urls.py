@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ApartmentCreate,
-    ApartmentCreateUpdateDelete,
+    ApartmentListUpdateDelete,
     ApartmentList,
     ApartmentSearch,
     apartment_reviews_create,
@@ -29,7 +29,7 @@ urlpatterns = [
     ),
     path(
         "api/v1/apartment/<uuid:apartment_id>",
-        ApartmentCreateUpdateDelete.as_view(),
+        ApartmentListUpdateDelete.as_view(),
         name="get-apartment",
     ),
     path(

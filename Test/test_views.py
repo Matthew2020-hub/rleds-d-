@@ -205,7 +205,7 @@ class TestViews(TestSetUp):
 
 
 
-    def test_verifyEmail_endpoint(self):
+    def test_verifyEmailError_endpoint(self):
         self.email_verification_url = reverse("verify-email")
         self.client.post(self.register_url, self.user_data)
         # pdb.set_trace()
