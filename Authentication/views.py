@@ -1,7 +1,7 @@
 from multiprocessing import AuthenticationError
 from django.forms import ValidationError
 from .serializers import (
-    LoginSerializer,
+    SigninSerializer,
     GetAcessTokenSerializer,
     CustomPasswordResetSerializer,
     AgentSerializer,
@@ -171,7 +171,7 @@ def refreshToken(request, email):
     if user.is_verify is True:
         return Response(
             "User's Email already verified",
-            status=status.HTTP_208_ALREADY_REPORTED,
+            status=status.HTTP_208_ALREADY_REPORTED
         )
 
     email_verification_token = RefreshToken.for_user(user).access_token
@@ -551,7 +551,7 @@ class Validate_Authorization_Code(APIView):
 class Login(APIView):
 
     permission_classes = [AllowAny]
-    @swagger_auto_schema(request_body=LoginSerializer)
+    @swagger_auto_schema(request_body=SigninSerializer)
     def post(self, request):
 
         """
@@ -565,7 +565,7 @@ class Login(APIView):
             HTTP_401_UNAUTHORIZED- if login credentials are incorrect
 
         """
-        serializer = LoginSerializer(data=request.data)
+        serializer = SigninSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
         password = serializer.validated_data["password"]

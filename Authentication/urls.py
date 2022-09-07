@@ -35,7 +35,7 @@ urlpatterns = [
         views.refreshToken,
         name="refresh-token",
     ),
-    path("api/v1/login/", views.Login.as_view(), name="login"),
+    path("api/v1/login/", views.Login.as_view(), name="signin"),
     path(
         "api/v1/google-token/validate/oauth2callback",
         views.Validate_Authorization_Code.as_view(),
