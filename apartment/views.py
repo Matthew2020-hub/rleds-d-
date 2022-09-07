@@ -15,9 +15,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from drf_yasg.utils import swagger_auto_schema
 from Authentication.models import User
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_headers
+# from django.utils.decorators import method_decorator
+# from django.views.decorators.cache import cache_page
+# from django.views.decorators.vary import vary_on_headers
 from django.db import IntegrityError
 from rest_framework.exceptions import APIException
 
