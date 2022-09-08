@@ -121,7 +121,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = "dev.wsgi.application"
+WSGI_APPLICATION = "dev.wsgi.application"
 ASGI_APPLICATION = 'dev.asgi.application'
 
 AUTH_USER_MODEL = "Authentication.User"
