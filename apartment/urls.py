@@ -7,6 +7,7 @@ from .views import (
     apartment_reviews_create,
 )
 from django.conf import settings
+from django.views.decorators.cache import cache_page
 from django.conf.urls.static import static
 
 # adjacent
@@ -19,6 +20,7 @@ urlpatterns = [
     ),
     path(
         "api/v1/apartment/all/",
+        cache_page(60*60),
         ApartmentList.as_view(),
         name="apartment-list",
     ),

@@ -15,9 +15,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from drf_yasg.utils import swagger_auto_schema
 from Authentication.models import User
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_headers
 from django.db import IntegrityError
 from rest_framework.exceptions import APIException
 
@@ -63,8 +60,6 @@ class ApartmentList(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 
-    @method_decorator(vary_on_headers)
-    @cache_page(60 * 60)
     def get(self, request):
         queryset = Apartment.objects.all()
         if not queryset:
