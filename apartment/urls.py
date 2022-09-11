@@ -21,8 +21,7 @@ urlpatterns = [
     path(
         "api/v1/apartment/all/",
         cache_page(60*60)
-        (ApartmentList.as_view()),
-        name="apartment-list",
+        (ApartmentList.as_view())
     ),
     path(
         "api/v1/apartment/review/<uuid:apartment_id>",
