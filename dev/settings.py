@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "apartment",
     "django.contrib.sites",
+    "django_redis",
     "django_countries",
     'phonenumber_field',
     "rest_auth.registration",
