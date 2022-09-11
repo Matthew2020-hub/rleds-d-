@@ -20,8 +20,8 @@ urlpatterns = [
     ),
     path(
         "api/v1/apartment/all/",
-        cache_page(60*60),
-        ApartmentList.as_view(),
+        cache_page(60*60)
+        (ApartmentList.as_view()),
         name="apartment-list",
     ),
     path(
