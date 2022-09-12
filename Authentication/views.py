@@ -574,7 +574,7 @@ class Login(APIView):
         user.backend = "django.contrib.auth.backends.ModelBackend"
         if not user.check_password(password):
             return Response(
-                {"message": "Incorrect Login credentials"},
+                "Incorrect Login credentials",
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         if not user.is_verify is True:
