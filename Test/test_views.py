@@ -20,7 +20,6 @@ class TestViews(TestSetUp):
         self.assertEqual(res.status_code, 201)
 
 
-
     def test_apartment_list(self):
         # agent data needs to be registered before an apartment could be created.
         self.client.post(self.register_url, self.agent_data, format="json")

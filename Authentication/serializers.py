@@ -3,18 +3,14 @@ from rest_framework import serializers
 
 # from message.models import Room
 from .validators import password_regex_pattern
-
-
 class CustomUserSerializer(serializers.ModelSerializer):
 
     """A User serializer"""
-
     password = serializers.CharField(
         validators=[password_regex_pattern],
-        max_length=100,
         style={"input_type": "password"},
         write_only=True,
-    )
+)
 
     class Meta:
         model = User

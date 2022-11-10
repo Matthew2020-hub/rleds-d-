@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG')
+DEBUG = True
 CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL")
 
 ACCOUNT_ADAPTER = "Profile.adapter.AccountAdapter"
@@ -157,14 +157,11 @@ REST_FRAMEWORK = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 ALLOWED_HOSTS = ['freehouses.herokuapp.com']
 # Password validation
@@ -172,7 +169,8 @@ ALLOWED_HOSTS = ['freehouses.herokuapp.com']
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": 
+        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -250,11 +248,11 @@ DATABASES['default'] = dj_database_url.config(
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL"),
+        "LOCATION": os.environ.get("REDIS_TLS_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "PASSWORD": os.environ.get("REDIS_PASSWORD"),
-            "CONNECTION_POOL_KWARGS": {"ssl_cert_reqs": None}
+            "PASSWORD": os.environ.get("REDIS_PASSWORD")
+            # "CONNECTION_POOL_KWARGS": {"ssl_cert_reqs": None}
         }
     }
 }

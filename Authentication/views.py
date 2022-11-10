@@ -46,9 +46,7 @@ environ.Env.read_env("housefree.env")
 from_email = os.environ.get("EMAIL_HOST_USER")
 api_key = os.environ.get("MJ_API_KEY")
 api_secret = os.environ.get("MJ_API_SECRET")
-TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
-TWILIO_NUMBER = os.environ.get("TWILIO_NUMBER")
+DOMAIN = os.environ.get("DOMAIN")
 GOOGLE_TOKEN_URL = os.environ.get("GOOGLE_TOKEN_URL")
 SOCIAL_AUTH_GOOGLE_KEY = os.environ.get("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_SECRET = os.environ.get("GOOGLE_CLIENT_KEY")
@@ -177,7 +175,7 @@ def refreshToken(request, email):
     email_verification_token = RefreshToken.for_user(user).access_token
     current_site = get_current_site(request).domain
     print(current_site)
-    absurl = f"https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}"
+    absurl = f"{DOMAIN}?token={email_verification_token}"
     email_body = (
         "Hi " + " " + user.name + ":\n" + "Use link below to verify your email"
         "\n" + absurl
