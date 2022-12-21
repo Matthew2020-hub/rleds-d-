@@ -45,7 +45,7 @@ urlpatterns = [
     path("", include("transaction.urls")),
     path("", include("Profile.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += [
     url(
@@ -59,7 +59,7 @@ urlpatterns += [
         name="schema-swagger-ui",
     ),
     url(
-        r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), 
+        r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0),
         name="schema-redoc"
     ),
 ]

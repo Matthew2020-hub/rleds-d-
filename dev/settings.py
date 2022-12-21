@@ -128,9 +128,7 @@ ASGI_APPLICATION = 'dev.asgi.application'
 AUTH_USER_MODEL = "Authentication.User"
 
 
-
 SIMPLE_JWT = {"USER_ID_FIELD": "user_id"}
-
 
 
 AUTHENTICATION_BACKENDS = (
@@ -163,13 +161,13 @@ DATABASES = {
 }
 
 
-ALLOWED_HOSTS = ['freehouses.herokuapp.com']
+ALLOWED_HOSTS = ['freehouses.herokuapp.com', '.vercel.app', '.now.sh']
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": 
+        "NAME":
         "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
@@ -203,7 +201,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 MEDIA_URL = "/media/"
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -242,7 +240,7 @@ USE_TZ = True
 
 DATABASES['default'] = dj_database_url.config(
     conn_max_age=600, ssl_require=True
-    )
+)
 
 # redis caching configuration
 CACHES = {
@@ -256,8 +254,3 @@ CACHES = {
         }
     }
 }
-
-
-
-
-
