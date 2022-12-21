@@ -20,7 +20,7 @@ class Apartment(models.Model):
     videofile = models.CharField(max_length=500, blank=True, null=True)
     image_url = models.JSONField(null=True)
     price = models.CharField(max_length=50, null=False)
-    location = models.CharField(max_length=30, null=False)
+    location = models.CharField(max_length=30, null=False, unique=True)
     agent = models.CharField(max_length=30, null=True)
     descriptions = models.CharField(max_length=250, null=True)
     feautures = models.CharField(max_length=250, blank=False, null=True)

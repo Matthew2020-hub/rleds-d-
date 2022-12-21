@@ -7,7 +7,7 @@ class TestSetUp(APITestCase):
         self.post_apartment_url = reverse("apartment-post")
         self.list_apartment = reverse("apartment-list")
         self.register_url = reverse("user-register")
-        self.login_url = reverse("login")
+        self.login_url = reverse("signin")
 
 
         self.user_data = {

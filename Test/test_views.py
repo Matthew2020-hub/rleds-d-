@@ -20,7 +20,6 @@ class TestViews(TestSetUp):
         self.assertEqual(res.status_code, 201)
 
 
-
     def test_apartment_list(self):
         # agent data needs to be registered before an apartment could be created.
         self.client.post(self.register_url, self.agent_data, format="json")
@@ -205,7 +204,7 @@ class TestViews(TestSetUp):
 
 
 
-    def test_verifyEmail_endpoint(self):
+    def test_verifyEmailError_endpoint(self):
         self.email_verification_url = reverse("verify-email")
         self.client.post(self.register_url, self.user_data)
         # pdb.set_trace()

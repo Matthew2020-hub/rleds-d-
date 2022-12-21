@@ -1,7 +1,7 @@
 from multiprocessing import AuthenticationError
 from django.forms import ValidationError
 from .serializers import (
-    LoginSerializer,
+    SigninSerializer,
     GetAcessTokenSerializer,
     CustomPasswordResetSerializer,
     AgentSerializer,
@@ -23,7 +23,8 @@ from rest_framework.decorators import (
     api_view,
     permission_classes, authentication_classes
 )
-from django.contrib.auth import logout, login
+from django.contrib.auth import login
+from django.db import IntegrityError
 from django.utils.translation import gettext_lazy as _
 import requests
 import jwt, datetime
@@ -34,6 +35,7 @@ from drf_yasg.utils import swagger_auto_schema
 import os
 import environ
 from django.core.exceptions import ValidationError
+from rest_framework.exceptions import APIException
 from random import randint
 from datetime import datetime, timedelta
 from mailjet_rest import Client
@@ -44,9 +46,7 @@ environ.Env.read_env("housefree.env")
 from_email = os.environ.get("EMAIL_HOST_USER")
 api_key = os.environ.get("MJ_API_KEY")
 api_secret = os.environ.get("MJ_API_SECRET")
-TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
-TWILIO_NUMBER = os.environ.get("TWILIO_NUMBER")
+DOMAIN = os.environ.get("DOMAIN")
 GOOGLE_TOKEN_URL = os.environ.get("GOOGLE_TOKEN_URL")
 SOCIAL_AUTH_GOOGLE_KEY = os.environ.get("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_SECRET = os.environ.get("GOOGLE_CLIENT_KEY")
@@ -84,6 +84,9 @@ class userRegistration(APIView):
     A token is being created for a user after a successful registration
 
     Returns: HTTP_201_CREATED, a serializer data and a token
+    Raises:
+        HTTP_500_INTERNAL_SERVER_ERROR if user's data couldn't be processed
+        HTTP_400_BAD_REQUEST if there's an invalid data or a unique constraint
 
     """
 
@@ -91,20 +94,23 @@ class userRegistration(APIView):
 
     @swagger_auto_schema(request_body=CustomUserSerializer)
     def post(self, request):
-        serializer = CustomUserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user_create = User.objects.create_user(
-            **serializer.validated_data
-        )
-        if not user_create:
-            return Response(
-                "User creation is unsuccessful",
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+        try:
+            serializer = CustomUserSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user_create = User.objects.create_user(
+                **serializer.validated_data
             )
-        return Response(
-            {"message": "Check your email for verification"},
-            status=status.HTTP_201_CREATED,
-        )
+            if not user_create:
+                return Response(
+                    "User creation is unsuccessful",
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            return Response(
+                {"message": "Check your email for verification"},
+                status=status.HTTP_201_CREATED,
+            )
+        except IntegrityError as error:
+            raise APIException(detail=error)
 
 
 class agentRegistration(APIView):
@@ -113,6 +119,9 @@ class agentRegistration(APIView):
     A token is being created for an agent after a successful registration
 
     Returns: HTTP_201_CREATED- a serializer data and a token
+    Raise:
+        HTTP_500_INTERNAL_SERVER_ERROR if agent's data couldn't be processed
+        HTTP_400_BAD_REQUEST if there is an invalid data or unique constraint
 
     """
 
@@ -121,17 +130,22 @@ class agentRegistration(APIView):
 
     @swagger_auto_schema(request_body=AgentSerializer)
     def post(self, request):
-        serializer = AgentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        agent_create = User.objects.create_user(**serializer.validated_data)
-        if not agent_create:
-            return Response('Agent creation is unsuccessful', 
-            status=status.HTTP_422_UNPROCESSABLE_ENTITY
+        try:
+            serializer = AgentSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            agent_create = User.objects.create_user(**serializer.validated_data)
+            if not agent_create:
+                return Response('Agent creation is unsuccessful', 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            return Response(
+                {"message": "Check your email and verify"},
+                status=status.HTTP_201_CREATED,
             )
-        return Response(
-            {"message": "Check your email and verify"},
-            status=status.HTTP_201_CREATED,
-        )
+        except IntegrityError as error:
+            raise APIException(detail=error)
+
+
 
 
 @api_view(["GET"])
@@ -155,13 +169,13 @@ def refreshToken(request, email):
     if user.is_verify is True:
         return Response(
             "User's Email already verified",
-            status=status.HTTP_208_ALREADY_REPORTED,
+            status=status.HTTP_208_ALREADY_REPORTED
         )
 
     email_verification_token = RefreshToken.for_user(user).access_token
     current_site = get_current_site(request).domain
     print(current_site)
-    absurl = f"https://freehouses.herokuapp.com/api/v1/email-verify?token={email_verification_token}"
+    absurl = f"{DOMAIN}?token={email_verification_token}"
     email_body = (
         "Hi " + " " + user.name + ":\n" + "Use link below to verify your email"
         "\n" + absurl
@@ -187,7 +201,6 @@ def refreshToken(request, email):
         ]
     }
     mailjet_result = mailjet.send.create(data=data)
-    print(mailjet.status_code)
     if mailjet_result:
         return Response(mailjet_result.json(), status=status.HTTP_201_CREATED)
     return Response(
@@ -536,7 +549,7 @@ class Validate_Authorization_Code(APIView):
 class Login(APIView):
 
     permission_classes = [AllowAny]
-    @swagger_auto_schema(request_body=LoginSerializer)
+    @swagger_auto_schema(request_body=SigninSerializer)
     def post(self, request):
 
         """
@@ -550,7 +563,7 @@ class Login(APIView):
             HTTP_401_UNAUTHORIZED- if login credentials are incorrect
 
         """
-        serializer = LoginSerializer(data=request.data)
+        serializer = SigninSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
         password = serializer.validated_data["password"]
@@ -559,7 +572,7 @@ class Login(APIView):
         user.backend = "django.contrib.auth.backends.ModelBackend"
         if not user.check_password(password):
             return Response(
-                {"message": "Incorrect Login credentials"},
+                "Incorrect Login credentials",
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         if not user.is_verify is True:

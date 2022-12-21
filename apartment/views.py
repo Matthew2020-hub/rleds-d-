@@ -17,7 +17,9 @@ from drf_yasg.utils import swagger_auto_schema
 from Authentication.models import User
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_headers
+from django.views.decorators.vary import vary_on_cookie
+from django.db import IntegrityError
+from rest_framework.exceptions import APIException
 
 
 class ApartmentCreate(APIView):
@@ -29,28 +31,30 @@ class ApartmentCreate(APIView):
 
     @swagger_auto_schema(request_body=ApartmentSerializer)
     def post(self, request):
-
-        serializer = ApartmentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        validated_data = serializer.validated_data
-        agent_name = serializer.validated_data["agent"]
-        # serializer.save()
         try:
-            # verify that the person creating an apartment is an agent
-            verify_user = User.objects.get(name=agent_name)
-            if verify_user.entry != "Agent":
-                return Response(
-                    "Only an agent can post an apartment",
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-            apartment = Apartment.objects.create(**validated_data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = ApartmentSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            validated_data = serializer.validated_data
+            agent_name = serializer.validated_data["agent"]
+            # serializer.save()
+            try:
+                # verify that the person creating an apartment is an agent
+                verify_user = User.objects.get(name=agent_name)
+                if verify_user.entry != "Agent":
+                    return Response(
+                        "Only an agent can post an apartment",
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+                apartment = Apartment.objects.create(**validated_data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        except User.DoesNotExist:
-            return Response(
-                "Agent with this name does not exist",
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            except User.DoesNotExist:
+                return Response(
+                    "Agent with this name does not exist",
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except IntegrityError as exec:
+            raise APIException(detail=exec)
 
 
 class ApartmentList(APIView):
@@ -59,8 +63,8 @@ class ApartmentList(APIView):
     authentication_classes = [TokenAuthentication]
     permisssion_classes = [IsAuthenticated]
 
-    @method_decorator(vary_on_headers)
-    @cache_page(60 * 60)
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60*60*12))
     def get(self, request):
         queryset = Apartment.objects.all()
         if not queryset:
@@ -75,7 +79,7 @@ class ApartmentList(APIView):
         )
 
 
-class ApartmentCreateUpdateDelete(APIView):
+class ApartmentListUpdateDelete(APIView):
 
     """
     An endpoint to get, delete and update a particular endpoint
